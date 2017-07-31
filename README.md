@@ -1,9 +1,8 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.0-red.svg)](https://github.com/Tencent/soter/releases) 
+[![Release Version](https://img.shields.io/badge/release-1.3.1-red.svg)](https://github.com/Tencent/soter/releases) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
-[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.0-red.svg)](https://github.com/Tencent/soter/wiki)
 
 For English version, please click [here](README_EN.md).
 
@@ -82,35 +81,54 @@ TENCENT SOTER中，一共有三个级别的密钥：ATTK，App Secure Key(ASK)�
 
 我们提供了两个gradle dependency：`soterwrapp` and `sotercore`。`sotercore`提供了TENCENT SOTER与framework、TEE层交互的核心底层接口，比如从客户端判断设备是否支持TENCENT SOTER，如何生成ASK和AuthKey，如何签名等等。尽管你可以直接使用`sotercore`来完成所有的TENCENT SOTER实现，但是我们依然强烈建议你直接使用另外一个dependency`soterwrapper`，因为我们在这里封装很多TENCENT SOTER相关的复杂逻辑和易错逻辑，让你能更快实现TENCENT SOTER。
 
-在你的客户端中添加TENCENT SOTER支持非常简单：只要在APP的`build.gradle`文件中相应位置添加这一行：
+在你的客户端中添加TENCENT SOTER支持非常简单：只要在主module`build.gradle`文件中相应位置添加这一行：
 
 ```groovy
 dependencies {
     ...
-      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.0'if you only want to use core functions in your application
-    compile 'com.tencent.soter:soterwrapper:1.3.0'
+      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.1'if you only want to use core functions in your application
+    compile 'com.tencent.soter:soterwrapper:1.3.1'
     ...
 }
 ```
 
-这就可以了！然后，建议你参考我们的sample，确定你需要在应用中添加哪些逻辑
+以及project`build.gradle`中添加
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven {
+            url 'https://dl.bintray.com/tencent-soter/maven/'
+        }
+    }
+}
+```
+
+当然，也别忘记在 `AndroidManifest.xml`中添加使用指纹权限：
+
+```xml
+<uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+```
+
+
+
+就可以了！然后，建议你参考我们的sample，确定你需要在应用中添加哪些逻辑。
 
 你应该尽可能早得初始化TENCENT SOTER支持，比如在`Application.onCreate()`中：
 
 ```java
-InitializeParam param = new InitializeParam.InitializeParamBuilder().setGetSupportNetWrapper(new RemoteGetSupportSoter()).setScenes(ConstantsSoterDemo.SCENE_PAYMENT)
-                /*.setCustomAppSecureKeyName("Wechat_demo_ask").setDistinguishSalt("demo_salt_account_1").setSoterLogger(new ISoterLogger() {
-                                                                                                                    ...
-                                                                                                           }
-                                                                                                        )*/.build();
+InitializeParam param = new InitializeParam.InitializeParamBuilder().setGetSupportNetWrapper(new RemoteGetSupportSoter()).setScenes(ConstantsSoterDemo.SCENE_PAYMENT).build();
 SoterWrapperApi.init(getApplicationContext(), mGetIsSupportCallback, param);
 ```
 
-你也应该尽早准备ASK。你可以选择在初始化TENCENT SOTER之后，或者在生成AuthKey之前
+你也应该尽早准备ASK。你可以选择在初始化TENCENT SOTER之后，或者在生成AuthKey之前。
 
 ```java
 SoterWrapperApi.prepareAppSecureKey(mPrepareASKCallback, false, new RemoteUploadASK());
 ```
+
+当然，如果你没有提前生成ASK的需求的话，也完全可以和AuthKey一起生成。
 
 你应当生成自己业务需要使用的AuthKey。我们强烈建议在生成AuthKey的请求参数中，将上传ASK公钥的网络封装结构体传进去（如果有的话）。这样的话，如果你没有成功生成ASK，或者ASK被用户主动删除，我们会自动帮你重新生成上传新的ASK公钥。
 

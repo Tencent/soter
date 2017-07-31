@@ -23,7 +23,7 @@ abstract public class SoterProcessResultBase<T> extends SoterCoreResult implemen
     private T extData = null;
 
     // only for create dummy instance
-    public SoterProcessResultBase() {
+    SoterProcessResultBase() {
         super(ERR_UNKNOWN);
     }
 
@@ -80,5 +80,15 @@ abstract public class SoterProcessResultBase<T> extends SoterCoreResult implemen
     @SuppressWarnings("unused")
     public T getExtData() {
         return extData;
+    }
+
+    @Override
+    public String toString() {
+        if(getExtData() == null) {
+            return super.toString();
+        } else {
+            return String.format("total: %s, extData: %s", super.toString(), getExtData().toString());
+        }
+
     }
 }

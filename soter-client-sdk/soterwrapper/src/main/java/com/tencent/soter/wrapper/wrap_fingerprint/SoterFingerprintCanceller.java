@@ -9,15 +9,17 @@
 
 package com.tencent.soter.wrapper.wrap_fingerprint;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 
 import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
+
+import junit.framework.Assert;
 
 /**
  * Created by henryye on 2017/4/24.
@@ -26,7 +28,6 @@ import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
  *
  * All devices that support SOTER must be at least Android 5.0, so we do not have to check the API-Level
  */
-@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
 public class SoterFingerprintCanceller {
     private static final String TAG = "Soter.SoterFingerprintCanceller";
 
@@ -35,6 +36,7 @@ public class SoterFingerprintCanceller {
     private static final long MAX_WAIT_EXECUTION_TIME = 350;
 
     public SoterFingerprintCanceller() {
+        Assert.assertTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
         refreshCancellationSignal();
     }
 
@@ -42,10 +44,12 @@ public class SoterFingerprintCanceller {
      * Cancel the fingerprint authentication asynchronously. Note that the cancel callback in called in {@link FingerprintManagerCompat.AuthenticationCallback#onAuthenticationCancelled()}
      * @return False if the cancellation process is already done before.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public boolean asyncCancelFingerprintAuthentication() {
         return asyncCancelFingerprintAuthenticationInnerImp(true);
     }
 
+    @SuppressLint("NewApi")
     public boolean asyncCancelFingerprintAuthenticationInnerImp(final boolean shouldPublishCancel) {
         SLogger.v(TAG, "soter: publishing cancellation");
         if(!mCancellationSignal.isCanceled()) {
@@ -87,6 +91,7 @@ public class SoterFingerprintCanceller {
         SoterTaskManager.getInstance().publishAuthCancellation();
     }
 
+    @SuppressLint("NewApi")
     public void refreshCancellationSignal() {
         this.mCancellationSignal = new CancellationSignal();
     }

@@ -55,6 +55,9 @@ public class TaskPrepareAppSecureKey extends BaseSoterPrepareKeyTask implements 
             callback(new SoterProcessKeyPreparationResult(ERR_OK, SoterCore.getAppGlobalSecureKeyModel()));
             return true;
         }
+        if(mAppSecureKeyNetWrapper == null) {
+            SLogger.w(TAG, "soter: it is strongly recommended that you provide a net wrapper to check and upload ASK validation from server! Please make sure you upload it later");
+        }
         return false;
     }
 

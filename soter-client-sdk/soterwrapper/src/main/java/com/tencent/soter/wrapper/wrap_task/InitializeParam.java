@@ -14,6 +14,7 @@ import com.tencent.soter.wrapper.wrap_net.IWrapGetSupportNet;
 
 /**
  * Created by henryye on 2017/7/12.
+ * The initialize parameter and Builder used for initialize
  */
 
 @SuppressWarnings({"unused", "WeakerAccess"})

@@ -30,6 +30,8 @@ import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 
+import junit.framework.Assert;
+
 import java.lang.ref.WeakReference;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -77,7 +79,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
     }
 
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "NewApi"})
     @Override
     boolean preExecute() {
         if (!SoterDataCenter.getInstance().isInit()) {
@@ -90,6 +92,8 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             callback(new SoterProcessAuthenticationResult(ERR_SOTER_NOT_SUPPORTED));
             return true;
         }
+        // All SOTER device must be at list Android 5.0, so be easy and free to add this Assert after checking SOTER support
+        Assert.assertTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
         mAuthKeyName = SoterDataCenter.getInstance().getAuthKeyNames().get(mScene, "");
         if (SoterCoreUtil.isNullOrNil(mAuthKeyName)) {
             SLogger.w(TAG, "soter: request prepare auth key scene: %d, but key name is not registered. Please make sure you register the scene in init");
@@ -145,6 +149,9 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             SLogger.w(TAG, "soter: did not pass cancellation obj. We suggest you pass one");
             mFingerprintCancelSignal = new SoterFingerprintCanceller();
             return false;
+        }
+        if(mUploadSignatureWrapper == null) {
+            SLogger.w(TAG, "hy: we strongly recommend you to check the final authentication data in server! Please make sure you upload and check later");
         }
         return false;
     }
@@ -209,6 +216,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         });
     }
 
+    @SuppressLint("NewApi")
     private void performStartFingerprintLogic(Signature signatureToAuth) {
         Context context = mContextWeakReference.get();
         if (context == null) {
@@ -392,6 +400,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             compatLogicWhenDone();
         }
 
+        @SuppressLint("NewApi")
         private void compatLogicWhenFailOrHelp() {
             // in versions below 6.0, you must cancel the authentication and start again when onAuthenticationFailed and onAuthenticationHelp
             if(mShouldOperateCompatWhenHint) {
@@ -408,6 +417,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             }
         }
 
+        @SuppressLint("NewApi")
         private void compatLogicWhenDone() {
             if(mShouldOperateCompatWhenDone) {
                 mFingerprintCancelSignal.asyncCancelFingerprintAuthenticationInnerImp(false);

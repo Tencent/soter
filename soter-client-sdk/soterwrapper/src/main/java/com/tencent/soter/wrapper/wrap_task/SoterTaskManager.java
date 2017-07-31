@@ -28,10 +28,6 @@ public class SoterTaskManager implements SoterProcessErrCode {
 
     private final Object mTaskPoolLock = new Object();
 
-    public Object getTaskLock() {
-        return mTaskPoolLock;
-    }
-
     private SoterTaskManager() {
         sTaskPool = new SparseArray<>(5);
     }

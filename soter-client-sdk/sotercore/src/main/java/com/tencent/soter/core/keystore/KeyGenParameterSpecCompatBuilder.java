@@ -38,7 +38,7 @@ import javax.security.auth.x500.X500Principal;
  *
  * The builder to compat legacy KeyGenParameterSpecBuilder
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public abstract class KeyGenParameterSpecCompatBuilder {
     private static final String TAG = "Soter.KeyGenParameterSpecCompatBuilder";
 
@@ -206,6 +206,7 @@ public abstract class KeyGenParameterSpecCompatBuilder {
         }
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     static class ReflectKeyGenParameterSpecCompatBuilder extends KeyGenParameterSpecCompatBuilder {
 
         private static final String CLASSNAME = "android.security.keystore.KeyGenParameterSpec";

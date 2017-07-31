@@ -47,11 +47,7 @@ public class SoterCoreResult implements SoterErrCode {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof SoterCoreResult)) {
-            return false;
-        } else {
-            return ((SoterCoreResult) obj).errCode == errCode;
-        }
+        return obj instanceof SoterCoreResult && ((SoterCoreResult) obj).errCode == errCode;
     }
 
     public int getErrCode() {

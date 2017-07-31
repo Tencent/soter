@@ -11,6 +11,7 @@ package com.tencent.soter.wrapper.wrap_core;
 
 /**
  * Created by henryye on 2017/4/28.
+ * The key upload and generate status used by library locally
  */
 
 public class ConstantsSoterProcess {

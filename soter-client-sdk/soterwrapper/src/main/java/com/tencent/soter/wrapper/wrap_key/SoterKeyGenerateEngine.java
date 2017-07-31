@@ -150,6 +150,7 @@ public class SoterKeyGenerateEngine {
     }
 
     private SoterProcessKeyPreparationResult checkParams() {
+        //noinspection StatementWithEmptyBody
         if((mGenKeyFlag & FLAG_GEN_ASK) == FLAG_GEN_ASK) {
             // nothing to check
         } else if((mGenKeyFlag & FLAG_GEN_AUTH_KEY) == FLAG_GEN_AUTH_KEY) {

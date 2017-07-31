@@ -1,9 +1,8 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.0-red.svg)](https://github.com/Tencent/soter/releases) 
+[![Release Version](https://img.shields.io/badge/release-1.3.1-red.svg)](https://github.com/Tencent/soter/releases) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
-[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.0-red.svg)](https://github.com/Tencent/soter/wiki)
 
 We will give you a brief overview on what TENCENT SOTER is, why we should use TENCENT SOTER, How TENCENT SOTER works, how many devices already supported TENCENT SOTER, and the most important: how you can use it.
 
@@ -135,11 +134,32 @@ It's very easy to configure TENCENT SOTER support in you Android client applicat
 ```groovy
 dependencies {
     ...
-      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.0'if you only want to use core functions in your application
-    compile 'com.tencent.soter:soterwrapper:1.3.0'
+      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.1'if you only want to use core functions in your application
+    compile 'com.tencent.soter:soterwrapper:1.3.1'
     ...
 }
 ```
+
+and in project module's `build.gradle`
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven {
+            url 'https://dl.bintray.com/tencent-soter/maven/'
+        }
+    }
+}
+```
+
+Of course, don't forget to add fingerprint permission in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+```
+
+
 
 And it's done! Later you need to follow our [sample](soter-client-demo/) to learn what you need to add in your application. 
 

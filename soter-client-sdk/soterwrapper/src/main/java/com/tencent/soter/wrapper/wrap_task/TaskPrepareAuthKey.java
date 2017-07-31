@@ -74,10 +74,9 @@ public class TaskPrepareAuthKey extends BaseSoterPrepareKeyTask implements Soter
         if(!SoterCore.hasAppGlobalSecureKey() && SoterCore.hasAuthKey(mAuthKeyName)) {
             SLogger.w(TAG, "soter: no ask but has auth key. delete the auth key as well");
             SoterCore.removeAuthKey(mAuthKeyName, false);
-            return false;
         }
-        if(!SoterCore.hasAppGlobalSecureKey() && !(mIsAutoPrepareASKWhenNotFound && mASKNetWrapper != null)) {
-            SLogger.w(TAG, "soter: has not generate app secure key yet and not require to generate it or upload ask wrapper is null");
+        if(!SoterCore.hasAppGlobalSecureKey() && !mIsAutoPrepareASKWhenNotFound) {
+            SLogger.w(TAG, "soter: has not generate app secure key yet and not require to generate it");
             callback(new SoterProcessKeyPreparationResult(SoterErrCode.ERR_ASK_NOT_EXIST));
             return true;
         }
@@ -89,6 +88,9 @@ public class TaskPrepareAuthKey extends BaseSoterPrepareKeyTask implements Soter
             SLogger.i(TAG, "soter: already has key. do not need generate again");
             callback(new SoterProcessKeyPreparationResult(ERR_OK, SoterCore.getAuthKeyModel(mAuthKeyName)));
             return true;
+        }
+        if(mAuthKeyNetWrapper == null) {
+            SLogger.w(TAG, "soter: it is strongly recommended that you provide a net wrapper to check and upload AuthKey validation from server! Please make sure you upload it later");
         }
         return false;
     }
@@ -107,7 +109,7 @@ public class TaskPrepareAuthKey extends BaseSoterPrepareKeyTask implements Soter
 
     @Override
     void execute() {
-        if(!SoterCore.hasAppGlobalSecureKey() && mIsAutoPrepareASKWhenNotFound && mASKNetWrapper != null) {
+        if(!SoterCore.hasAppGlobalSecureKey() && mIsAutoPrepareASKWhenNotFound) {
             SLogger.d(TAG, "soter: ask not found, but required to generate it. start generate");
             SoterWrapperApi.prepareAppSecureKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {
 

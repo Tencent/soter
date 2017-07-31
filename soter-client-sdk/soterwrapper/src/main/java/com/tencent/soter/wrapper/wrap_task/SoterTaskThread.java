@@ -58,6 +58,7 @@ public class SoterTaskThread {
         mTaskHandler.postDelayed(task, delayInMs);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void postToMainThread(final Runnable task) {
         mMainLooperHandler.post(task);
     }

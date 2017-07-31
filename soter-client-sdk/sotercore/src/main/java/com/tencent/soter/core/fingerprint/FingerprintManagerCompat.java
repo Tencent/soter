@@ -37,7 +37,8 @@ import javax.crypto.Mac;
  * On platforms before {@link Build.VERSION_CODES}, this class behaves as there would
  * be no fingerprint hardware available.
  */
-@SuppressWarnings("ALL")
+
+@SuppressWarnings({"SameParameterValue", "WeakerAccess"})
 public class FingerprintManagerCompat {
     private static final String TAG = "Soter.FingerprintManagerCompat";
 
@@ -156,6 +157,7 @@ public class FingerprintManagerCompat {
         }
     }
 
+    @SuppressWarnings("unused")
     public static final class AuthenticationResult {
         private CryptoObject mCryptoObject;
 

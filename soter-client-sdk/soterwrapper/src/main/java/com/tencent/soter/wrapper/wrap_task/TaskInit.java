@@ -82,6 +82,9 @@ public class TaskInit extends BaseSoterTask {
             callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_CUSTOM_ASK_NAME_TOO_LONG, "the passed ask name is too long (larger than 24)"));
             return true;
         }
+        if(getSupportNetWrapper == null) {
+            SLogger.w(TAG, "soter: it is strongly recommended to check device support from server, so you'd better provider a net wrapper to check it");
+        }
         if(!SoterCoreUtil.isNullOrNil(customAskName)) {
             SLogger.i(TAG, "soter: provided valid ASK name");
             SoterCoreData.getInstance().setAskName(customAskName);
