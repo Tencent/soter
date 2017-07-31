@@ -18,15 +18,6 @@ artifacts {
     archives sourcesJar
 }
 
-////for local maven test
-//afterEvaluate { project ->
-//    tasks.all { Task task ->
-//        if (task.name.equalsIgnoreCase('publishTinkerBootsPublicationToMavenLocal')) {
-//            task.dependsOn tasks.getByName('assemble')
-//        }
-//    }
-//}
-
 publishing {
     publications {
         SoterBoots(MavenPublication) {
@@ -37,9 +28,5 @@ publishing {
         }
     }
 }
-
-//task buildAndPublishLocalMaven(dependsOn: ['build', 'publishTinkerBootsPublicationToMavenLocal']) {
-//    group = 'tinker'
-//}
 
 apply from: rootProject.file('gradle/check.gradle')

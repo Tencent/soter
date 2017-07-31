@@ -1,4 +1,4 @@
-# Contributing to Tinker
+# Contributing to TENCENT SOTER
 Welcome to [report Issues](https://github.com/Tencent/tinker/issues) or [pull requests](https://github.com/Tencent/tinker/pulls). It's recommended to read the following Contributing Guide first before contributing. 
 
 ## Issues
@@ -17,14 +17,14 @@ We strongly welcome your pull request to make TENCENT SOTER better.
 There are three main branches here:
 
 1. `master` branch.
- 1. It is the latest (pre-)release branch. We use `master` for tags, with version number `v.1.1.0`, `v.1.2.0`, `v.1.3.0`...
- 2. **Don't submit any PR on `master` branch.**
-2. `dev` branch. 
- 1. It is our stable developing branch. After full testing, `dev` will be merged to `master` branch for the next release.
- 2. **You are recommended to submit bugfix or feature PR on `dev` branch.**
-3. `hotfix` branch. 
- 1. It is the latest tag version for hot fix. If we accept your pull request, we may just tag with version number `1.1.1`, `1.2.3`.
- 2. **Only submit urgent PR on `hotfix` branch for next specific release.**
+2. It is the latest (pre-)release branch. We use `master` for tags, with version number `v.1.1.0`, `v.1.2.0`, `v.1.3.0`...
+3. **Don't submit any PR on `master` branch.**
+4. `dev` branch. 
+5. It is our stable developing branch. After full testing, `dev` will be merged to `master` branch for the next release.
+6. **You are recommended to submit bugfix or feature PR on `dev` branch.**
+7. `hotfix` branch. 
+8. It is the latest tag version for hot fix. If we accept your pull request, we may just tag with version number `1.1.1`, `1.2.3`.
+9. **Only submit urgent PR on `hotfix` branch for next specific release.**
 
 Normal bugfix or feature request should be submitted to `dev` branch. After full testing, we will merge them to `master` branch for the next release. 
 

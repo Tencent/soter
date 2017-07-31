@@ -11,7 +11,7 @@ We will give you a brief overview on what TENCENT SOTER is, why we should use TE
 
 ## What is TENCENT SOTER
 
-TENCENT SOTER is a biometric stantdard as well as a platform built by Tencent. It mainly focuses on biometric authentication security, and provides a solution to use your authentication sensors — for example, fingerprint sensor — securely and easily. It's not easy to build it, but don't worry, Tencent has handled almost all the things, and you only need to do little work to get all things done.
+TENCENT SOTER is a biometric stantdard as well as platform held by Tencent. It mainly focuses on biometric authentication security, and provides a solution to use your authentication sensors — for example, fingerprint sensor — securely and easily. It's not easy to build it, but don't worry, Tencent has handled almost all the things, and you only need to do little work to get all things done.
 
 
 
@@ -19,14 +19,14 @@ TENCENT SOTER is a biometric stantdard as well as a platform built by Tencent. I
 
 It's a good question. As there are hundreds of millions Android phones already had fingerprint sensors, and Google even provide a universal fingerprint interface [FingerprintManager](https://developer.android.com/reference/android/hardware/fingerprint/FingerprintManager.htmlFingerprirntManager), why shouldn't we use it in security sensitive scenes? Here are the reasons:
 
-* Legacy FingerprintManger is not safe. If you only use the FingerprintManager itself for authenticating, hackers would hack your device quite easily (for example, change your authentication result from 'false ' to 'true', so that everyone can impersonate you).
-* Even if you use the Crypto interfaces combine with FingerprintManager (see how [googlesample](https://github.com/googlesamples/android-FingerprintDialog) does it), it's still not so safe, because device may not have a root key, which means when you ask the framework to generate a pair of keys that need user to authenticate by fingerprint, the request may be hooked by hackers, replace the keys with theirs, and everything you do later, signing or encrypting or macing, they are all hooked and remain unsafe.
+* Legacy FingerprintManger is not safe enough. If you only use the FingerprintManager itself for authenticating, hackers would hack your device quite easily (for example, change your authentication result from 'false ' to 'true', so that everyone can impersonate you). Of course, you can prevent user using fingeprint for authentication when device is rooted, but wait, the judgement itself can be hooked as well, isn't it?
+* Even if you use the Crypto interfaces combining with FingerprintManager (see how [googlesample](https://github.com/googlesamples/android-FingerprintDialog) does it), it's still not so safe, because device may not have a root key, which means when you ask the framework to generate a pair of keys that need user to authenticate by fingerprint, the request may be hooked by hackers, replace the keys with theirs, and everything you do later, signing or encrypting or macing, they are all hooked and remain unsafe.
 * In Android 7.0, Google require phone manufactures to provide a root key in there phones, but there're still some risks in it. The root keys are not deivce unique, which means other devices may have the same root key as yours. Once a key is cracked, it may influence thousands — or much more — other devices. More over, it needs your phone to be Android 7.0 once launched to market, and has Google Service in it. You now how little share Android 7.0 with Google service is, let alone most of them is not Android 7.0 since they are in there production lines.
 * Last but not least, you can never know what fingerprint a user used with legacy FingerprintManager, so when an authentication action is taken, you cannot make sure the fingerprint used to authenticate is the right one, the one who uses it the first time. It is very important to know it in payment or account login scenes.
 
 So the answer why we should use TENCENT SOTER is clear. TENCENT SOTER can solve all the issues listed above.
 
-* TENCENT SOTER is very safe, even when your device is rooted. Check next chapter you'll find the reason.
+* If you implements all the client/backend interfaces, then TENCENT SOTER is very safe, even when your device is rooted. Check next chapter you'll find the reason.
 * If a device supports TENCENT SOTER, Tencent will guarantee it has a device unique root key, and you can verify it via [WeChat Open Platform](https://open.weixin.qq.com/) server interfaces, which is stable and credible. 
 * There're over 200,000,000 Android devices already support TENCENT SOTER, and what's more, **WeChat uses TENCENT SOTER in fingerprint payment in almost all the devices, which proved TENCENT SOTER has the security level of payment.**
 * You can know what fingerprint in device scope the user used to authenticate each time, which means you're able to distinguish them from others in sensitive business scenes.
@@ -60,23 +60,15 @@ Below is the whole structure
 
 ## How Many Devices Already Supported TENCENT SOTER
 
-By June 2nd 2017, there are over **200,000,000** Android devices already support TENCENT SOTER. You can check [this site][http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA] to learn what manufactures and what device models supported.
+By June 2nd 2017, there are over **230,000,000** Android devices already support TENCENT SOTER. You can check [this site][http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA] to learn what manufactures and what device models supported.
 
 ## How to use it
 
 If you're confused about the concept or machinism of TENCENT SOTER, don't worry, you just need to know that if you follow the instruction, your fingerprint authentication process would be very safe. So what you need to know is: how I can use TENCENT SOTER?
 
-### Request Access Permission
+### Prepare APPID
 
-Before starting, you can find from chapters before that you need to communicate with WeChat Open Platform, which need your [WeChat Official Platform](https://mp.weixin.qq.com/) account appid been added the access permission. Send your request to `soter@tencent.com` with format below:
-
-```
-Purpose: Add TENCENT SOTER permission
-WeChat Official Platform appid: xxxxx
-Company: your company (if any) or individual 
-```
-
-We will give you a better way for requiring access permission sooner later.
+Before starting, If you need to use the server interface to check ASK valitdation and device support, you need to prepare APPID in [WeChat Open Platform](https://mp.weixin.qq.com/) or [WeChat Official Accounts Platform](https://mp.weixin.qq.com/). You can skip this and next chapter if you only want to use client APIs to implement a simple and unsafe version. **Only these applications which implement all the client and server interface as well as logics have the most security standard**.
 
 ### Server Implements
 
@@ -168,7 +160,7 @@ You should prepare the ASK as soon as possible too, either after you checked the
 SoterWrapperApi.prepareAppSecureKey(mPrepareASKCallback, false, new RemoteUploadASK());
 ```
 
-You should generate Auth Key in your application. It is highly recommended you pass the ASK network wrapper to Auth Key as well, in case the ASK is not generated, and our wrapper will help you re-generate and upload ASK and Auth Key all at once.
+You should generate Auth Key in your application. It is highly recommended you pass the ASK network wrapper (If any) to Auth Key as well, in case the ASK is not generated, and our wrapper will help you re-generate and upload ASK and Auth Key all at once.
 
 ```java
 SoterWrapperApi.prepareAuthKey(mPrepareAuthKeyCallback, false, true, SCENE1, new RemoteUploadPayAuthKey(pwdDigest), new RemoteUploadASK());
