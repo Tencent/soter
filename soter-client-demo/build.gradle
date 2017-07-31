@@ -1,0 +1,40 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven {
+            url 'https://dl.bintray.com/tencent-soter/maven/'
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+        classpath "com.github.dcendents:android-maven-gradle-plugin:1.5"
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+    }
+
+    tasks.withType(Javadoc).all {
+        enabled = false
+        options.setEncoding('UTF-8')
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+    minSdkVersion = 16
+    targetSdkVersion = 23
+    compileSdkVersion = 24
+    buildToolsVersion = '25.0.0'
+
+    javaVersion = JavaVersion.VERSION_1_7
+}
+
+

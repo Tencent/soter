@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/del_ask"
+          android:title="@string/app_delete_ask"/>
+    <item android:id="@+id/del_auth_key"
+          android:title="@string/app_delete_auth_key" />
+</menu>
