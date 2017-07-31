@@ -1,5 +1,10 @@
 # Hello TENCENT SOTER
 
+[![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
+[![Release Version](https://img.shields.io/badge/release-1.3.0-red.svg)](https://github.com/Tencent/soter/releases) 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
+[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.0-red.svg)](https://github.com/Tencent/soter/wiki)
+
 For English version, please click [here](README_EN.md).
 
 本文档将简要说明什么是TENCENT SOTER，为什么我们要用TENCENT SOTER，TENCENT SOTER的原理是什么，有多少设备已经支持TENCENT SOTER，以及最重要的：如何接入并使用TENCENT SOTER
