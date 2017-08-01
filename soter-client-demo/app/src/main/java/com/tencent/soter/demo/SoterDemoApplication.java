@@ -35,7 +35,7 @@ public class SoterDemoApplication extends Application{
         @Override
         public void onResult(@NonNull SoterProcessNoExtResult result) {
             DemoLogger.d(TAG, "soterdemo: get is support soter done. result: %s", result.toString());
-            // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备ASK
+            // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备 ASK
             if(result.errCode == SoterProcessErrCode.ERR_OK) {
                 prepareASK();
             }
@@ -54,12 +54,12 @@ public class SoterDemoApplication extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        checkIsSupport();
+        initSoterSupport();
         // 模拟获取开通状态
         SoterDemoData.getInstance().init(getApplicationContext());
     }
 
-    private void checkIsSupport() {
+    private void initSoterSupport() {
         // init 的时机有多种情况，应用方可以自己选择。如果多账号共享同一个密钥的话，则只需要在 Application 的 onCreate 中初始化；如果需要切换账户，则在账户登录成功之后初始化。如果需要
         // 不同账户不共享密钥，则需要填入区分不同账户的字符串 setDistinguishSalt，比如账户名。正常情况下，没有特殊需求，不用调用 setCustomAppSecureKeyName。此接口仅仅作为前期已经接入
         // 如果有自己的log实现，可以将实现通过 setSoterLogger 接口写入
@@ -72,7 +72,7 @@ public class SoterDemoApplication extends Application{
         SoterWrapperApi.init(getApplicationContext(), mGetIsSupportCallback, param);
     }
 
-    // 注意，ASK的生成时间较长，且会占用较高CPU，因此除非必须（如Auth Key后台延签不通过，这一般是本地ASK私钥导致的问题），不要删除ASK
+    // 注意，ASK的生成时间较长，且会占用较高 CPU，因此除非必须（如 Auth Key后台延签不通过，这一般是本地 ASK 私钥导致的问题），不要删除 ASK
     private void prepareASK() {
         SoterWrapperApi.prepareAppSecureKey(mPrepareASKCallback, false, new RemoteUploadASK());
     }

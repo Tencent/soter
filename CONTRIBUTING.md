@@ -56,5 +56,5 @@ Use [Code Style](https://github.com/Tencent/tinker/blob/master/checkstyle.xml) f
 * 4 spaces for indentation rather than tabs
 
 ## License
-By contributing to Tinker, you agree that your contributions will be licensed
+By contributing to TENCENT SOTER, you agree that your contributions will be licensed
 under its [BSD LICENSE](https://github.com/Tencent/tinker/blob/master/LICENSE)

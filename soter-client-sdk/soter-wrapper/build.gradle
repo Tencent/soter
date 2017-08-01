@@ -18,7 +18,7 @@ android {
     }
 
     lintOptions {
-        disable "TrulyRandom","RtlSymmetry","RtlHardcoded","ContentDescription","DefaultLocale","AllowBackup","GoogleAppIndexingWarning"
+        disable "TrulyRandom", "RtlSymmetry", "RtlHardcoded", "ContentDescription", "DefaultLocale", "AllowBackup", "GoogleAppIndexingWarning"
     }
 }
 

@@ -6,7 +6,9 @@
 
 For English version, please click [here](README_EN.md).
 
-本文档将简要说明什么是TENCENT SOTER，为什么我们要用TENCENT SOTER，TENCENT SOTER的原理是什么，有多少设备已经支持TENCENT SOTER，以及最重要的：如何接入并使用TENCENT SOTER。
+
+
+关于TENCENT SOTER的介绍和原理，请参考wiki中的内容。
 
 
 
