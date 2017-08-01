@@ -20,7 +20,7 @@ class DemoNetworkThread {
     private static final String TAG = "SoterDemo.DemoNetworkThread";
     private static final String HANDLER_THREAD_NAME = "DemoHandlerThreadName";
 
-    private DemoNetworkThread(){
+    private DemoNetworkThread() {
         HandlerThread workerHandlerThread = new HandlerThread(HANDLER_THREAD_NAME);
         workerHandlerThread.start();
         mWorkerHandler = new Handler(workerHandlerThread.getLooper());
