@@ -134,8 +134,8 @@ It's very easy to configure TENCENT SOTER support in you Android client applicat
 ```groovy
 dependencies {
     ...
-      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.1'if you only want to use core functions in your application
-    compile 'com.tencent.soter:soterwrapper:1.3.1'
+      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.2'if you only want to use core functions in your application
+    compile 'com.tencent.soter:soterwrapper:1.3.2'
     ...
 }
 ```
