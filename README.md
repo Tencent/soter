@@ -86,8 +86,8 @@ TENCENT SOTER中，一共有三个级别的密钥：ATTK，App Secure Key(ASK)�
 ```groovy
 dependencies {
     ...
-      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.1'if you only want to use core functions in your application
-    compile 'com.tencent.soter:soterwrapper:1.3.1'
+      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.2'if you only want to use core functions in your application
+    compile 'com.tencent.soter:soterwrapper:1.3.2'
     ...
 }
 ```

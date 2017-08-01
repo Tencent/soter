@@ -1,1 +1,1 @@
-include ':sotercore', ':soterwrapper'
+include ':soter-core', ':soter-wrapper'
