@@ -92,19 +92,6 @@ dependencies {
 }
 ```
 
-以及project`build.gradle`中添加
-
-```groovy
-allprojects {
-    repositories {
-        ...
-        maven {
-            url 'https://dl.bintray.com/tencent-soter/maven/'
-        }
-    }
-}
-```
-
 当然，也别忘记在 `AndroidManifest.xml`中添加使用指纹权限：
 
 ```xml

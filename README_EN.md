@@ -140,19 +140,6 @@ dependencies {
 }
 ```
 
-and in project module's `build.gradle`
-
-```groovy
-allprojects {
-    repositories {
-        ...
-        maven {
-            url 'https://dl.bintray.com/tencent-soter/maven/'
-        }
-    }
-}
-```
-
 Of course, don't forget to add fingerprint permission in `AndroidManifest.xml`:
 
 ```xml

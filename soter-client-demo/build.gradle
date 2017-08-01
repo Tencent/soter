@@ -2,9 +2,9 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
-        maven {
-            url 'https://dl.bintray.com/tencent-soter/maven/'
-        }
+//        maven {
+//            url 'https://dl.bintray.com/tencent-soter/maven/'
+//        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
