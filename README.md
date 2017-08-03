@@ -4,7 +4,7 @@
 [![Release Version](https://img.shields.io/badge/release-1.3.2-red.svg)](https://github.com/Tencent/soter/releases) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
-For English version, please click [here](README_EN.md).
+For English version, please click [here](#a-quick-loook-at-tencent-soter).
 
 
 
