@@ -1,150 +1,205 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.1-red.svg)](https://github.com/Tencent/soter/releases) 
+[![Release Version](https://img.shields.io/badge/release-1.3.2-red.svg)](https://github.com/Tencent/soter/releases) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](README_EN.md).
 
 
 
-关于TENCENT SOTER的介绍和原理，请参考wiki中的内容。
+## TENCENT SOTER简介
+
+TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通过与厂商合作，目前已经在一百余款、2.3亿部Android设备上得到支持，并且这个数字还在快速增长。
+
+目前，TENCENT SOTER已经在微信指纹支付、微信公众号/小程序指纹授权接口等场景使用，并得到了验证。
+
+接入TENCENT SOTER，你可以在Android设备上实现可信的指纹认证，获得与微信指纹支付一致的安全快捷认证体验。
+
+![SoterFramework](markdown_res/SoterFramework.png)
 
 
 
-## 什么是TENCENT SOTER
+## 快速接入
 
-TENCENT SOTER是一种生物认证标准，同时也是腾讯生物认证平台。TENCENT SOTER主要着眼于如何安全、高效并简单得使用你设备上的传感器进行鉴权——最重要，也是目前用到最多的就是指纹传感器。构建这样的一个平台和制定标准并不简单，但是不用担心，我们已经将几乎所有的准备工作全部完成，你所需的仅仅是少量的接入工作，即可快速完成安全的生物鉴权。
+可以在几行代码之内快速体验TENCENT SOTER完成指纹授权接口。
 
+在使用之前，请确保所使用的测试机在[支持机型列表](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)中。
 
+### 添加gradle依赖
 
-## 为什么要用TENCENT SOTER
-
-这是一个好问题：既然已经有数亿Android设备已经拥有了指纹传感器，甚至Google在Android 6.0中添加了标准的指纹授权接口，为什么我们不能在安全敏感的场景中直接用这个接口呢？原因如下：
-
-* 直接使用系统的指纹接口并不足够安全。如果仅仅使用FingerprintManager进行指纹鉴权，黑客会很容易在设备被root的前提下将整个授权过程劫持掉（比如，将指纹认证结果从false直接改为true，那么任何一个人都可以模仿你的指纹进行授权了）。当然，如果事先判断设备是否root然后决定是否可以使用指纹鉴权也并不安全——毕竟判断设备是否root也可能被劫持。
-* 即使你用Crypto接口配合FingerprintManager一起使用（可以参考 [googlesample](https://github.com/googlesamples/android-FingerprintDialog)看下如何实现），整个授权过程依然不够安全。因为设备不一定有一个根密钥，这意味着当你要求系统生成一对用户指纹授权才能使用私钥的非对称密钥的时候，这个请求可能会被黑客挂钩子，然后黑客用自己的密钥替换掉你要生成的密钥。这之后你做的所有逻辑，比如签名或者解密等等，全部使用的是黑客的密钥，前面做的努力徒劳无功。
-* 在Android 7.0中，Google要求手机厂商在设备中植入根密钥以避免上述风险。但是，这仍然是有漏洞的：根密钥并非一机一密，也就是说，其他手机可能拥有和你一模一样的密钥。那么，万一其中一台机器的密钥被破解（黑客破解自己的手机即可），那么将影响成千上万的其他机器。另外，这个根密钥同样要求你的手机出厂即是Android 7.0系统或以上，并且在在手机上有可用的Google Service。目前Android 7.0的市占率并不高，更别说大部分手机都是后期升级到7.0的了。
-* 最重要的一点，如果使用系统指纹接口，你在授权的时候不知道用户使用了哪根手指进行授权。那么，你将永远不知道是不是你所希望的用户——一般而言，是注册这项服务的用户——授权了这个请求。知晓授权者为谁，这对于高安全性场景（如登录、支付等）非常重要。
-
-因此为什么要用TENCENT SOTER的原因就很明显了：他能解决上述所有问题。
-
-* 如果你的应用实现了全套的客户端、后台接口和逻辑，那么TENCENT SOTER非常安全，即使你的设备被root了也是如此。下一章将会告诉你为什么。
-* 如果该设备支持TENCENT SOTER，那么腾讯将会保证这部设备出厂即有一机一密的根密钥。所有的验证服务都由腾讯开放平台提供，该平台已经被时间验证了是稳定且可信的。
-* 目前，已经有超过2.3亿部Android设备支持了TENCENT SOTER。并且最重要的是，**在几乎所有支持TENCENT SOTER的设备上进行微信指纹支付时，都使用了TENCENT SOTER标准相当长一段时间。这也证明了TENCENT SOTER本身是具备支付级别安全能力的标准和平台**。
-* 每次授权之后，你可以知道用户使用了设备上哪根手指进行支付。这对于敏感的业务场景而言非常重要。
-* 如果你对于Android系统中的FingerprintManager和Crypto相关接口很熟悉的话，你会发现对TENCENT SOTER非常熟悉：我们所有的实现都是使用的Android Framework中的接口，并且，我们没有增加一个公开接口来做这件事情。我们只是针对这些接口和厂商进行合作，进行了很强的安全加固。
-* 你并不需要每次指纹认证都接入腾讯的后台。你的数据安全与隐私将会得到充分保证。
-* 腾讯已经针对所有支持TENCENT SOTER的手机进行了严格的测试，也就意味着你不必担心手头这台支持TENCENT SOTER的设备的安全性是否可靠。
-* 还有，TENCENT SOTER甚至支持了部分Android 5.1设备，比如vivo X6和OPPO R7，即使这些设备上完全没有Android标准指纹接口。
-
-## TENCENT SOTER的原理是什么
-
-
-
-你可以通过微信扫描下面的二维码关注TENCENT SOTER官方公众号，在这里你可以找到详细的原理说明和接入指引。如果你只是想了解TENCENT SOTER的原理，可以参考[这个链接](http://mp.weixin.qq.com/s/4BQulfFgVvanPSGOS92yiw)
-
-![qrcode_for_gh_6410b016e824_258](markdown_res/qrcode_for_gh_6410b016e824_258.jpg)
-
-另外，这里有一个[更简单的解释](http://mp.weixin.qq.com/s/x27CDj0oJPg6gsH-mfq-8g)。
-
-简要解释下TENCENT SOTER的原理：
-
-TENCENT SOTER中，一共有三个级别的密钥：ATTK，App Secure Key(ASK)以及AuthKey。这些密钥都是RSA-2048的非对称密钥。
-
-所有的密钥都在[TEE](https://en.wikipedia.org/wiki/Trusted_execution_environment)（一个独立于Android系统的安全环境，这也是TENCENT SOTER能解决root下手机认证的关键所在）中（或经过TEE安全密钥加密）安全保存。如果在TEE中保存或者安全密钥加密保证，除了数据所有者之外，没有人可以使用它。更重要的是，如果密钥是在TEE中生成的，所有人——包括密钥所有者——都无法得到密钥私钥（对非对称密钥而言），仅仅可以请求使用它。一句话总结，如果非对称密钥是在TEE内部生成的，即使设备被root，私钥也不会泄露。
-
-* ATTK私钥在设备出厂之前就已经在TEE中生成，公钥被被厂商安全得传输到腾讯的TAM服务器，私钥则在TEE中安全存储。
-* 第三方应用能且只能在TEE中生成唯一ASK（二级密钥）。一旦ASK被成功生成，私钥被存储在TEE中（或者更加准确地说，被TEE中安全密钥加密存储在手机sfs中，等同于存储在TEE中，即使手机被root了也是安全的）。公钥结构体（包含公钥信息以及其他辅助信息）导出的时候会自动带上ATTK对公钥数据的签名。应用开发者将公钥结构体以及ATTK对该结构体的签名通过微信开放平台接口（见接口文档）发送到TAM服务器认证公钥结构体合法性。如果合法，则第三方保存该结构体备用。
-* 在所有的业务场景中，你应该生成一对AuthKey用于该场景指纹认证。AuthKey的生成过程与ASK类似——在TEE中生成，私钥在TEE中保存，公钥上传到服务器。不同的是，第三方应用应该自己检查AuthKey的合法性（实际上，我们真的不想知道你们的用户做了多少笔支付）。同时，生成AuthKey的时候，需要标记私钥只有在用户指纹授权之后才可以使用（正如Google在标准接口中定义的那样）。
-* 在认证之前，应用需要先向自己的服务器请求一个挑战因子（通常是一个随机串）作为用于签名的对象。用户指纹授权之后，你将可以导出一个JSON结果，其中包含了你刚刚请求的挑战因子、用户使用了哪个手指（fid）以及其他设备信息，和这个JSON结果对应AuthKey的签名。之后，将他们发送到自己的服务器，自己使用之前存储的AuthKey公钥验签就好。其中，fid也是在TEE中自动读取并连同结果一起被签名的，也就是说，黑客是无法伪造。
-
-下面是TENCENT SOTER的整体架构
-
-![FD5DC4F4-B49B-4502-B2DE-836BB33B5627](markdown_res/SoterFramework.png)
-
-## 有多少设备已经支持TENCENT SOTER
-
-截止2017年6月2日，已经有超过**2.3亿**设备支持了TENCENT SOTER。通过[这个网址](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)可以了解目前哪些厂商的哪些机型已经支持了TENCENT SOTER。
-
-## 如何接入并使用TENCENT SOTER
-
-如果你对于TENCENT SOTER的原理感到困惑，不要担心，你只要知道跟着我们一步步做，你就能很简单且安全得实现指纹认证。那么，究竟该如何行动呢？
-
-### 申请APPID
-
-在使用TENCENT SOTER之前，如果你需要使用验证ASK有效性以及检查设备是否支持TENCENT SOTER的后台API，需要申请[微信开放平台](https://mp.weixin.qq.com/)或[微信公众平台](https://mp.weixin.qq.com/)账号备用，使用方法见服务器实现。当然，如果仅仅使用客户端接口进行方便的指纹授权，可以跳过这一步和下一步。不过，需要事先提醒的是，**只有实现了下述所有前后台验证接口和逻辑的应用才具有最高安全性**。
-
-### 服务器实现
-
-如果你的应用需要确保足够的授权安全性，请参考[后台实现流程指引](server-docs/后台实现流程指引.md)以实现后台逻辑。
-
-### 客户端实现
-
-我们提供了两个gradle dependency：`soterwrapp` and `sotercore`。`sotercore`提供了TENCENT SOTER与framework、TEE层交互的核心底层接口，比如从客户端判断设备是否支持TENCENT SOTER，如何生成ASK和AuthKey，如何签名等等。尽管你可以直接使用`sotercore`来完成所有的TENCENT SOTER实现，但是我们依然强烈建议你直接使用另外一个dependency`soterwrapper`，因为我们在这里封装很多TENCENT SOTER相关的复杂逻辑和易错逻辑，让你能更快实现TENCENT SOTER。
-
-在你的客户端中添加TENCENT SOTER支持非常简单：只要在主module`build.gradle`文件中相应位置添加这一行：
+在项目的`build.gradle`中，添加TENCENT SOTER依赖
 
 ```groovy
 dependencies {
     ...
-      // You should replace the content of compile with 'com.tencent.soter:sotercore:1.3.2'if you only want to use core functions in your application
     compile 'com.tencent.soter:soterwrapper:1.3.2'
     ...
 }
 ```
 
-当然，也别忘记在 `AndroidManifest.xml`中添加使用指纹权限：
+### 声明权限
+
+在 `AndroidManifest.xml`中添加使用指纹权限
 
 ```xml
 <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
 ```
 
+### 初始化
 
-
-就可以了！然后，建议你参考我们的sample，确定你需要在应用中添加哪些逻辑。
-
-你应该尽可能早得初始化TENCENT SOTER支持，比如在`Application.onCreate()`中：
+初始化过程整个应用声明周期内只需要进行一次，用于生成基本配置和检查设备支持情况。你可以选择在`Application`中进行初始化，或者在使用TENCENT SOTER之前。
 
 ```java
-InitializeParam param = new InitializeParam.InitializeParamBuilder().setGetSupportNetWrapper(new RemoteGetSupportSoter()).setScenes(ConstantsSoterDemo.SCENE_PAYMENT).build();
-SoterWrapperApi.init(getApplicationContext(), mGetIsSupportCallback, param);
+InitializeParam param = new InitializeParam.InitializeParamBuilder()
+.setScenes(ConstantsSoterDemo.SCENE_PAYMENT) // 场景值常量，后续使用该常量进行密钥生成或指纹认证
+.build();
+SoterWrapperApi.init(context, 
+new new SoterProcessCallback<SoterProcessNoExtResult>() {...}, 
+param);
 ```
 
-你也应该尽早准备ASK。你可以选择在初始化TENCENT SOTER之后，或者在生成AuthKey之前。
+### 准备密钥
+
+需要在使用指纹认证之前生成相关密钥
 
 ```java
-SoterWrapperApi.prepareAppSecureKey(mPrepareASKCallback, false, new RemoteUploadASK());
+SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true,  SampleApplication.SCENE_TEST, null, null);
 ```
 
-当然，如果你没有提前生成ASK的需求的话，也完全可以和AuthKey一起生成。
+### 进行指纹认证
 
-你应当生成自己业务需要使用的AuthKey。我们强烈建议在生成AuthKey的请求参数中，将上传ASK公钥的网络封装结构体传进去（如果有的话）。这样的话，如果你没有成功生成ASK，或者ASK被用户主动删除，我们会自动帮你重新生成上传新的ASK公钥。
-
-```java
-SoterWrapperApi.prepareAuthKey(mPrepareAuthKeyCallback, false, true, SCENE1, new RemoteUploadPayAuthKey(pwdDigest), new RemoteUploadASK());
-```
-
-我们不建议你直接使用系统FingerprintManager来进行指纹认证（尽管你可以这么做）。我们提供了一个更加友好的认证接口。你只需要提供认证以及获取挑战因子的网络结构体，所有的事情我们都会替你完成：
+密钥生成完毕之后，可以使用封装接口调用指纹传感器进行认证。
 
 ```java
 AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
-                .setScene(ConstantsSoterDemo.SCENE_PAYMENT)
-                .setContext(this)
-                .setFingerprintCanceller(mCanceller)
-                .setIWrapGetChallengeStr(new RemoteGetChallengeStr())
-                .setIWrapUploadSignature(uploadSignatureWrapper)
-                .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() {
-                  ...
-                }).build();
-        SoterWrapperApi.requestAuthorizeAndSign(processCallback, param);
+                                    .setScene(SampleApplication.SCENE_TEST)
+                                    .setContext(MainActivity.this)
+                                    .setFingerprintCanceller(mSoterFingerprintCanceller)
+                                    .setPrefilledChallenge("test challenge")
+                                    .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() {...}).build();
+SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAuthenticationResult>() {...}, param);
 ```
 
+### 释放
+
+当你不再使用TENCENT SOTER时，可以选择释放所有资源，用于停止所有生成、上传任务以及支持状态等。释放之后再次使用时，需要重新进行初始化。 实际上，TENCENT SOTER本身不会占据过多资源，只需要在确认不会再次使用的前提下（如切换账户之前）释放一次即可。
+
+```java
+SoterWrapperApi.release();
+```
+
+## 更多文档
+
+* 想了解TENCENT SOTER更多信息与原理？看[这里](https://github.com/Tencent/soter/wiki)。
+* 想要更高的安全性，用于登录甚至支付场景中？看[这里](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5)。
+
+## 贡献代码
+
+我们欢迎开发者贡献代码丰富TENCENT SOTER应用，请参考[这个文档](./CONTRIBUTING.md)。
+
+## 协议
+
+TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 
-当然，最好的方式还是直接参考我们的 [sample](soter-client-demo/) 看下怎么实现TENCENT SOTER（请事先确认使用的是支持TENCENT SOTER的设备进行测试，支持设备列表见[这里](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)）。如果`soterwrapper`不能满足你的需求，欢迎fork我们的工程然后自行修改。如果你有更好的实现，或者发现我们未解决的bug，不要忘了给我们发pull request。
 
-教程就这么简单，现在就开始尝试吧！
+## A Quick Loook at TENCENT SOTER
+
+TENCENT SOTER is a biomatric standard as well as a platform held by Tencent. 
+
+There are more than 100 models, 230 million Android devices supporting TENCENT SOTER, and the number is still increading fast. 
+
+TENCENT SOTER is already used in scenaries like WeChat fingerprint payment and fingerprint authentication in Official Account Webpages and Mini Programs.
+
+You can get a consistent experience in fingerprint authenticating in your applicaiton, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
 
 
 
+![SoterFramework](markdown_res/SoterFramework.png)
+
+
+
+## Quick Start
+
+You can get access to TENCENT SOTER in few lines of code to experience.
+
+You should make sure your device to test is in [support list](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)
+
+### Add Gradle Dependency
+
+Add TENCENT SOTER dependency in your project's `build.gradle`
+
+```groovy
+dependencies {
+    ...
+    compile 'com.tencent.soter:soterwrapper:1.3.2'
+    ...
+}
+```
+
+### Declare Permission
+
+Add fingerprint permission declaration in `AndroidManifest.xml`
+
+```xml
+<uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+```
+
+### Initialize
+
+You need to initialize only once in application's lifecircle. You can either do it in `Application`'s onCreate, or anywhere before you need to use TENCENT SOTER.
+
+```java
+InitializeParam param = new InitializeParam.InitializeParamBuilder()
+.setScenes(ConstantsSoterDemo.SCENE_PAYMENT) // The senary constant for business index
+.build();
+SoterWrapperApi.init(context, 
+new new SoterProcessCallback<SoterProcessNoExtResult>() {...}, 
+param);
+```
+
+### Prepare Keys
+
+You need to prepare keys before authentication process.
+
+```java
+SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true,  SampleApplication.SCENE_TEST, null, null);
+```
+
+### Authenticate With Fingerprint
+
+You can use wrapped interface to authenticate when fingerprint.
+
+```java
+AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
+                                    .setScene(SampleApplication.SCENE_TEST)
+                                    .setContext(MainActivity.this)
+                                    .setFingerprintCanceller(mSoterFingerprintCanceller)
+                                    .setPrefilledChallenge("test challenge")
+                                    .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() {...}).build();
+SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAuthenticationResult>() {...}, param);
+```
+
+### Release
+
+当你不再使用TENCENT SOTER时，可以选择释放所有资源，用于停止所有生成、上传任务以及支持状态等。释放之后再次使用时，需要重新进行初始化。 实际上，TENCENT SOTER本身不会占据过多资源，只需要在确认不会再次使用的前提下（如切换账户之前）释放一次即可。
+
+You can release all the resource when you do not use TENCENT SOTER again by calling release. It will abort on-doing tasks and remove support status. TENCENT SOTER will not occupy too much room actually. You can only do it when you confirm that you did not need to use it, like switch an account.
+
+```java
+SoterWrapperApi.release();
+```
+
+## More Document
+
+- Want to know more about TENCENT SOTER's mechanism? Check [this](https://github.com/Tencent/soter/wiki).
+- Want to use TENCENT SOTER in more sensitive business scenaries like login, or even payment? Check [this](https://github.com/Tencent/soter/wiki).
+
+## Contributing
+
+For more information about contributing issues or pull requests, check our [CONTRIBUTING document](./CONTRIBUTING.md).
+
+## License
+
+TENCENT SOTER is based on BSD license. Please check our [LICENSE document](./LICENSE).
