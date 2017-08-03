@@ -48,7 +48,7 @@ dependencies {
 
 ### 初始化
 
-初始化过程整个应用声明周期内只需要进行一次，用于生成基本配置和检查设备支持情况。你可以选择在`Application`中进行初始化，或者在使用TENCENT SOTER之前。
+初始化过程整个应用声明周期内只需要进行一次，用于生成基本配置和检查设备支持情况。你可以选择在`Application`的onCreate()中，或者在使用TENCENT SOTER之前进行初始化。
 
 ```java
 InitializeParam param = new InitializeParam.InitializeParamBuilder()
@@ -110,7 +110,7 @@ TENCENT SOTER is a biomatric standard as well as a platform held by Tencent.
 
 There are more than 100 models, 230 million Android devices supporting TENCENT SOTER, and the number is still increading fast. 
 
-TENCENT SOTER is already used in scenaries like WeChat fingerprint payment and fingerprint authentication in Official Account Webpages and Mini Programs.
+TENCENT SOTER is already used in scenaries like WeChat fingerprint payment , fingerprint authentication in Official Account Webpages and Mini Programs.
 
 You can get a consistent experience in fingerprint authenticating in your applicaiton, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
 
@@ -122,7 +122,7 @@ You can get a consistent experience in fingerprint authenticating in your applic
 
 ## Quick Start
 
-You can get access to TENCENT SOTER in few lines of code to experience.
+You can get access to TENCENT SOTER in few lines of code to quick experience.
 
 You should make sure your device to test is in [support list](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)
 
@@ -182,8 +182,6 @@ SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAut
 ```
 
 ### Release
-
-当你不再使用TENCENT SOTER时，可以选择释放所有资源，用于停止所有生成、上传任务以及支持状态等。释放之后再次使用时，需要重新进行初始化。 实际上，TENCENT SOTER本身不会占据过多资源，只需要在确认不会再次使用的前提下（如切换账户之前）释放一次即可。
 
 You can release all the resource when you do not use TENCENT SOTER again by calling release. It will abort on-doing tasks and remove support status. TENCENT SOTER will not occupy too much room actually. You can only do it when you confirm that you did not need to use it, like switch an account.
 
