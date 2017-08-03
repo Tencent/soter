@@ -52,7 +52,7 @@ dependencies {
 
 ```java
 InitializeParam param = new InitializeParam.InitializeParamBuilder()
-.setScenes(ConstantsSoterDemo.SCENE_PAYMENT) // 场景值常量，后续使用该常量进行密钥生成或指纹认证
+.setScenes(ConstantsSoterDemo.SCENE_TEST) // 场景值常量，后续使用该常量进行密钥生成或指纹认证
 .build();
 SoterWrapperApi.init(context, 
 new new SoterProcessCallback<SoterProcessNoExtResult>() {...}, 
