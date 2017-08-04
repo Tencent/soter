@@ -108,7 +108,7 @@ TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 TENCENT SOTER is a biometric standard as well as a platform held by Tencent. 
 
-There are more than 100 models,Hundreds of millions Android devices supporting TENCENT SOTER, and the number is still increasing fast. 
+There are more than 100 models, hundreds of millions Android devices supporting TENCENT SOTER, and the number is still increasing fast. 
 
 TENCENT SOTER has been already used in scenarios like WeChat fingerprint payment, fingerprint authentication in Official Account Webpages and Mini Programs.
 
