@@ -150,7 +150,7 @@ You need to initialize only once in application's lifecycle. You can either do i
 
 ```java
 InitializeParam param = new InitializeParam.InitializeParamBuilder()
-.setScenes(ConstantsSoterDemo.SCENE_PAYMENT) // The senary constant for business index
+.setScenes(0) // The senary constant for business index
 .build();
 SoterWrapperApi.init(context, 
 new SoterProcessCallback<SoterProcessNoExtResult>() {...}, 
@@ -162,7 +162,7 @@ param);
 You need to prepare keys before authentication process.
 
 ```java
-SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true,  SampleApplication.SCENE_TEST, null, null);
+SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true, 0, null, null);
 ```
 
 ### Authenticate With Fingerprint
@@ -171,7 +171,7 @@ You can use wrapped interface to authenticate when fingerprint.
 
 ```java
 AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
-                                    .setScene(SampleApplication.SCENE_TEST)
+                                    .setScene(0)
                                     .setContext(MainActivity.this)
                                     .setFingerprintCanceller(mSoterFingerprintCanceller)
                                     .setPrefilledChallenge("test challenge")
