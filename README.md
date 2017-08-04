@@ -106,13 +106,13 @@ TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 ## A Quick Look at TENCENT SOTER
 
-TENCENT SOTER is a biomatric standard as well as a platform held by Tencent. 
+TENCENT SOTER is a biometric standard as well as a platform held by Tencent. 
 
-There are more than 100 models, 230 million Android devices supporting TENCENT SOTER, and the number is still increading fast. 
+There are more than 100 models, 230 million Android devices supporting TENCENT SOTER, and the number is still increasing fast. 
 
-TENCENT SOTER has been already used in scenaries like WeChat fingerprint payment , fingerprint authentication in Official Account Webpages and Mini Programs.
+TENCENT SOTER has been already used in scenarios like WeChat fingerprint payment, fingerprint authentication in Official Account Webpages and Mini Programs.
 
-You can get a consistent experience in fingerprint authenticating in your applicaiton, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
+You can get a consistent experience in fingerprint authenticating in your application, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
 
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
@@ -146,7 +146,7 @@ Add fingerprint permission declaration in `AndroidManifest.xml`
 
 ### Initialize
 
-You need to initialize only once in application's lifecircle. You can either do it in `Application`'s onCreate, or anywhere before you need to use TENCENT SOTER.
+You need to initialize only once in application's lifecycle. You can either do it in `Application`'s `onCreate()`, or anywhere before you need to use TENCENT SOTER.
 
 ```java
 InitializeParam param = new InitializeParam.InitializeParamBuilder()
@@ -181,7 +181,7 @@ SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAut
 
 ### Release
 
-You can release all the resource when you do not use TENCENT SOTER again by calling release. It will abort on-doing tasks and remove support status. TENCENT SOTER will not occupy too much room actually. You can only do it when you confirm that you did not need to use it, like switch an account.
+You can release all the resource when you do not use TENCENT SOTER again by calling release. It will abort on-going tasks and remove support status. TENCENT SOTER will not occupy too much room actually. You can only do it when you confirm that you did not need to use it, like switch an account.
 
 ```java
 SoterWrapperApi.release();
@@ -190,7 +190,7 @@ SoterWrapperApi.release();
 ## More Document
 
 - Want to know more about TENCENT SOTER's mechanism? Check [this](https://github.com/Tencent/soter/wiki).
-- Want to use TENCENT SOTER in more sensitive business scenaries like login, or even payment? Check [this](https://github.com/Tencent/soter/wiki).
+- Want to use TENCENT SOTER in more sensitive business scenarios like login, or even payment? Check [this](https://github.com/Tencent/soter/wiki).
 
 ## Contributing
 
