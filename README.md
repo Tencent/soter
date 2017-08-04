@@ -114,8 +114,6 @@ TENCENT SOTER has been already used in scenaries like WeChat fingerprint payment
 
 You can get a consistent experience in fingerprint authenticating in your applicaiton, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
 
-
-
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
 
