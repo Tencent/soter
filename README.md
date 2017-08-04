@@ -104,13 +104,13 @@ TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 
 
-## A Quick Loook at TENCENT SOTER
+## A Quick Look at TENCENT SOTER
 
 TENCENT SOTER is a biomatric standard as well as a platform held by Tencent. 
 
 There are more than 100 models, 230 million Android devices supporting TENCENT SOTER, and the number is still increading fast. 
 
-TENCENT SOTER is already used in scenaries like WeChat fingerprint payment , fingerprint authentication in Official Account Webpages and Mini Programs.
+TENCENT SOTER has been already used in scenaries like WeChat fingerprint payment , fingerprint authentication in Official Account Webpages and Mini Programs.
 
 You can get a consistent experience in fingerprint authenticating in your applicaiton, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
 
@@ -124,7 +124,7 @@ You can get a consistent experience in fingerprint authenticating in your applic
 
 You can get access to TENCENT SOTER in few lines of code to quick experience.
 
-You should make sure your device to test is in [support list](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA)
+You should make sure your device for testing is in [support list](http://mp.weixin.qq.com/s/IRI-RCGsVB2WiPwUCGcytA).
 
 ### Add Gradle Dependency
 
