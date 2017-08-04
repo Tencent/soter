@@ -14,7 +14,7 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 
 目前，TENCENT SOTER已经在微信指纹支付、微信公众号/小程序指纹授权接口等场景使用，并得到了验证。
 
-接入TENCENT SOTER，你可以在Android设备上实现可信的指纹认证，获得与微信指纹支付一致的安全快捷认证体验。
+接入TENCENT SOTER，你可以在不获取用户指纹图案的前提下，在Android设备上实现可信的指纹认证，获得与微信指纹支付一致的安全快捷认证体验。
 
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
