@@ -52,7 +52,7 @@ dependencies {
 
 ```java
 InitializeParam param = new InitializeParam.InitializeParamBuilder()
-.setScenes(ConstantsSoterDemo.SCENE_TEST) // 场景值常量，后续使用该常量进行密钥生成或指纹认证
+.setScenes(0) // 场景值常量，后续使用该常量进行密钥生成或指纹认证
 .build();
 SoterWrapperApi.init(context, 
 new SoterProcessCallback<SoterProcessNoExtResult>() {...}, 
@@ -64,7 +64,7 @@ param);
 需要在使用指纹认证之前生成相关密钥
 
 ```java
-SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true,  SampleApplication.SCENE_TEST, null, null);
+SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true, 0, null, null);
 ```
 
 ### 进行指纹认证
@@ -73,7 +73,7 @@ SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparati
 
 ```java
 AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
-                                    .setScene(SampleApplication.SCENE_TEST)
+                                    .setScene(0)
                                     .setContext(MainActivity.this)
                                     .setFingerprintCanceller(mSoterFingerprintCanceller)
                                     .setPrefilledChallenge("test challenge")
