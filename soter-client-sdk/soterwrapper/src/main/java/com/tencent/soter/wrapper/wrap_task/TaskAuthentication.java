@@ -290,6 +290,12 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             mSignatureToAuth = signature;
         }
 
+        private String charSequenceToStringNullAsNil(CharSequence sequence) {
+            return sequence == null ? "unknown error" : sequence.toString();
+        }
+
+
+
         @Override
         public void onAuthenticationError(final int errMsgId, final CharSequence errString) {
             SLogger.e(TAG, "soter: on authentication fatal error: %d, %s", errMsgId, errString);
@@ -304,9 +310,9 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                         }
                     }
                 });
-                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_AUTHENTICATION_FAILED, errString.toString()));
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             } else {
-                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_LOCKED, errString.toString()));
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_LOCKED,  charSequenceToStringNullAsNil(errString)));
             }
             compatLogicWhenDone();
         }
@@ -318,7 +324,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                 @Override
                 public void run() {
                     if (mFingerprintStateCallback != null) {
-                        mFingerprintStateCallback.onAuthenticationHelp(helpMsgId, helpString);
+                        mFingerprintStateCallback.onAuthenticationHelp(helpMsgId, charSequenceToStringNullAsNil(helpString));
                     }
                 }
             });
