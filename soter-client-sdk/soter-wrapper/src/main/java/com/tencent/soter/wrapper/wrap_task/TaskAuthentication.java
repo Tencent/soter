@@ -23,9 +23,9 @@ import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessAuthenticationResult;
 import com.tencent.soter.wrapper.wrap_core.SoterDataCenter;
+import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
-import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
@@ -218,6 +218,10 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
 
     @SuppressLint("NewApi")
     private void performStartFingerprintLogic(Signature signatureToAuth) {
+        if(isFinished()) {
+            SLogger.w(TAG, "soter: already finished. can not authenticate");
+            return;
+        }
         Context context = mContextWeakReference.get();
         if (context == null) {
             SLogger.w(TAG, "soter: context instance released in startAuthenticate");
@@ -412,10 +416,15 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             if(mShouldOperateCompatWhenHint) {
                 SLogger.i(TAG, "soter: should compat lower android version logic.");
                 mFingerprintCancelSignal.asyncCancelFingerprintAuthenticationInnerImp(false);
-                SoterTaskThread.getInstance().postToWorkerDelayed(new Runnable() {
+                SoterTaskThread.getInstance().postToWorker(new Runnable() {
                     @Override
                     public void run() {
                         mFingerprintCancelSignal.refreshCancellationSignal();
+                    }
+                });
+                SoterTaskThread.getInstance().postToWorkerDelayed(new Runnable() {
+                    @Override
+                    public void run() {
                         performStartFingerprintLogic(mSignatureToAuth);
                     }
                 }, MAGIC_CANCELLATION_WAIT);
@@ -432,5 +441,4 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         }
 
     }
-
 }

@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 
 import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
 
@@ -51,7 +52,7 @@ public class SoterFingerprintCanceller {
 
     @SuppressLint("NewApi")
     public boolean asyncCancelFingerprintAuthenticationInnerImp(final boolean shouldPublishCancel) {
-        SLogger.v(TAG, "soter: publishing cancellation");
+        SLogger.v(TAG, "soter: publishing cancellation. should publish: %b", shouldPublishCancel);
         if(!mCancellationSignal.isCanceled()) {
             if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 SoterTaskThread.getInstance().postToWorker(new Runnable() {
@@ -83,7 +84,7 @@ public class SoterFingerprintCanceller {
 
             return true;
         }
-        SLogger.w(TAG, "soter: cancellation signal already expired");
+        SLogger.i(TAG, "soter: cancellation signal already expired.");
         return false;
     }
 
