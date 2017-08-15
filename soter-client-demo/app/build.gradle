@@ -22,6 +22,6 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.tencent.soter:soter-wrapper:1.3.2'
+    compile 'com.tencent.soter:soter-wrapper:1.3.4'
     compile 'com.android.support:appcompat-v7:24.1.1'
 }
