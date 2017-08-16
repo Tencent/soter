@@ -1,7 +1,8 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.2-red.svg)](https://github.com/Tencent/soter/releases) 
+[![Release Version](https://img.shields.io/badge/release-1.3.4-red.svg)](https://github.com/Tencent/soter/releases)
+[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.4-red.svg)](https://github.com/Tencent/soter/wiki) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
@@ -92,7 +93,18 @@ SoterWrapperApi.release();
 ## 更多文档
 
 * 想了解TENCENT SOTER更多信息与原理？看[这里](https://github.com/Tencent/soter/wiki)。
+
 * 想要更高的安全性，用于登录甚至支付场景中？看[这里](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5)。
+
+  ​
+
+## 联系我们
+
+如有相关问题，可以在[issues](https://github.com/Tencent/soter/issues)中提问。
+
+为了方便大家交流，也可以加入下面的QQ群进行，讨论相关技术问题：
+
+![qqgroup_qrcode](https://github.com/WeMobileDev/article/blob/master/assets/soter/SOTER%E4%BA%A4%E6%B5%81%E7%BE%A4%E7%BE%A4%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
 
 ## 贡献代码
 
@@ -191,6 +203,14 @@ SoterWrapperApi.release();
 
 - Want to know more about TENCENT SOTER's mechanism? Check [this](https://github.com/Tencent/soter/wiki).
 - Want to use TENCENT SOTER in more sensitive business scenarios like login, or even payment? Check [this](https://github.com/Tencent/soter/wiki).
+
+## Contact Us
+
+You can add your comments in [issues](https://github.com/Tencent/soter/issues) if you have any question.
+
+You can also join in the following QQ Group for more convenient discussing:
+
+![qqgroup_qrcode](https://github.com/WeMobileDev/article/blob/master/assets/soter/SOTER%E4%BA%A4%E6%B5%81%E7%BE%A4%E7%BE%A4%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
 
 ## Contributing
 
