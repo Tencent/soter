@@ -51,7 +51,13 @@ final class FingerprintManagerCompatApi23 {
             SLogger.e(TAG, "soter: permission check failed: hasEnrolledFingerprints");
             return false;
         }
-        return getFingerprintManager(context).hasEnrolledFingerprints();
+        FingerprintManager mgr = getFingerprintManager(context);
+        if(mgr != null) {
+            return mgr.hasEnrolledFingerprints();
+        } else {
+            SLogger.e(TAG, "soter: fingerprint manager is null in hasEnrolledFingerprints! Should never happen");
+            return false;
+        }
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -64,7 +70,13 @@ final class FingerprintManagerCompatApi23 {
             SLogger.e(TAG, "soter: permission check failed: isHardwareDetected");
             return false;
         }
-        return getFingerprintManager(context).isHardwareDetected();
+        FingerprintManager mgr = getFingerprintManager(context);
+        if (mgr != null) {
+            return mgr.isHardwareDetected();
+        } else {
+            SLogger.e(TAG, "soter: fingerprint manager is null in isHardwareDetected! Should never happen");
+            return false;
+        }
     }
 
     public static void authenticate(Context context, CryptoObject crypto, int flags, Object cancel,
@@ -73,9 +85,15 @@ final class FingerprintManagerCompatApi23 {
             SLogger.e(TAG, "soter: permission check failed: authenticate");
             return;
         }
-        getFingerprintManager(context).authenticate(wrapCryptoObject(crypto),
-                (android.os.CancellationSignal) cancel, flags,
-                wrapCallback(callback), handler);
+        FingerprintManager mgr = getFingerprintManager(context);
+        if(mgr != null) {
+            mgr.authenticate(wrapCryptoObject(crypto),
+                    (android.os.CancellationSignal) cancel, flags,
+                    wrapCallback(callback), handler);
+        } else {
+            SLogger.e(TAG, "soter: fingerprint manager is null in authenticate! Should never happen");
+        }
+
     }
 
     private static FingerprintManager.CryptoObject wrapCryptoObject(CryptoObject cryptoObject) {
