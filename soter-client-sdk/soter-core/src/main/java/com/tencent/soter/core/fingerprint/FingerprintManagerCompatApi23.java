@@ -21,9 +21,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Handler;
 
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SoterCoreUtil;
 
 import java.security.Signature;
 
@@ -47,53 +49,83 @@ final class FingerprintManagerCompatApi23 {
     }
 
     public static boolean hasEnrolledFingerprints(Context context) {
-        if (checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
             SLogger.e(TAG, "soter: permission check failed: hasEnrolledFingerprints");
             return false;
         }
-        FingerprintManager mgr = getFingerprintManager(context);
-        if(mgr != null) {
-            return mgr.hasEnrolledFingerprints();
-        } else {
-            SLogger.e(TAG, "soter: fingerprint manager is null in hasEnrolledFingerprints! Should never happen");
+        try {
+            FingerprintManager mgr = getFingerprintManager(context);
+            if(mgr != null) {
+                return mgr.hasEnrolledFingerprints();
+            } else {
+                SLogger.e(TAG, "soter: fingerprint manager is null in hasEnrolledFingerprints! Should never happen");
+                return false;
+            }
+        } catch (SecurityException e) {
+            SLogger.e(TAG, "soter: triggered SecurityException %s in hasEnrolledFingerprints! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
             return false;
         }
+
     }
 
-    @SuppressWarnings("UnusedParameters")
-    private static int checkSelfPermission(String useFingerprint) {
-        return 0;
+    private static int checkSelfPermission(Context context, String permission) {
+        if(context == null) {
+            SLogger.e(TAG, "soter: check self permission: context is null");
+            return -1;
+        }
+        if(SoterCoreUtil.isNullOrNil(permission)) {
+            SLogger.e(TAG, "soter: requested permission is null or nil");
+            return -2;
+        }
+        if (Build.VERSION.SDK_INT < 23) {
+            SLogger.d(TAG, "soter: below 23. directly return.");
+            return 0;
+        }
+        return context.checkSelfPermission(permission);
     }
 
+    /**
+     * Check whether there's hardware detected in the device
+     * @param context The context
+     * @return true if there's hardware detected
+     */
     public static boolean isHardwareDetected(Context context) {
-        if (checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
             SLogger.e(TAG, "soter: permission check failed: isHardwareDetected");
             return false;
         }
-        FingerprintManager mgr = getFingerprintManager(context);
-        if (mgr != null) {
-            return mgr.isHardwareDetected();
-        } else {
-            SLogger.e(TAG, "soter: fingerprint manager is null in isHardwareDetected! Should never happen");
+        try {
+            FingerprintManager mgr = getFingerprintManager(context);
+            if (mgr != null) {
+                return mgr.isHardwareDetected();
+            } else {
+                SLogger.e(TAG, "soter: fingerprint manager is null in isHardwareDetected! Should never happen");
+                return false;
+            }
+        } catch (SecurityException e) {
+            SLogger.e(TAG, "soter: triggered SecurityException %s in isHardwareDetected! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
             return false;
         }
     }
 
     public static void authenticate(Context context, CryptoObject crypto, int flags, Object cancel,
                                     AuthenticationCallback callback, Handler handler) {
-        if (checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
             SLogger.e(TAG, "soter: permission check failed: authenticate");
             return;
         }
-        FingerprintManager mgr = getFingerprintManager(context);
-        if(mgr != null) {
-            mgr.authenticate(wrapCryptoObject(crypto),
-                    (android.os.CancellationSignal) cancel, flags,
-                    wrapCallback(callback), handler);
-        } else {
-            SLogger.e(TAG, "soter: fingerprint manager is null in authenticate! Should never happen");
+        try {
+            FingerprintManager mgr = getFingerprintManager(context);
+            if(mgr != null) {
+                mgr.authenticate(wrapCryptoObject(crypto),
+                        (android.os.CancellationSignal) cancel, flags,
+                        wrapCallback(callback), handler);
+            } else {
+                SLogger.e(TAG, "soter: fingerprint manager is null in authenticate! Should never happen");
+            }
+        } catch (SecurityException e) {
+            SLogger.e(TAG, "soter: triggered SecurityException %s in authenticate! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
         }
-
     }
 
     private static FingerprintManager.CryptoObject wrapCryptoObject(CryptoObject cryptoObject) {
