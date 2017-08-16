@@ -34,7 +34,7 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.4'
+    compile 'com.tencent.soter:soter-wrapper:1.3.5'
     ...
 }
 ```
@@ -143,7 +143,7 @@ Add TENCENT SOTER dependency in your project's `build.gradle`
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.4'
+    compile 'com.tencent.soter:soter-wrapper:1.3.5'
     ...
 }
 ```
