@@ -1,8 +1,8 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.4-red.svg)](https://github.com/Tencent/soter/releases)
-[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.4-red.svg)](https://github.com/Tencent/soter/wiki) 
+[![Release Version](https://img.shields.io/badge/release-1.3.5-red.svg)](https://github.com/Tencent/soter/releases)
+[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.5-red.svg)](https://github.com/Tencent/soter/wiki) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
