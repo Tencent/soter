@@ -75,7 +75,7 @@ final class FingerprintManagerCompatApi23 {
         }
         if(SoterCoreUtil.isNullOrNil(permission)) {
             SLogger.e(TAG, "soter: requested permission is null or nil");
-            return -2;
+            return -1;
         }
         if (Build.VERSION.SDK_INT < 23) {
             SLogger.d(TAG, "soter: below 23. directly return.");
