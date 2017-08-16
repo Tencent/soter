@@ -102,7 +102,7 @@ SoterWrapperApi.release();
 
 如有相关问题，可以在[issues](https://github.com/Tencent/soter/issues)中提问。
 
-为了方便大家交流，也可以加入下面的QQ群进行，讨论相关技术问题：
+为了方便大家交流，也可以加入下面的QQ群，讨论相关技术问题：
 
 ![qqgroup_qrcode](https://github.com/WeMobileDev/article/blob/master/assets/soter/SOTER%E4%BA%A4%E6%B5%81%E7%BE%A4%E7%BE%A4%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
 
