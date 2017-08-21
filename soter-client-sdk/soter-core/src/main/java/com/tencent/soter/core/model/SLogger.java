@@ -57,27 +57,52 @@ public class SLogger {
 
         @Override
         public void v(String TAG, String msg, Object... args) {
-            Log.v(TAG, String.format(msg, args));
+            try {
+                Log.v(TAG, String.format(msg, args));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override
         public void d(String TAG, String msg, Object... args) {
-            Log.d(TAG, String.format(msg, args));
+            try {
+                Log.d(TAG, String.format(msg, args));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override
         public void i(String TAG, String msg, Object... args) {
-            Log.i(TAG, String.format(msg, args));
+            try {
+                Log.i(TAG, String.format(msg, args));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override
         public void w(String TAG, String msg, Object... args) {
-            Log.w(TAG, String.format(msg, args));
+            try {
+                Log.w(TAG, String.format(msg, args));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override
         public void e(String TAG, String msg, Object... args) {
-            Log.e(TAG, String.format(msg, args));
+            try {
+                Log.e(TAG, String.format(msg, args));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override

@@ -48,25 +48,24 @@ public class TaskInit extends BaseSoterTask {
     private String distinguishSalt = "";
     private String customAskName = "";
     private int[] scenes;
-    private ISoterLogger loggerImp;
 
     public TaskInit(Context context, @NonNull InitializeParam param){
+        ISoterLogger loggerImp = param.getSoterLogger();
+        // set logger first.
+        if(loggerImp != null) {
+            SLogger.setLogImp(loggerImp);
+        }
         SoterCore.setUp();
         isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();
         this.customAskName = param.getCustomAppSecureKeyName();
-        this.loggerImp = param.getSoterLogger();
         SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
     }
 
     @Override
     boolean preExecute() {
-        // set logger first.
-        if(loggerImp != null) {
-            SLogger.setLogImp(loggerImp);
-        }
         if(SoterCoreUtil.isNullOrNil(scenes)) {
             SLogger.e(TAG, "soter: the salt string used to distinguish is longer than 24");
             callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_NO_BUSINESS_SCENE_PROVIDED, "no business scene provided"));

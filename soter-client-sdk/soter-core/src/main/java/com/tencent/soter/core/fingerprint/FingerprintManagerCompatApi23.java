@@ -62,7 +62,7 @@ final class FingerprintManagerCompatApi23 {
                 return false;
             }
         } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException %s in hasEnrolledFingerprints! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+            SLogger.e(TAG, "soter: triggered SecurityException in hasEnrolledFingerprints! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
             return false;
         }
 
@@ -103,7 +103,7 @@ final class FingerprintManagerCompatApi23 {
                 return false;
             }
         } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException %s in isHardwareDetected! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+            SLogger.e(TAG, "soter: triggered SecurityException in isHardwareDetected! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
             return false;
         }
     }
@@ -124,7 +124,7 @@ final class FingerprintManagerCompatApi23 {
                 SLogger.e(TAG, "soter: fingerprint manager is null in authenticate! Should never happen");
             }
         } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException %s in authenticate! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+            SLogger.e(TAG, "soter: triggered SecurityException in authenticate! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
         }
     }
 
