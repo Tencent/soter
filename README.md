@@ -1,8 +1,8 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-1.3.6-red.svg)](https://github.com/Tencent/soter/releases)
-[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.6-red.svg)](https://github.com/Tencent/soter/wiki) 
+[![Release Version](https://img.shields.io/badge/release-1.3.8-red.svg)](https://github.com/Tencent/soter/releases)
+[![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-1.3.8-red.svg)](https://github.com/Tencent/soter/wiki) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
@@ -34,7 +34,7 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.6'
+    compile 'com.tencent.soter:soter-wrapper:1.3.8'
     ...
 }
 ```
@@ -143,7 +143,7 @@ Add TENCENT SOTER dependency in your project's `build.gradle`
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.6'
+    compile 'com.tencent.soter:soter-wrapper:1.3.8'
     ...
 }
 ```
