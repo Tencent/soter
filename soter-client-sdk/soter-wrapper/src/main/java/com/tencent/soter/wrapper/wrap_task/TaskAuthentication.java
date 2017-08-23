@@ -340,7 +340,6 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                     }
                 }
             });
-            compatLogicWhenFailOrHelp();
         }
 
         @Override
@@ -387,7 +386,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                     }
                 }
             });
-            compatLogicWhenFailOrHelp();
+            compatLogicWhenFail();
         }
 
         @Override
@@ -411,8 +410,8 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         }
 
         @SuppressLint("NewApi")
-        private void compatLogicWhenFailOrHelp() {
-            // in versions below 6.0, you must cancel the authentication and start again when onAuthenticationFailed and onAuthenticationHelp
+        private void compatLogicWhenFail() {
+            // in versions below 6.0, you must cancel the authentication and start again when onAuthenticationFailed
             if(mShouldOperateCompatWhenHint) {
                 SLogger.i(TAG, "soter: should compat lower android version logic.");
                 mFingerprintCancelSignal.asyncCancelFingerprintAuthenticationInnerImp(false);
