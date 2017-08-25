@@ -21,8 +21,10 @@ public class SoterCoreResult implements SoterErrCode {
     public String errMsg;
 
     public SoterCoreResult(int errCode, String errMsg) {
-        this.errCode = errCode;
-        this.errMsg = errMsg;
+        this(errCode);
+        if(!SoterCoreUtil.isNullOrNil(errMsg)) {
+            this.errMsg = errMsg;
+        }
     }
 
     public SoterCoreResult(int errCode) {
