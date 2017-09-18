@@ -15,15 +15,15 @@ public class SoterServerDemo {
 		Security.addProvider(new BouncyCastleProvider());
 
 		// verify auth key
-		RSAPublicKey askPublicKey = RSAUtil.loadPublicKeyFromFile("example/ask_key.pem");
+		RSAPublicKey askPublicKey = RSAUtil.loadPublicKeyFromFile("example/ask.pem");
 		byte[] authKeyJson = FileUtil.readByteArrayFromFile("example/auth_key_json.txt");
 		byte[] authKeySignature = FileUtil.readByteArrayFromFile("example/auth_key_signature.bin");
 		boolean verifyAuthKey = RSAUtil.verify(askPublicKey, authKeyJson, authKeySignature);
 		if (verifyAuthKey) {
-			System.out.println("Verify authKey OK");
+			System.out.println("Verify AuthKey OK");
 		}
 		else {
-			System.err.println("Verify authKey failed");
+			System.err.println("Verify AuthKey failed");
 		}
 		
 		// verify final signature
@@ -32,10 +32,10 @@ public class SoterServerDemo {
 		byte[] signature = FileUtil.readByteArrayFromFile("example/final_signature.bin");
 		boolean verifyFinal = RSAUtil.verify(publicKey, data, signature);
 		if (verifyFinal) {
-			System.out.println("Verify final OK");
+			System.out.println("Verify Final signature OK");
 		}
 		else {
-			System.err.println("Verify final failed");
+			System.err.println("Verify Final signature failed");
 		}
 		
 	}

@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class FileUtil {
-	private static final char[] HEX_CHAR = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
+	/**
+	 * The function is used to read public key from file.
+	 */
 	public static String readFromFile(String fileName, boolean isAppendLineSeparator) {
 		String lineSeparator = System.getProperty("line.separator");
 		File file = new File(fileName);
@@ -53,15 +55,6 @@ public class FileUtil {
 		}
 	}
 
-	public static String byteArrayToString(byte[] data) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (int i = 0; i < data.length; i++) {
-			stringBuilder.append(HEX_CHAR[(data[i] & 0xf0) >>> 4]);
-			stringBuilder.append(HEX_CHAR[(data[i] & 0x0f)]);
-		}
-		return stringBuilder.toString();
-	}
-	
 	public static byte[] readByteArrayFromFile(String fileName) {
 		BufferedInputStream in = null;
 		try {
