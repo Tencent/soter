@@ -1,0 +1,1 @@
+{"raw":"I'm a demo challenge string","fid":"2313170","counter":246,"tee_n":"t-base-Mediatek-Armv8-Android-302A-V012-20160705_104258_41","tee_v":"10010","fp_n":"FPC","fp_v":"6516","cpu_id":"0900000026030000241a1e8e9e44c3a8e05b9c0c","uid":"10115"}
