@@ -36,7 +36,7 @@ public class SoterDemoApplication extends Application{
         public void onResult(@NonNull SoterProcessNoExtResult result) {
             DemoLogger.d(TAG, "soterdemo: get is support soter done. result: %s", result.toString());
             // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备 ASK
-            if(result.errCode == SoterProcessErrCode.ERR_OK) {
+            if(result.errCode == SoterProcessErrCode.ERR_OK && SoterWrapperApi.isSupportSoter()) {
                 prepareASK();
             }
         }
