@@ -19,7 +19,7 @@ public interface ConstantsSoter {
     String SOTER_PROVIDER_NAME = "SoterKeyStore";
     // You must add this prefix in every key name to compat some bad implements.
     String SOTER_COMMON_KEYNAME_PREFIX = "Wechat";
-    String COMMON_SOTER_APP_SECURE_KEY_NAME = SOTER_COMMON_KEYNAME_PREFIX + "SOTER_ASK_" + Process.myUid();
+    String COMMON_SOTER_APP_SECURE_KEY_NAME = SOTER_COMMON_KEYNAME_PREFIX + Process.myUid();
     String SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG = "Too many failed times";
     /**
      * The authentication is frozen due to too many failures
