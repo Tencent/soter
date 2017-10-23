@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Process;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.model.ConstantsSoter;
@@ -39,7 +40,7 @@ public class TaskInit extends BaseSoterTask {
     private static final String TAG = "Soter.TaskInit";
 
     private static final String SOTER_STATUS_SHARED_PREFERENCE_NAME = "soter_status";
-    private static final int MAX_SALT_STR_LEN = 24;
+    private static final int MAX_SALT_STR_LEN = 16;
     private static final int MAX_CUSTOM_KEY_LEN = 24;
 
     private boolean isNativeSupport = false;
@@ -72,9 +73,16 @@ public class TaskInit extends BaseSoterTask {
             return true;
         }
         if(SoterCoreUtil.nullAsNil(distinguishSalt).length() > MAX_SALT_STR_LEN) {
-            SLogger.e(TAG, "soter: the salt string used to distinguish is longer than 24");
-            callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_ACCOUNT_SALT_LEN_TOO_LONG, "the account salt length is too long"));
-            return true;
+            SLogger.w(TAG, "soter: the salt string used to distinguish is longer than 24. soter will try to make it compat");
+            String compatMd5 = getCompatDistinguishSalt(distinguishSalt);
+            if(SoterCoreUtil.isNullOrNil(compatMd5)) {
+                SLogger.w(TAG, "soter: saltlen compat failed!!");
+                callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_ACCOUNT_SALT_LEN_TOO_LONG, "the account salt length is too long"));
+                return true;
+            } else {
+                distinguishSalt = compatMd5;
+                // continue
+            }
         }
         if(!SoterCoreUtil.isNullOrNil(customAskName) && customAskName.length() > MAX_CUSTOM_KEY_LEN) {
             SLogger.e(TAG, "soter: the passed ask name is too long (larger than 24).");
@@ -98,6 +106,16 @@ public class TaskInit extends BaseSoterTask {
         });
         return false;
     }
+
+    private String getCompatDistinguishSalt(@NonNull String previousSalt) {
+        String saltMd5 = SoterCoreUtil.getMessageDigest(previousSalt.getBytes());
+        if(!SoterCoreUtil.isNullOrNil(saltMd5) && saltMd5.length() >= MAX_SALT_STR_LEN) {
+            return saltMd5.substring(0, MAX_SALT_STR_LEN);
+        }
+        Log.e(TAG, "soter: not valid md5 implement!!");
+        return null;
+    }
+
 
     // check if there's any keys invalid and need to be deleted
     private void removeAbnormalKeys() {
