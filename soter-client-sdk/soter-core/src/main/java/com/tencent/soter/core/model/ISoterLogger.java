@@ -22,5 +22,5 @@ public interface ISoterLogger {
     void i(String TAG, String msg, Object... args);
     void w(String TAG, String msg, Object... args);
     void e(String TAG, String msg, Object... args);
-    void printErrStackTrace(String TAG, Exception e, String errMsg);
+    void printErrStackTrace(String TAG, Throwable e, String errMsg);
 }

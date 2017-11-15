@@ -49,7 +49,7 @@ public class SLogger {
         mLoggerImp.e(TAG, msg, args);
     }
 
-    public static void printErrStackTrace(String TAG, Exception e, String errMsg) {
+    public static void printErrStackTrace(String TAG, Throwable e, String errMsg) {
         mLoggerImp.printErrStackTrace(TAG, e, errMsg);
     }
 
@@ -106,7 +106,7 @@ public class SLogger {
         }
 
         @Override
-        public void printErrStackTrace(String TAG, Exception e, String errMsg) {
+        public void printErrStackTrace(String TAG, Throwable e, String errMsg) {
             e.printStackTrace();
         }
     }

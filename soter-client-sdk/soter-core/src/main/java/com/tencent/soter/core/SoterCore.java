@@ -127,6 +127,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
                 SLogger.printErrStackTrace(TAG, e, "soter: generateAppGlobalSecureKey error");
                 return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
+            } catch (OutOfMemoryError oomError) {
+                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -195,6 +197,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return null;
             } catch (Exception e) {
                 SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
+            } catch (OutOfMemoryError oomError) {
+                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -238,6 +242,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generate auth key failed: " + e.toString());
                 return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
+            } catch (OutOfMemoryError oomError) {
+                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -326,6 +332,9 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             SLogger.e(TAG, "soter: occurs other exceptions: %s", e.toString());
             SLogger.printErrStackTrace(TAG, e, "soter: occurs other exceptions");
             return false;
+        } catch (OutOfMemoryError oomError) {
+            SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when isAuthKeyValid!! maybe no attk inside");
+            return false;
         }
     }
 
@@ -358,6 +367,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return null;
             } catch (Exception e) {
                 SLogger.printErrStackTrace(TAG, e, "soter: error in get auth key model");
+            } catch (OutOfMemoryError oomError) {
+                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthKeyModel!! maybe no attk inside");
             }
         } else {
             SLogger.e(TAG, "soter: not support soter " + "AndroidKeyStore");
@@ -435,6 +446,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         System.arraycopy(origin, 0, lengthBytes, 0, 4);
         int rawLength = toInt(lengthBytes);
         SLogger.d("Soter", "parsed raw length: " + rawLength);
+        if(rawLength > 1024 * 1024) {
+            SLogger.e(TAG, "soter: too large signature result!");
+            return null;
+        }
 
         byte[] rawJsonBytes = new byte[rawLength];
         if (origin.length <= RAW_LENGTH_PREFIX + rawLength) {
@@ -479,6 +494,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         System.arraycopy(origin, 0, lengthBytes, 0, 4);
         int rawLength = toInt(lengthBytes);
         SLogger.d(TAG, "soter: parsed raw length: " + rawLength);
+        if(rawLength > 1024 * 1024) {
+            SLogger.e(TAG, "soter: too large json result!");
+            return null;
+        }
         byte[] rawJsonBytes = new byte[rawLength];
         if (origin.length <= RAW_LENGTH_PREFIX + rawLength) {
             SLogger.e(TAG, "length not correct 2");
