@@ -51,6 +51,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     public static final String TAG = "Soter.SoterCore";
 
     private static boolean isAlreadyCheckedSetUp = false;
+    private static boolean isTriggeredOOM = false; // once triggered OOM, we regard it as no attk or error stack. mark as not native support.
 
     private static final String MAGIC_SOTER_PWD = "from_soter_ui";
 
@@ -86,6 +87,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     public static boolean isNativeSupportSoter() {
         if(!isAlreadyCheckedSetUp) {
             setUp();
+        }
+        if(isTriggeredOOM) {
+            SLogger.w(TAG, "hy: the device has already triggered OOM. mark as not support");
+            return false;
         }
         Provider[] providers = Security.getProviders();
         if (providers == null) {
@@ -129,6 +134,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
+                isTriggeredOOM = true;
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -199,6 +205,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
+                isTriggeredOOM = true;
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -244,6 +251,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
+                isTriggeredOOM = true;
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -334,6 +342,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             return false;
         } catch (OutOfMemoryError oomError) {
             SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when isAuthKeyValid!! maybe no attk inside");
+            isTriggeredOOM = true;
             return false;
         }
     }
@@ -369,6 +378,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 SLogger.printErrStackTrace(TAG, e, "soter: error in get auth key model");
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthKeyModel!! maybe no attk inside");
+                isTriggeredOOM = true;
             }
         } else {
             SLogger.e(TAG, "soter: not support soter " + "AndroidKeyStore");
@@ -396,6 +406,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: exception when getSignatureResult: " + e.toString());
                 SLogger.printErrStackTrace(TAG, e, "soter: exception when getSignatureResult");
+                return null;
+            } catch (OutOfMemoryError oomError) {
+                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthInitAndSign!! maybe no attk inside");
+                isTriggeredOOM = true;
                 return null;
             }
         } else {
