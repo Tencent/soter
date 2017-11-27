@@ -353,8 +353,7 @@ public class SoterDemoUI extends AppCompatActivity {
                     @Override
                     public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
                         DemoLogger.w(TAG, "soterdemo: onAuthenticationHelp: %d, %s", helpCode, helpString);
-                        // 可以使用固定提示，也可以使用底层的helpString
-                        setFingerprintHintMsg(getString(R.string.fingerprint_normal_hint), true);
+                        // 由于厂商实现不同，不建议在onAuthenticationHelp中做任何操作。
                     }
 
                     @Override

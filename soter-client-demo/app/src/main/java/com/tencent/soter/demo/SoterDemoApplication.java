@@ -17,7 +17,6 @@ import com.tencent.soter.demo.model.SoterDemoData;
 import com.tencent.soter.demo.net.RemoteGetSupportSoter;
 import com.tencent.soter.wrapper.SoterWrapperApi;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessCallback;
-import com.tencent.soter.wrapper.wrap_callback.SoterProcessKeyPreparationResult;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessNoExtResult;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 
@@ -39,13 +38,6 @@ public class SoterDemoApplication extends Application{
 //            }
             // Edit 2017.11.27
             // 不再建议提前生成ASK，可能会拖慢启动。同时极少量机型有兼容性问题，提前生成ASK可能会导致不可预见错误
-        }
-    };
-
-    private SoterProcessCallback<SoterProcessKeyPreparationResult> mPrepareASKCallback = new SoterProcessCallback<SoterProcessKeyPreparationResult>() {
-        @Override
-        public void onResult(@NonNull SoterProcessKeyPreparationResult result) {
-            DemoLogger.d(TAG, "soterdemo: prepare ask done. result: %s, ask data : %s", result.toString(), result.getExtData() != null ? result.getExtData().toString() : null);
         }
     };
 
