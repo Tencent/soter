@@ -15,12 +15,10 @@ import com.tencent.soter.demo.model.ConstantsSoterDemo;
 import com.tencent.soter.demo.model.DemoLogger;
 import com.tencent.soter.demo.model.SoterDemoData;
 import com.tencent.soter.demo.net.RemoteGetSupportSoter;
-import com.tencent.soter.demo.net.RemoteUploadASK;
 import com.tencent.soter.wrapper.SoterWrapperApi;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessKeyPreparationResult;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessNoExtResult;
-import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 
 /**
