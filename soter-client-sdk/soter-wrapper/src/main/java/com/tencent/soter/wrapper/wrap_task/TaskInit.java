@@ -31,6 +31,8 @@ import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetSupportNet;
 
+import java.nio.charset.Charset;
+
 /**
  * Created by henryye on 2017/4/21.
  * The task called in the very beginning of the application.
@@ -108,7 +110,7 @@ public class TaskInit extends BaseSoterTask {
     }
 
     private String getCompatDistinguishSalt(@NonNull String previousSalt) {
-        String saltMd5 = SoterCoreUtil.getMessageDigest(previousSalt.getBytes());
+        String saltMd5 = SoterCoreUtil.getMessageDigest(previousSalt.getBytes(Charset.forName("UTF-8")));
         if(!SoterCoreUtil.isNullOrNil(saltMd5) && saltMd5.length() >= MAX_SALT_STR_LEN) {
             return saltMd5.substring(0, MAX_SALT_STR_LEN);
         }

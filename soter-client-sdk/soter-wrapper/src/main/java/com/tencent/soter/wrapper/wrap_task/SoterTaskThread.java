@@ -9,9 +9,12 @@
 
 package com.tencent.soter.wrapper.wrap_task;
 
+import android.graphics.PointF;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+
+import com.tencent.soter.core.model.SLogger;
 
 /**
  * Created by henryye on 2017/4/6.
@@ -28,7 +31,13 @@ public class SoterTaskThread {
     private SoterTaskThread() {
         HandlerThread taskHandlerThread = new HandlerThread(HANDLER_THREAD_NAME);
         taskHandlerThread.start();
-        mTaskHandler = new Handler(taskHandlerThread.getLooper());
+        Looper taskLooper = taskHandlerThread.getLooper();
+        if(taskLooper != null) {
+            mTaskHandler = new Handler(taskHandlerThread.getLooper());
+        } else {
+            SLogger.e(TAG, "soter: task looper is null! use main looper as the task looper");
+            mTaskHandler = new Handler(Looper.getMainLooper());
+        }
         mMainLooperHandler = new Handler(Looper.getMainLooper());
     }
 

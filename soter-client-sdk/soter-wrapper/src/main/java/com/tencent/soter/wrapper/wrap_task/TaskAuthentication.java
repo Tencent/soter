@@ -33,6 +33,7 @@ import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
 import java.security.Signature;
 import java.security.SignatureException;
 
@@ -350,7 +351,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                 public void run() {
                     if(!SoterCoreUtil.isNullOrNil(mChallenge)) {
                         try {
-                            mSignatureToAuth.update(mChallenge.getBytes());
+                            mSignatureToAuth.update(mChallenge.getBytes(Charset.forName("UTF-8")));
                             executeWhenAuthenticated(mSignatureToAuth);
                         } catch (SignatureException e) {
                             SLogger.e(TAG, "soter: exception in update");

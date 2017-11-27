@@ -79,7 +79,7 @@ public class SoterTaskManager implements SoterProcessErrCode {
                 synchronized (mTaskPoolLock) {
                     for (int i = 0; i < sTaskPool.size(); i++) {
                         int key = sTaskPool.keyAt(i);
-                        if (sTaskPool.get(key).getClass().getName().equals(task.getClass().getName())) {
+                        if (sTaskPool.get(key) != null && sTaskPool.get(key).getClass().getName().equals(task.getClass().getName())) {
                             SLogger.w(TAG, "soter: already such type of task. abandon add task");
                             instanceOnError.setErrCode(ERR_ADD_TASK_FAILED);
                             instanceOnError.setErrMsg("add SOTER task to queue failed. check the logcat for further information");
@@ -112,9 +112,11 @@ public class SoterTaskManager implements SoterProcessErrCode {
                     SoterTaskThread.getInstance().postToWorker(new Runnable() {
                         @Override
                         public void run() {
-                            BaseSoterTask task = sTaskPool.get(key);
-                            if(task != null) {
-                                task.onRemovedFromTaskPoolActively();
+                            synchronized (mTaskPoolLock) {
+                                BaseSoterTask task = sTaskPool.get(key);
+                                if(task != null) {
+                                    task.onRemovedFromTaskPoolActively();
+                                }
                             }
                         }
                     });
@@ -150,12 +152,14 @@ public class SoterTaskManager implements SoterProcessErrCode {
                     SoterTaskThread.getInstance().postToWorker(new Runnable() {
                         @Override
                         public void run() {
-                            BaseSoterTask task = sTaskPool.get(key);
-                            if(task != null && (task instanceof AuthCancellationCallable)) {
-                                if(!((AuthCancellationCallable) task).isCancelled()) {
-                                    ((AuthCancellationCallable) task).callCancellationInternal();
-                                }
+                            synchronized (mTaskPoolLock) {
+                                BaseSoterTask task = sTaskPool.get(key);
+                                if(task != null && (task instanceof AuthCancellationCallable)) {
+                                    if(!((AuthCancellationCallable) task).isCancelled()) {
+                                        ((AuthCancellationCallable) task).callCancellationInternal();
+                                    }
 
+                                }
                             }
                         }
                     });

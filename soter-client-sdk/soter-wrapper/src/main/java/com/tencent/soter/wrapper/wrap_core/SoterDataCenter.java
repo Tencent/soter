@@ -18,7 +18,7 @@ import android.util.SparseArray;
  */
 
 public class SoterDataCenter {
-    private static SoterDataCenter sInstance = null;
+    private static volatile SoterDataCenter sInstance = null;
 
     public static SoterDataCenter getInstance() {
         if(sInstance == null) {
