@@ -36,9 +36,11 @@ public class SoterDemoApplication extends Application{
         public void onResult(@NonNull SoterProcessNoExtResult result) {
             DemoLogger.d(TAG, "soterdemo: get is support soter done. result: %s", result.toString());
             // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备 ASK
-            if(result.errCode == SoterProcessErrCode.ERR_OK && SoterWrapperApi.isSupportSoter()) {
-                prepareASK();
-            }
+//            if(result.errCode == SoterProcessErrCode.ERR_OK && SoterWrapperApi.isSupportSoter()) {
+//                prepareASK();
+//            }
+            // Edit 2017.11.27
+            // 不再建议提前生成ASK，可能会拖慢启动。同时极少量机型有兼容性问题，提前生成ASK可能会导致不可预见错误
         }
     };
 
@@ -70,11 +72,6 @@ public class SoterDemoApplication extends Application{
 //                .setSoterLogger(new ISoterLogger() {...})
                 .build();
         SoterWrapperApi.init(getApplicationContext(), mGetIsSupportCallback, param);
-    }
-
-    // 注意，ASK的生成时间较长，且会占用较高 CPU，因此除非必须（如 Auth Key后台延签不通过，这一般是本地 ASK 私钥导致的问题），不要删除 ASK
-    private void prepareASK() {
-        SoterWrapperApi.prepareAppSecureKey(mPrepareASKCallback, false, new RemoteUploadASK());
     }
 
     // 虚拟机专用，不要过度依赖
