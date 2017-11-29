@@ -15,7 +15,7 @@ package com.tencent.soter.core.model;
  */
 
 public class SoterCoreData {
-    private static SoterCoreData instance = null;
+    private volatile static SoterCoreData instance = null;
 
     public static SoterCoreData getInstance() {
         if(instance == null) {
