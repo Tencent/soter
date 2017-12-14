@@ -50,7 +50,7 @@ public class TaskPrepareAppSecureKey extends BaseSoterPrepareKeyTask implements 
             callback(new SoterProcessKeyPreparationResult(ERR_SOTER_NOT_SUPPORTED));
             return true;
         }
-        if(SoterCore.hasAppGlobalSecureKey() && !mIsAutoDeleteWhenAlreadyGenerated) {
+        if(SoterCore.isAppGlobalSecureKeyValid() && !mIsAutoDeleteWhenAlreadyGenerated) {
             SLogger.i(TAG, "soter: already has ask. do not need generate again");
             callback(new SoterProcessKeyPreparationResult(ERR_OK, SoterCore.getAppGlobalSecureKeyModel()));
             return true;

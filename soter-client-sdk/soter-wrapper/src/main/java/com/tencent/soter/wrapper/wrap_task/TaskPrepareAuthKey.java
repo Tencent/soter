@@ -70,12 +70,13 @@ public class TaskPrepareAuthKey extends BaseSoterPrepareKeyTask implements Soter
             callback(new SoterProcessKeyPreparationResult(ERR_AUTH_KEY_NOT_IN_MAP, String.format("auth scene %d not initialized in map", mScene)));
             return true;
         }
+        boolean isASKValid = SoterCore.isAppGlobalSecureKeyValid();
         // if there's no ask but has auth key, you should delete the auth key as well
-        if(!SoterCore.hasAppGlobalSecureKey() && SoterCore.hasAuthKey(mAuthKeyName)) {
+        if(!isASKValid && SoterCore.hasAuthKey(mAuthKeyName)) {
             SLogger.w(TAG, "soter: no ask but has auth key. delete the auth key as well");
             SoterCore.removeAuthKey(mAuthKeyName, false);
         }
-        if(!SoterCore.hasAppGlobalSecureKey() && !mIsAutoPrepareASKWhenNotFound) {
+        if(!isASKValid && !mIsAutoPrepareASKWhenNotFound) {
             SLogger.w(TAG, "soter: has not generate app secure key yet and not require to generate it");
             callback(new SoterProcessKeyPreparationResult(SoterErrCode.ERR_ASK_NOT_EXIST));
             return true;
@@ -109,7 +110,7 @@ public class TaskPrepareAuthKey extends BaseSoterPrepareKeyTask implements Soter
 
     @Override
     void execute() {
-        if(!SoterCore.hasAppGlobalSecureKey() && mIsAutoPrepareASKWhenNotFound) {
+        if(!SoterCore.isAppGlobalSecureKeyValid() && mIsAutoPrepareASKWhenNotFound) {
             SLogger.d(TAG, "soter: ask not found, but required to generate it. start generate");
             SoterWrapperApi.prepareAppSecureKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {
 

@@ -121,7 +121,7 @@ public class SoterKeyGenerateEngine {
                 }
                 if((mGenKeyFlag & FLAG_GEN_AUTH_KEY) == FLAG_GEN_AUTH_KEY) {
                     SLogger.d(TAG, "soter: require generate auth key. start gen: %s", mAuthKeyName);
-                    if(!SoterCore.hasAppGlobalSecureKey()) {
+                    if(!SoterCore.isAppGlobalSecureKeyValid()) {
                         SLogger.w(TAG, "soter: no ask.");
                         callback(new SoterProcessKeyPreparationResult(SoterProcessErrCode.ERR_ASK_NOT_EXIST, "ASK not exists when generate auth key"));
                         return;

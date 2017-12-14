@@ -101,12 +101,12 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             callback(new SoterProcessAuthenticationResult(ERR_AUTH_KEY_NOT_IN_MAP, String.format("auth scene %d not initialized in map", mScene)));
             return true;
         }
-        if (!SoterCore.hasAppGlobalSecureKey()) {
+        if (!SoterCore.isAppGlobalSecureKeyValid()) {
             SLogger.w(TAG, "soter: app secure key not exists. need re-generate");
             callback(new SoterProcessAuthenticationResult(ERR_ASK_NOT_EXIST));
             return true;
         }
-        if (!SoterCore.hasAuthKey(mAuthKeyName)) {
+        if (!(SoterCore.hasAuthKey(mAuthKeyName) && SoterCore.getAuthKeyModel(mAuthKeyName) != null)) {
             SLogger.w(TAG, "soter: auth key %s not exists. need re-generate", mAuthKeyName);
             callback(new SoterProcessAuthenticationResult(ERR_AUTHKEY_NOT_FOUND, String.format("the auth key to scene %d not exists. it may because you haven't prepare it, or user removed them already in system settings. please prepare the key again", mScene)));
             return true;

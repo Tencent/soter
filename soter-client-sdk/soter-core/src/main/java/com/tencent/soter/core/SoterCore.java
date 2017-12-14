@@ -180,6 +180,15 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     }
 
     /**
+     * Check if the App Secure Key is valid. Add it because some vivo devices will return true in hasAppGlobalSecureKey
+     * but actual model is null.
+     * @return true if the App Secure Key is valid
+     */
+    public static boolean isAppGlobalSecureKeyValid() {
+        return hasAppGlobalSecureKey() && getAppGlobalSecureKeyModel() != null;
+    }
+
+    /**
      * To retrieve the App Secure Key model from device.
      * @return The App Secure Key model.
      */
