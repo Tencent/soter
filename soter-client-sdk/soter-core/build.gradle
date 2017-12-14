@@ -24,7 +24,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-annotations:24.1.1'
+    api 'com.android.support:support-annotations:27.0.2'
 }
 
 version = rootProject.ext.VERSION_NAME
