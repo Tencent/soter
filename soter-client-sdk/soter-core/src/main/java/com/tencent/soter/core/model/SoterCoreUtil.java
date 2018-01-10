@@ -42,7 +42,7 @@ public class SoterCoreUtil {
         return (System.nanoTime() - beforeTicks) / 1000 / 1000;
     }
 
-    public final static String getMessageDigest(byte[] buffer) {
+    public static String getMessageDigest(byte[] buffer) {
         char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
         try {
             MessageDigest mdTemp = MessageDigest.getInstance("MD5");
