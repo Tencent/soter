@@ -19,6 +19,7 @@ import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
+import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
 import com.tencent.soter.core.model.SoterSignatureResult;
@@ -51,7 +52,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     public static final String TAG = "Soter.SoterCore";
 
     private static boolean isAlreadyCheckedSetUp = false;
-    private static boolean isTriggeredOOM = false; // once triggered OOM, we regard it as no attk or error stack. mark as not native support.
+
 
     private static final String MAGIC_SOTER_PWD = "from_soter_ui";
 
@@ -88,7 +89,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         if(!isAlreadyCheckedSetUp) {
             setUp();
         }
-        if(isTriggeredOOM) {
+        if(SoterDelegate.isTriggeredOOM()) {
             SLogger.w(TAG, "hy: the device has already triggered OOM. mark as not support");
             return false;
         }
@@ -134,7 +135,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
-                isTriggeredOOM = true;
+                SoterDelegate.onTriggerOOM();
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -214,7 +215,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
-                isTriggeredOOM = true;
+                SoterDelegate.onTriggerOOM();
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -260,7 +261,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
-                isTriggeredOOM = true;
+                SoterDelegate.onTriggerOOM();
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");
@@ -351,7 +352,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             return false;
         } catch (OutOfMemoryError oomError) {
             SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when isAuthKeyValid!! maybe no attk inside");
-            isTriggeredOOM = true;
+            SoterDelegate.onTriggerOOM();
             return false;
         }
     }
@@ -387,7 +388,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 SLogger.printErrStackTrace(TAG, e, "soter: error in get auth key model");
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthKeyModel!! maybe no attk inside");
-                isTriggeredOOM = true;
+                SoterDelegate.onTriggerOOM();
             }
         } else {
             SLogger.e(TAG, "soter: not support soter " + "AndroidKeyStore");
@@ -418,7 +419,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
                 return null;
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthInitAndSign!! maybe no attk inside");
-                isTriggeredOOM = true;
+                SoterDelegate.onTriggerOOM();
                 return null;
             }
         } else {

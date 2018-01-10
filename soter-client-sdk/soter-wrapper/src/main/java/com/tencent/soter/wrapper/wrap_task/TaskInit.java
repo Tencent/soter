@@ -23,6 +23,7 @@ import com.tencent.soter.core.model.ISoterLogger;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreUtil;
+import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessNoExtResult;
 import com.tencent.soter.wrapper.wrap_core.ConstantsSoterProcess;
@@ -42,6 +43,10 @@ public class TaskInit extends BaseSoterTask {
     private static final String TAG = "Soter.TaskInit";
 
     private static final String SOTER_STATUS_SHARED_PREFERENCE_NAME = "soter_status";
+    // we add device information digest as the salt, as OEMs may OTA their ROM to avoid OOM.
+    private static final String SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME = "soter_triggered_oom"
+            + SoterCoreUtil.getMessageDigest(SoterCore.generateRemoteCheckRequestParam().getBytes(Charset.forName("UTF-8")));
+
     private static final int MAX_SALT_STR_LEN = 16;
     private static final int MAX_CUSTOM_KEY_LEN = 24;
 
@@ -52,19 +57,49 @@ public class TaskInit extends BaseSoterTask {
     private String customAskName = "";
     private int[] scenes;
 
+    @SuppressWarnings("FieldCanBeLocal")
+    private SoterDelegate.ISoterDelegate wrapperDelegate = new SoterDelegate.ISoterDelegate() {
+        @SuppressLint("ApplySharedPref")
+        @Override
+        public void onTriggeredOOM() {
+            SLogger.w(TAG, "soter: on trigger OOM, using wrapper implement");
+            SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
+            if(preferences != null) {
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, true);
+                editor.commit();
+            }
+        }
+
+        @Override
+        public boolean isTriggeredOOM() {
+            SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
+            if(preferences != null) {
+                boolean isTriggeredOOM = preferences.getBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, false);
+                SLogger.i(TAG, "soter: is triggered OOM: %b", isTriggeredOOM);
+                return isTriggeredOOM;
+            } else {
+                return false;
+            }
+        }
+    };
+
     public TaskInit(Context context, @NonNull InitializeParam param){
         ISoterLogger loggerImp = param.getSoterLogger();
         // set logger first.
         if(loggerImp != null) {
             SLogger.setLogImp(loggerImp);
         }
+        SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
+        // set implement to wrapper
+        SoterDelegate.setImplement(wrapperDelegate);
+
         SoterCore.setUp();
         isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();
         this.customAskName = param.getCustomAppSecureKeyName();
-        SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
     }
 
     @Override
