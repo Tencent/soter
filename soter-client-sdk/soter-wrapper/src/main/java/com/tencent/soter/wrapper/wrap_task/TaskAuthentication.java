@@ -358,7 +358,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                             //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
                             SLogger.e(TAG, "soter: remove the auth key: %s", mAuthKeyName);
                             SoterCore.removeAuthKey(mAuthKeyName,false);
-                            callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_SIGNATURE_INVALID, "update signature failed"));
+                            callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_SIGNATURE_INVALID, "update signature failed. authkey removed after this failure, please check"));
                         }
                         try {
                             executeWhenAuthenticated(mSignatureToAuth);
