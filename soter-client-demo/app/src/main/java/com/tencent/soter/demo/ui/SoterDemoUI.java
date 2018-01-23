@@ -218,7 +218,8 @@ public class SoterDemoUI extends AppCompatActivity {
                 } else {
                     // 先判断是否是指纹密钥失效。如果指纹失效，则重新生成并上传authkey，然后直接使用密码支付
                     if (result.errCode == SoterProcessErrCode.ERR_AUTHKEY_NOT_FOUND
-                            || result.errCode == SoterProcessErrCode.ERR_AUTHKEY_ALREADY_EXPIRED || result.errCode == SoterProcessErrCode.ERR_ASK_NOT_EXIST) {
+                            || result.errCode == SoterProcessErrCode.ERR_AUTHKEY_ALREADY_EXPIRED || result.errCode == SoterProcessErrCode.ERR_ASK_NOT_EXIST
+                            || result.errCode == SoterProcessErrCode.ERR_SIGNATURE_INVALID) {
                         DemoLogger.w(TAG, "soterdemo: auth key expired or keys not found. regen and upload");
                         Toast.makeText(SoterDemoUI.this, "authkey expired or not found. start re-generate",
                                 Toast.LENGTH_SHORT).show();
