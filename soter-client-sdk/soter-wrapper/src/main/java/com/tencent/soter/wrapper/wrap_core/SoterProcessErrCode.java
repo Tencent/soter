@@ -119,4 +119,10 @@ public interface SoterProcessErrCode extends SoterErrCode {
      * The custom App Secure Key name is too long (larger than 24).
      */
     int ERR_CUSTOM_ASK_NAME_TOO_LONG = 29;
+
+    /**
+     * The java.security.SignatureException(perhaps caused by android.security.KeyStoreException:
+     * Key user not authenticated,after OTA from N to O and enroll a new fingerprint).
+     */
+    int ERR_SIGNATURE_INVALID = 30;
 }
