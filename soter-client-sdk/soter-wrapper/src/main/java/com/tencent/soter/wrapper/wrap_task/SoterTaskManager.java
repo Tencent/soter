@@ -152,18 +152,17 @@ public class SoterTaskManager implements SoterProcessErrCode {
                     SoterTaskThread.getInstance().postToWorker(new Runnable() {
                         @Override
                         public void run() {
+                            BaseSoterTask task = null;
                             synchronized (mTaskPoolLock) {
-                                BaseSoterTask task = sTaskPool.get(key);
-                                if(task != null && (task instanceof AuthCancellationCallable)) {
-                                    if(!((AuthCancellationCallable) task).isCancelled()) {
-                                        ((AuthCancellationCallable) task).callCancellationInternal();
-                                    }
-
+                                task = sTaskPool.get(key);
+                            }
+                            if(task != null && (task instanceof AuthCancellationCallable)) {
+                                if(!((AuthCancellationCallable) task).isCancelled()) {
+                                    ((AuthCancellationCallable) task).callCancellationInternal();
                                 }
                             }
                         }
                     });
-
                 }
             }
         }
