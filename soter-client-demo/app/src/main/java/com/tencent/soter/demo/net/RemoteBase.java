@@ -10,7 +10,15 @@ package com.tencent.soter.demo.net;
 
 import com.tencent.soter.demo.model.DemoLogger;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Created by henryye on 2017/4/25.
@@ -40,6 +48,100 @@ abstract class RemoteBase {
         DemoNetworkThread.getInstance().postTaskDelayed(new Runnable() {
             @Override
             public void run() {
+                /*//get的方式提交就是url拼接的方式
+                try {
+                    String path = getNetUrl()+"?keyJson=keyJsonTest&signature=keySignatureTest&request=requestTest";
+                    URL url = new URL(path);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setConnectTimeout(5000);
+                    connection.setRequestMethod("GET");
+                    //获得结果码
+                    int responseCode = connection.getResponseCode();
+                    String response = null;
+                    if(responseCode ==200){
+                        //请求成功 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                    }
+                    DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.getJSONObject(response);
+                    mResultJson = resultJson;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }*/
+
+
+                //post的方式提交
+                try {
+                    String path = getNetUrl();
+                    URL url = new URL(path);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setConnectTimeout(5000);
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.connect();
+                    connection.getOutputStream().write((mRequestJson.toString()).getBytes("UTF-8"));
+                    //获得结果码
+                    int responseCode = connection.getResponseCode();
+                    String response = null;
+                    if(responseCode ==200){
+                        //请求成功 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                    }else {
+                        //请求失败 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                        DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    }
+                    DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    JSONObject resultJson = new JSONObject(response);
+                    mResultJson = resultJson.getJSONObject("data");
+                    connection.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                /*
+                try {
+
+                    String path = getNetUrl();
+                    URL url = new URL(path);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setDoOutput(true);
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/json");
+
+                    OutputStream outputstream = connection.getOutputStream();
+                    outputstream.write(mRequestJson.toString().getBytes("UTF-8"));
+                    outputstream.flush();
+
+                    //获得结果码
+                    int responseCode = connection.getResponseCode();
+                    String response = null;
+                    if(responseCode ==200){
+                        //请求成功 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                    }else {
+                        //请求失败 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                        DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    }
+                    DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.getJSONObject(response);
+                    mResultJson = resultJson;
+
+                    connection.disconnect();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }*/
+
                 onNetworkEnd(mResultJson);
             }
         }, SIMULATE_NETWORK_DELAY);

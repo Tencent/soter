@@ -33,7 +33,7 @@ public class RemoteUploadASK extends RemoteBase implements IWrapUploadKeyNet {
 
     private static final String KEY_REQUEST_KEY_JSON = "keyJson";
     private static final String KEY_REQUEST_SIGNATURE = "keySignature";
-    private static final String KEY_RESULT = "result";
+    private static final String KEY_RESULT = "is_verified";
 
     private ISoterNetCallback<UploadResult> mCallback = null;
 
@@ -101,6 +101,6 @@ public class RemoteUploadASK extends RemoteBase implements IWrapUploadKeyNet {
 
     @Override
     protected String getNetUrl() {
-        return "http://qcloud.simulate.soter_demo/upload_ask_key";
+        return "https://www.grouppic.cn/soter/upload_ask_key";
     }
 }

@@ -16,8 +16,13 @@ import com.tencent.soter.demo.model.DemoUtil;
 import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Created by henryye on 2017/4/27.
