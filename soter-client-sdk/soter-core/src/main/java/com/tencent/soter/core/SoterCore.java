@@ -114,6 +114,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     public static SoterCoreResult generateAppGlobalSecureKey() {
         SLogger.i(TAG, "soter: start generate ask");
+        SLogger.i(TAG, "soter: start generate ask for test");
         if (isNativeSupportSoter()) {
             try {
                 KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
