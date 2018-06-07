@@ -94,7 +94,7 @@ public class TaskInit extends BaseSoterTask {
         // set implement to wrapper
         SoterDelegate.setImplement(wrapperDelegate);
 
-        SoterCore.setUp();
+        SoterCore.setUp(context);
         isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();

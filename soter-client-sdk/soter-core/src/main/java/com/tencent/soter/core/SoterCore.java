@@ -11,6 +11,7 @@ package com.tencent.soter.core;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.util.Base64;
 
 import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
@@ -58,41 +59,57 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
 
     static SoterCoreBase IMPL;
 
-    static {
+    public static final int isBeforeTreble = 0;
+    public static final int isTreble = 1;
+    public static final int isOther = 2;
 
-        if(true){
-            IMPL = new SoterCoreBeforeTreble();
-        }else{
+    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
+
+
+    public static void setUp(Context context) {
+        if(SoterCore.soterModelLogic() == SoterCore.isTreble){
             IMPL = new SoterCoreTreble();
+            IMPL.initSoter(context);
+        }else {
+            IMPL = new SoterCoreBeforeTreble();
+            SoterCoreBeforeTreble.setUp();
         }
     }
 
+    public static int soterModelLogic (){
+        if (Build.VERSION.SDK_INT > 27){
 
-    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
+            SLogger.i(TAG, "soterModelLogic isTreble");
+            return isTreble;
+        }
+        SLogger.i(TAG, "soterModelLogic isBeforeTreble");
+
+        return isBeforeTreble;
+    }
 
     /**
      * The prepare work before using SOTER. Be sure to call this method before SOTER operation
      */
-    @SuppressLint("PrivateApi")
-    public static void setUp() {
-        Class<?> clazz;
-        try {
-            clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
-            Method method = clazz.getMethod("install");
-            method.setAccessible(true);
-            method.invoke(null);
-        } catch (ClassNotFoundException e) {
-            SLogger.i(TAG, "soter: no SoterProvider found");
-        } catch (NoSuchMethodException e) {
-            SLogger.i(TAG, "soter: function not found");
-        } catch (IllegalAccessException e) {
-            SLogger.i(TAG, "soter: cannot access");
-        } catch (InvocationTargetException e) {
-            SLogger.i(TAG, "soter: InvocationTargetException");
-        } finally {
-            isAlreadyCheckedSetUp = true;
-        }
-    }
+//    @SuppressLint("PrivateApi")
+//    public static void setUp() {
+//        Class<?> clazz;
+//        try {
+//            clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
+//            Method method = clazz.getMethod("install");
+//            method.setAccessible(true);
+//            method.invoke(null);
+//        } catch (ClassNotFoundException e) {
+//            SLogger.i(TAG, "soter: no SoterProvider found");
+//        } catch (NoSuchMethodException e) {
+//            SLogger.i(TAG, "soter: function not found");
+//        } catch (IllegalAccessException e) {
+//            SLogger.i(TAG, "soter: cannot access");
+//        } catch (InvocationTargetException e) {
+//            SLogger.i(TAG, "soter: InvocationTargetException");
+//        } finally {
+//            isAlreadyCheckedSetUp = true;
+//        }
+//    }
 
     /**
      * Check whether this device supports SOTER by checking native interfaces. Remind that you should check the server side as well,
@@ -226,6 +243,17 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return IMPL.initAuthKeySignature(useKeyAlias);
 
     }
+
+    public static long initSigh(String mAuthKeyName, String mChallenge) {
+
+        return IMPL.initSigh(mAuthKeyName, mChallenge);
+    }
+
+    public static byte[] finishSign(long session) throws Exception {
+
+        return IMPL.finishSign(session);
+    }
+
 
     /**
      * Convert the byte array got from {@link Signature#sign()} to {@link SoterSignatureResult} model.
@@ -369,5 +397,6 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         SLogger.d(TAG, "soter: getFingerprint  " + key.toString());
         return key.toString();
     }
+
 
 }

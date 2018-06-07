@@ -198,23 +198,43 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void startAuthenticate() {
-        final Signature signatureToAuth = SoterCore.getAuthInitAndSign(mAuthKeyName);
-        if (signatureToAuth == null) {
-            SLogger.w(TAG, "soter: error occurred when init sign");
-            callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
-            return;
-        }
-
-        mAuthenticationCallbackIml = new AuthenticationCallbackImpl(signatureToAuth);
-        performStartFingerprintLogic(signatureToAuth);
-        SoterTaskThread.getInstance().postToMainThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mFingerprintStateCallback != null) {
-                    mFingerprintStateCallback.onStartAuthentication();
-                }
+        if(SoterCore.soterModelLogic() == SoterCore.isTreble){
+            long session = SoterCore.initSigh(mAuthKeyName, mChallenge);
+            if(session != 0){
+                SLogger.w(TAG, "soter: error occurred when init sign");
+                callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
+                return;
             }
-        });
+            mAuthenticationCallbackIml = new AuthenticationCallbackImpl(null);
+            mAuthenticationCallbackIml.session = session;
+            performStartFingerprintLogic(null);
+            SoterTaskThread.getInstance().postToMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mFingerprintStateCallback != null) {
+                        mFingerprintStateCallback.onStartAuthentication();
+                    }
+                }
+            });
+        }else {
+            final Signature signatureToAuth = SoterCore.getAuthInitAndSign(mAuthKeyName);
+            if (signatureToAuth == null) {
+                SLogger.w(TAG, "soter: error occurred when init sign");
+                callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
+                return;
+            }
+
+            mAuthenticationCallbackIml = new AuthenticationCallbackImpl(signatureToAuth);
+            performStartFingerprintLogic(signatureToAuth);
+            SoterTaskThread.getInstance().postToMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mFingerprintStateCallback != null) {
+                        mFingerprintStateCallback.onStartAuthentication();
+                    }
+                }
+            });
+        }
     }
 
     @SuppressLint("NewApi")
@@ -239,6 +259,26 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             SLogger.e(TAG, "soter: caused exception when authenticating: %s", cause);
             SLogger.printErrStackTrace(TAG, e, "soter: caused exception when authenticating");
             callback(new SoterProcessAuthenticationResult(ERR_START_AUTHEN_FAILED, String.format("start authentication failed due to %s", cause)));
+        }
+    }
+
+    private void executeWhenAuthenticatedWithSession(@NonNull Signature signature, long session) {
+        try {
+
+            byte[] rawResult = SoterCore.finishSign(session);
+            mFinalResult = SoterCore.convertFromBytesToSignatureResult(rawResult);
+
+            if(mUploadSignatureWrapper != null) {
+                uploadSignature();
+            } else {
+                SLogger.i(TAG, "soter: no upload wrapper, return directly");
+                callback(new SoterProcessAuthenticationResult(ERR_OK, mFinalResult));
+            }
+
+        } catch (Exception e) {
+            SLogger.e(TAG, "soter: finish sign failed due to exception: %s", e.getMessage());
+            SLogger.printErrStackTrace(TAG, e, "soter: sign failed due to exception");
+            callback(new SoterProcessAuthenticationResult(ERR_SIGN_FAILED, "sign failed even after user authenticated the key."));
         }
     }
 
@@ -299,6 +339,8 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         // The cancellation signal may delay some time even it callbacks, for it uses a remote service and we cannot estimate the accurate delay. This is the experimental value to do that trick
         private static final long MAGIC_CANCELLATION_WAIT = 1000;
 
+        private long session ;
+
         private AuthenticationCallbackImpl(@NonNull Signature signature) {
             mSignatureToAuth = signature;
         }
@@ -350,22 +392,26 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                 @Override
                 public void run() {
                     if(!SoterCoreUtil.isNullOrNil(mChallenge)) {
-                        try {
-                            mSignatureToAuth.update(mChallenge.getBytes(Charset.forName("UTF-8")));
-                        } catch (SignatureException e) {
-                            SLogger.e(TAG, "soter: exception in update");
-                            SLogger.printErrStackTrace(TAG, e, "soter: exception in update");
-                            //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
-                            SLogger.e(TAG, "soter: remove the auth key: %s", mAuthKeyName);
-                            SoterCore.removeAuthKey(mAuthKeyName,false);
-                            callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_SIGNATURE_INVALID, "update signature failed. authkey removed after this failure, please check"));
-                        }
-                        try {
-                            executeWhenAuthenticated(mSignatureToAuth);
-                        } catch (Exception e) {
-                            SLogger.e(TAG, "soter: exception in executeWhenAuthenticated method");
-                            SLogger.printErrStackTrace(TAG, e, "soter: exception when execute");
-                            onAuthenticationError(-1000, "execute failed");
+                        if(SoterCore.soterModelLogic() == SoterCore.isTreble){
+                            executeWhenAuthenticatedWithSession(mSignatureToAuth, session);
+                        }else {
+                            try {
+                                mSignatureToAuth.update(mChallenge.getBytes(Charset.forName("UTF-8")));
+                            } catch (SignatureException e) {
+                                SLogger.e(TAG, "soter: exception in update");
+                                SLogger.printErrStackTrace(TAG, e, "soter: exception in update");
+                                //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
+                                SLogger.e(TAG, "soter: remove the auth key: %s", mAuthKeyName);
+                                SoterCore.removeAuthKey(mAuthKeyName, false);
+                                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_SIGNATURE_INVALID, "update signature failed. authkey removed after this failure, please check"));
+                            }
+                            try {
+                                executeWhenAuthenticated(mSignatureToAuth);
+                            } catch (Exception e) {
+                                SLogger.e(TAG, "soter: exception in executeWhenAuthenticated method");
+                                SLogger.printErrStackTrace(TAG, e, "soter: exception when execute");
+                                onAuthenticationError(-1000, "execute failed");
+                            }
                         }
                     } else {
                         SLogger.e(TAG, "soter: challenge is null. should not happen here");

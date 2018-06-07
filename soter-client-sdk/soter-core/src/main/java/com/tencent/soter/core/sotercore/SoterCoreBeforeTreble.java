@@ -36,7 +36,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 
 public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSoter, SoterErrCode {
-    public static final String TAG = "Soter.SoterCore";
+    public static final String TAG = "Soter.SoterCoreBeforeTreble";
 
     private static boolean isAlreadyCheckedSetUp = false;
 

@@ -15,6 +15,7 @@ import com.qualcomm.qti.soterserver.SoterSignResult;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
+import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterPubKeyModel;
 import com.tencent.soter.core.model.SoterErrCode;
 
@@ -31,6 +32,12 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, SoterErrCode{
+
+    public static final String TAG = "Soter.SoterCoreTreble";
+
+    private static boolean isAlreadyCheckedSetUp = false;
+
+    private Context mContext;
 
     protected ISoterService mSoterService;
 
@@ -52,14 +59,15 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     @Override
     public boolean initSoter(Context context) {
         if (mSoterService == null) {
+            mContext = context;
             bindService(context);
+            isAlreadyCheckedSetUp = true;
         }
         return true;
     }
 
     public void bindService(Context context){
         Intent intent = new Intent();
-
         intent.setAction("com.qualcomm.qti.soterserver.ISoterService");
         intent.setPackage("com.qualcomm.qti.soterserver");
 
@@ -70,16 +78,30 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         context.unbindService(mServiceConnection);
     }
 
-    @Override
     public boolean isNativeSupportSoter() {
-        return false;
+        if (!isAlreadyCheckedSetUp || mSoterService == null) {
+            SLogger.w(TAG, "cq: mContext is null bind failed");
+            if (mContext != null) {
+                bindService(mContext);
+            } else {
+                SLogger.w(TAG, "cq: mContext is null bind failed");
+            }
+            return false;
+        }
+        if(SoterDelegate.isTriggeredOOM()) {
+            SLogger.w(TAG, "cq: the device has already triggered OOM. mark as not support");
+            return false;
+        }
+
+        return true;
+
     }
 
     @Override
     public SoterCoreResult generateAppGlobalSecureKey() {
-        SLogger.i(TAG,"generateAppSecureKey in");
+        SLogger.i(TAG,"cq: generateAppSecureKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
@@ -98,9 +120,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult removeAppGlobalSecureKey() {
-        SLogger.i(TAG, "removeAuthKey in");
+        SLogger.i(TAG, "cq: removeAuthKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
@@ -119,9 +141,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean hasAppGlobalSecureKey() {
-        SLogger.i(TAG, "hasAppGlobalSecureKey in");
+        SLogger.i(TAG, "cq: hasAppGlobalSecureKey in");
 
         int uid = android.os.Process.myUid();
+
+        if(!isNativeSupportSoter()){
+            return false;
+        }
 
         try {
             return mSoterService.hasAskAlready(uid);
@@ -140,9 +166,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterPubKeyModel getAppGlobalSecureKeyModel() {
-        SLogger.i(TAG,"getAppSecureKey in");
+        SLogger.i(TAG,"cq: getAppSecureKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return null;
         }
 
@@ -156,7 +182,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             if (rawBytes != null && rawBytes.length > 0) {
                 return retrieveJsonFromExportedData(rawBytes);
             }else {
-                SLogger.e(TAG, "soter: key can not be retrieved");
+                SLogger.e(TAG, "cq: soter: key can not be retrieved");
                 return null;
             }
         } catch (RemoteException e) {
@@ -169,9 +195,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult generateAuthKey(String authKeyName) {
-        SLogger.i(TAG,"generateAuthKey in");
+        SLogger.i(TAG,"cq: generateAuthKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
@@ -190,9 +216,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult removeAuthKey(String authKeyName, boolean isAutoDeleteASK) {
-        SLogger.i(TAG,"removeAuthKey in");
+        SLogger.i(TAG,"cq: removeAuthKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
@@ -217,16 +243,16 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean isAuthKeyValid(String authKeyName, boolean autoDelIfNotValid) {
-        SLogger.i(TAG,"isAuthKeyValid in");
+        SLogger.i(TAG,"cq: isAuthKeyValid in");
         //todo
         return hasAuthKey(authKeyName) && getAuthKeyModel(authKeyName) != null;
     }
 
     @Override
     public SoterPubKeyModel getAuthKeyModel(String authKeyName) {
-        SLogger.i(TAG,"getAppSecureKey in");
+        SLogger.i(TAG,"cq: getAppSecureKey in");
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return null;
         }
 
@@ -258,6 +284,10 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     public boolean hasAuthKey(String authKeyName) {
         int uid = android.os.Process.myUid();
 
+        if(!isNativeSupportSoter()){
+            return false;
+        }
+
         try {
             return mSoterService.hasAuthKey(uid,authKeyName);
         } catch (RemoteException e) {
@@ -270,7 +300,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     @Override
     public long initSigh(String kname, String challenge) {
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return 0;
         }
 
@@ -291,7 +321,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     @Override
     public byte[] finishSign(long signSession) throws Exception{
 
-        if(mSoterService == null){
+        if(!isNativeSupportSoter()){
             return null;
         }
 
@@ -309,7 +339,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             e.printStackTrace();
         }
         return rawBytes;
-
 
     }
 
