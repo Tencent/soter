@@ -5,7 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 
 import com.qualcomm.qti.soterserver.ISoterService;
@@ -28,6 +31,8 @@ import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -43,50 +48,78 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     protected ISoterService mSoterService;
 
-    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+    private boolean connected = false;
 
-        @Override
-        public void binderDied() {
+    //同步锁
+    private final Object lock = new Object();
 
-            if (mSoterService == null)
-                return;
-            mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
-            mSoterService = null;
+    private SyncJob syncJob = new SyncJob();
 
-            bindService(mContext);
-        }
-    };
+
+    protected static final int DEFAULT_BLOCK_TIME = 10 * 1000; // Default synchronize block time
+
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(
                 ComponentName className, IBinder service) {
             SLogger.i(TAG, "onServiceConnected");
-            try {
-                service.linkToDeath(mDeathRecipient,0);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            synchronized (lock) {
+                connected = true;
+                lock.notifyAll();
             }
+
             mSoterService =
                     ISoterService.Stub.asInterface(service);
+
+
             SLogger.i(TAG, "Binding is done - Service connected");
 
+            syncJob.countDown();
         }
 
         public void onServiceDisconnected(ComponentName className) {
+            synchronized (lock) {
+                connected = false;
+                lock.notifyAll();
+            }
+
             mSoterService = null;
+
+            SLogger.i(TAG, "unBinding is done - Service disconnected");
+
+            syncJob.countDown();
         }
     };
 
     @Override
     public boolean initSoter(Context context) {
-        if (mSoterService == null) {
-            mContext = context;
-            bindService(context);
-            isAlreadyCheckedSetUp = true;
-        }
+
+        mContext = context;
+
+        bindServiceIfNeeded();
+
         return true;
     }
 
+    public void bindServiceIfNeeded() {
+        SoterCoreTaskThread.getInstance().postToWorker(new Runnable() {
+            @Override
+            public void run() {
+
+                if (!connected) {
+                    SLogger.i(TAG, "bindServiceIfNeeded try to bind");
+                    syncJob.doAsSyncJob(DEFAULT_BLOCK_TIME, new Runnable() {
+                        @Override
+                        public void run() {
+                            bindService(mContext);
+                        }
+                    });
+
+                }
+            }
+        });
+
+    }
 
     public void bindService(Context context){
         Intent intent = new Intent();
@@ -94,6 +127,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         intent.setPackage("com.qualcomm.qti.soterserver");
 
         context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        SLogger.i(TAG, "Binding is start ");
     }
 
     public void unbindService(Context context){
@@ -102,15 +136,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     public boolean isNativeSupportSoter() {
 
-        if (!isAlreadyCheckedSetUp || mSoterService == null) {
-            SLogger.w(TAG, "cq: mContext is null bind failed");
-            if (mContext != null) {
-                bindService(mContext);
-            } else {
-                SLogger.w(TAG, "cq: mContext is null bind failed");
-            }
-            return false;
-        }
         if(SoterDelegate.isTriggeredOOM()) {
             SLogger.w(TAG, "cq: the device has already triggered OOM. mark as not support");
             return false;
@@ -126,7 +151,14 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
+    }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
+
+        bindServiceIfNeeded();
 
         int uid = android.os.Process.myUid();
 
@@ -149,6 +181,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return new SoterCoreResult(ERR_REMOVE_ASK);
+        }
+
+        bindServiceIfNeeded();
+
         int uid = android.os.Process.myUid();
 
         try {
@@ -166,11 +205,18 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     public boolean hasAppGlobalSecureKey() {
         SLogger.i(TAG, "cq: hasAppGlobalSecureKey in");
 
-        int uid = android.os.Process.myUid();
-
         if(!isNativeSupportSoter()){
             return false;
         }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return false;
+        }
+
+        bindServiceIfNeeded();
+
+        int uid = android.os.Process.myUid();
 
         try {
             return mSoterService.hasAskAlready(uid);
@@ -191,9 +237,17 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     public SoterPubKeyModel getAppGlobalSecureKeyModel() {
         SLogger.i(TAG,"cq: getAppSecureKey in");
 
+
         if(!isNativeSupportSoter()){
             return null;
         }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return null;
+        }
+
+        bindServiceIfNeeded();
 
         SoterExportResult soterExportResult;
         int uid = android.os.Process.myUid();
@@ -224,6 +278,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
+        }
+
+        bindServiceIfNeeded();
+
         int uid = android.os.Process.myUid();
 
         try {
@@ -244,6 +305,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
+        }
+
+        bindServiceIfNeeded();
 
         int uid = android.os.Process.myUid();
 
@@ -279,6 +347,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return null;
         }
 
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return null;
+        }
+
+        bindServiceIfNeeded();
+
         SoterExportResult soterExportResult;
         int uid = android.os.Process.myUid();
 
@@ -311,6 +386,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return false;
         }
 
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return false;
+        }
+
+        bindServiceIfNeeded();
+
         try {
             return mSoterService.hasAuthKey(uid,authKeyName);
         } catch (RemoteException e) {
@@ -326,6 +408,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         if(!isNativeSupportSoter()){
             return 0;
         }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return 0;
+        }
+
+        bindServiceIfNeeded();
 
         int uid = android.os.Process.myUid();
 
@@ -347,6 +436,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         if(!isNativeSupportSoter()){
             return null;
         }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return null;
+        }
+
+        bindServiceIfNeeded();
 
         SoterSignResult soterSignResult;
         byte[] rawBytes = new byte[0];

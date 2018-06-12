@@ -59,6 +59,14 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
 
     static SoterCoreBase IMPL;
 
+    static {
+        if (SoterCore.soterModelLogic() == SoterCore.isTreble) {
+            IMPL = new SoterCoreTreble();
+        } else {
+            IMPL = new SoterCoreBeforeTreble();
+        }
+    }
+
     public static final int isBeforeTreble = 0;
     public static final int isTreble = 1;
     public static final int isOther = 2;
@@ -68,10 +76,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
 
     public static void setUp(Context context) {
         if(SoterCore.soterModelLogic() == SoterCore.isTreble){
-            IMPL = new SoterCoreTreble();
             IMPL.initSoter(context);
         }else {
-            IMPL = new SoterCoreBeforeTreble();
             SoterCoreBeforeTreble.setUp();
         }
     }
@@ -87,29 +93,6 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return isBeforeTreble;
     }
 
-    /**
-     * The prepare work before using SOTER. Be sure to call this method before SOTER operation
-     */
-//    @SuppressLint("PrivateApi")
-//    public static void setUp() {
-//        Class<?> clazz;
-//        try {
-//            clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
-//            Method method = clazz.getMethod("install");
-//            method.setAccessible(true);
-//            method.invoke(null);
-//        } catch (ClassNotFoundException e) {
-//            SLogger.i(TAG, "soter: no SoterProvider found");
-//        } catch (NoSuchMethodException e) {
-//            SLogger.i(TAG, "soter: function not found");
-//        } catch (IllegalAccessException e) {
-//            SLogger.i(TAG, "soter: cannot access");
-//        } catch (InvocationTargetException e) {
-//            SLogger.i(TAG, "soter: InvocationTargetException");
-//        } finally {
-//            isAlreadyCheckedSetUp = true;
-//        }
-//    }
 
     /**
      * Check whether this device supports SOTER by checking native interfaces. Remind that you should check the server side as well,
