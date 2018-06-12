@@ -30,7 +30,9 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 
-@SuppressWarnings("unused")
+/**
+ * The SOTER Core APIs Treble project
+ */
 public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, SoterErrCode{
 
     public static final String TAG = "Soter.SoterCoreTreble";
@@ -41,10 +43,29 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     protected ISoterService mSoterService;
 
+    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+
+        @Override
+        public void binderDied() {
+
+            if (mSoterService == null)
+                return;
+            mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
+            mSoterService = null;
+
+            bindService(mContext);
+        }
+    };
+
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(
                 ComponentName className, IBinder service) {
             SLogger.i(TAG, "onServiceConnected");
+            try {
+                service.linkToDeath(mDeathRecipient,0);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             mSoterService =
                     ISoterService.Stub.asInterface(service);
             SLogger.i(TAG, "Binding is done - Service connected");
@@ -66,6 +87,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         return true;
     }
 
+
     public void bindService(Context context){
         Intent intent = new Intent();
         intent.setAction("com.qualcomm.qti.soterserver.ISoterService");
@@ -79,6 +101,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     public boolean isNativeSupportSoter() {
+
         if (!isAlreadyCheckedSetUp || mSoterService == null) {
             SLogger.w(TAG, "cq: mContext is null bind failed");
             if (mContext != null) {
@@ -325,7 +348,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return null;
         }
 
-        int uid = android.os.Process.myUid();
         SoterSignResult soterSignResult;
         byte[] rawBytes = new byte[0];
         try {

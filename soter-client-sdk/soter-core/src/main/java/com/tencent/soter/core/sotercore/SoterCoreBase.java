@@ -20,27 +20,115 @@ import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
+
+/**
+ * The Base SOTER Core APIs
+ */
 public abstract class SoterCoreBase {
 
     protected static final String TAG = "Soter.SoterCoreBase";
 
     public abstract boolean initSoter(Context context);
 
+    /**
+     * Check whether this device supports SOTER by checking native interfaces. Remind that you should check the server side as well,
+     * instead of trust the return value of this method only
+     * @return Whether this device supports SOTER by it's native check result.
+     */
     public abstract boolean isNativeSupportSoter() ;
 
+    /**
+     * Generate App Secure Key. Remind not to call it in UI thread
+     * @return The result of generating process
+     */
     public abstract SoterCoreResult generateAppGlobalSecureKey();
 
+    /**
+     * Delete the App Secure Key. Remind that once removed, this key can never be retrieved any more.
+     * @return true if you delete the App Secure Key, false otherwise
+     */
     public abstract SoterCoreResult removeAppGlobalSecureKey();
 
+    /**
+     * Check if there's already a pair of App Secure Key of this application.
+     * @return true if there's already App Secure Key
+     */
     public abstract boolean hasAppGlobalSecureKey();
 
+    /**
+     * Check if the App Secure Key is valid. Add it because some vivo devices will return true in hasAppGlobalSecureKey
+     * but actual model is null.
+     * @return true if the App Secure Key is valid
+     */
     public abstract boolean isAppGlobalSecureKeyValid();
 
+    /**
+     * To retrieve the App Secure Key model from device.
+     * @return The App Secure Key model.
+     */
     public abstract SoterPubKeyModel getAppGlobalSecureKeyModel();
 
+    /**
+     * Generate Auth Key. Remind not to call it in UI thread
+     * @param  authKeyName The alias of the Auth Key to be generated. Keep in mind it should be unique in each business scene, or the key would be overwritten
+     * @return The result of key generating process.
+     */
     public abstract SoterCoreResult generateAuthKey(String authKeyName);
 
+    /**
+     * Delete the Auth Key. Remind that once removed, this key can never be retrieved any more.
+     * @param authKeyName The alias of the key to be deleted
+     * @param isAutoDeleteASK true if you want to remove the App Secure Key at the same time
+     * @return true if the key deleting process is successful
+     */
     public abstract SoterCoreResult removeAuthKey(String authKeyName, boolean isAutoDeleteASK);
+
+    /**
+     * Check if the Auth Key is valid or not. The check is necessary because from Android M, the Auth Key would be permanently invalid once
+     * user enrolled a new fingerprint in the device.
+     * @param authKeyName The alias of the auth key to check
+     * @param autoDelIfNotValid If the auth key should be deleted when find it invalid
+     * @return If the key is valid
+     */
+    public abstract boolean isAuthKeyValid(String authKeyName,  boolean autoDelIfNotValid);
+
+    /**
+     * To retrieve the App Secure Key model from device.
+     * @param authKeyName he alias of the auth key
+     * @return The public key model of the Auth Key
+     */
+    public abstract SoterPubKeyModel getAuthKeyModel(String authKeyName);
+
+    /**
+     * Prepare the {@link Signature} object before authenticating. You should keep the object for later use after user authenticated.
+     * More over, this method is used for checking whether the auth key is valid or not.
+     * @param useKeyAlias The Auth Key alias of which key you want to prepare
+     * @return The prepared Signature. It would be null if the prepare process fails, or the Auth Key is already invalid.
+     */
+    public abstract Signature getAuthInitAndSign(String useKeyAlias);
+
+    /**
+     * If there's already a pair of auth key by the given key alias
+     * @param authKeyName The key alias to check
+     * @return true if there's already a pair of auth key
+     */
+    public abstract boolean hasAuthKey(String authKeyName);
+
+    /**
+     * init signature task
+     * @param kname The key alias to check
+     * @param challenge The key challenge
+     * @return long session to ensure signature session is begin
+     */
+    public abstract long initSigh(String kname, String challenge) ;
+
+    /**
+     * finsh signature task
+     * @param signSession the long session to finish the signature task
+     * @return signResult to finishSign
+     */
+    public abstract byte[] finishSign(long signSession) throws Exception;
+
 
     public abstract Signature initAuthKeySignature(String useKeyAlias) throws InvalidKeyException, NoSuchProviderException,
             NoSuchAlgorithmException,
@@ -48,18 +136,6 @@ public abstract class SoterCoreBase {
             IOException,
             CertificateException,
             UnrecoverableEntryException;
-
-    public abstract boolean isAuthKeyValid(String authKeyName,  boolean autoDelIfNotValid);
-
-    public abstract SoterPubKeyModel getAuthKeyModel(String authKeyName);
-
-    public abstract Signature getAuthInitAndSign(String useKeyAlias);
-
-    public abstract boolean hasAuthKey(String authKeyName);
-
-    public abstract long initSigh(String kname, String challenge) ;
-
-    public abstract byte[] finishSign(long signSession) throws Exception;
 
 
     protected static final int RAW_LENGTH_PREFIX = 4;
