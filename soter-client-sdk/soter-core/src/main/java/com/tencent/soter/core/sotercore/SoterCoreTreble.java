@@ -11,10 +11,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 
-import com.qualcomm.qti.soterserver.ISoterService;
-import com.qualcomm.qti.soterserver.SoterExportResult;
-import com.qualcomm.qti.soterserver.SoterSessionResult;
-import com.qualcomm.qti.soterserver.SoterSignResult;
+import com.tencent.soter.soterserver.ISoterService;
+import com.tencent.soter.soterserver.SoterExportResult;
+import com.tencent.soter.soterserver.SoterSessionResult;
+import com.tencent.soter.soterserver.SoterSignResult;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
@@ -123,8 +123,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     public void bindService(Context context){
         Intent intent = new Intent();
-        intent.setAction("com.qualcomm.qti.soterserver.ISoterService");
-        intent.setPackage("com.qualcomm.qti.soterserver");
+        intent.setAction("com.tencent.soter.soterserver.ISoterService");
+        intent.setPackage("com.tencent.soter.soterserver");
 
         context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         SLogger.i(TAG, "Binding is start ");
@@ -151,7 +151,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
-    }
+        }
 
         if(mContext == null) {
             SLogger.w(TAG, "cq: context is null");
@@ -159,6 +159,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return new SoterCoreResult(ERR_ASK_GEN_FAILED);
+        }
 
         int uid = android.os.Process.myUid();
 
@@ -188,6 +193,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         bindServiceIfNeeded();
 
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return new SoterCoreResult(ERR_REMOVE_ASK);
+        }
+
         int uid = android.os.Process.myUid();
 
         try {
@@ -215,6 +225,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return false;
+        }
 
         int uid = android.os.Process.myUid();
 
@@ -248,6 +263,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return null;
+        }
 
         SoterExportResult soterExportResult;
         int uid = android.os.Process.myUid();
@@ -285,6 +305,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         bindServiceIfNeeded();
 
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
+        }
+
         int uid = android.os.Process.myUid();
 
         try {
@@ -312,6 +337,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
+        }
 
         int uid = android.os.Process.myUid();
 
@@ -354,6 +384,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         bindServiceIfNeeded();
 
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return null;
+        }
+
         SoterExportResult soterExportResult;
         int uid = android.os.Process.myUid();
 
@@ -393,6 +428,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         bindServiceIfNeeded();
 
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return false;
+        }
+
         try {
             return mSoterService.hasAuthKey(uid,authKeyName);
         } catch (RemoteException e) {
@@ -415,6 +455,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return 0;
+        }
 
         int uid = android.os.Process.myUid();
 
@@ -443,6 +488,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service is null");
+            return null;
+        }
 
         SoterSignResult soterSignResult;
         byte[] rawBytes = new byte[0];
