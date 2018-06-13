@@ -9,15 +9,12 @@
 
 package com.tencent.soter.core;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.util.Base64;
 
 import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
-import com.tencent.soter.core.keystore.KeyGenParameterSpecCompatBuilder;
 import com.tencent.soter.core.model.SLogger;
-import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
@@ -25,19 +22,14 @@ import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
-import com.tencent.soter.core.keystore.KeyPropertiesCompact;
 import com.tencent.soter.core.model.ConstantsSoter;
+import com.tencent.soter.core.sotercore.CertSoterCore;
 import com.tencent.soter.core.sotercore.SoterCoreBase;
 import com.tencent.soter.core.sotercore.SoterCoreBeforeTreble;
 import com.tencent.soter.core.sotercore.SoterCoreTreble;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -46,51 +38,65 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
 
 /**
  * The SOTER Core APIs for developer to handle keys and other basic stuff. Do not change this file because there're many magic codes in it.
  */
 @SuppressWarnings("unused")
 public class SoterCore implements ConstantsSoter, SoterErrCode {
-    public static final String TAG = "Soter.SoterCore";
+    private static final String TAG = "Soter.SoterCore";
+    public static final int IS_BEFORE_TREBLE = 0;
+    public static final int IS_TREBLE = 1;
+    public static final int IS_OTHER = 2;
 
     private static boolean isAlreadyCheckedSetUp = false;
-
-    static SoterCoreBase IMPL;
+    private static SoterCoreBase IMPL;
 
     static {
-        if (SoterCore.soterModelLogic() == SoterCore.isTreble) {
+        if (SoterCore.soterModelLogic() == SoterCore.IS_TREBLE) {
             IMPL = new SoterCoreTreble();
         } else {
-            IMPL = new SoterCoreBeforeTreble();
+            IMPL = getProviderSoterCore();
         }
     }
 
-    public static final int isBeforeTreble = 0;
-    public static final int isTreble = 1;
-    public static final int isOther = 2;
-
-    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
-
-
     public static void setUp(Context context) {
-        if(SoterCore.soterModelLogic() == SoterCore.isTreble){
-            IMPL.initSoter(context);
-        }else {
-            SoterCoreBeforeTreble.setUp();
+        if (IMPL == null){
+            SLogger.e(TAG, "SoterCore IMPL has not been initialized!");
+            return;
         }
+        IMPL.initSoter(context);
     }
 
     public static int soterModelLogic (){
         if (Build.VERSION.SDK_INT > 27){
-
-            SLogger.i(TAG, "soterModelLogic isTreble");
-            return isTreble;
+            SLogger.i(TAG, "soterModelLogic IS_TREBLE");
+            return IS_TREBLE;
         }
-        SLogger.i(TAG, "soterModelLogic isBeforeTreble");
+        SLogger.i(TAG, "soterModelLogic IS_BEFORE_TREBLE");
+        return IS_BEFORE_TREBLE;
+    }
 
-        return isBeforeTreble;
+
+    public static SoterCoreBase getProviderSoterCore(){
+        SoterCoreBeforeTreble.setUp();
+        if(SoterDelegate.isTriggeredOOM()) {
+            return null;
+        }
+        Provider[] providers = Security.getProviders();
+        if (providers == null) {
+            return null;
+        }
+        for (Provider provider : providers) {
+            String providerName = provider.getName();
+            if (providerName != null && providerName.startsWith(SoterCore.SOTER_PROVIDER_NAME)) {
+                if(providerName.split("\\.").length > 1){
+                    return new CertSoterCore(providerName);
+                }
+                return new SoterCoreBeforeTreble(providerName);
+            }
+        }
+        return null;
     }
 
 

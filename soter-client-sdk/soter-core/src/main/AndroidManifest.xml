@@ -1,6 +1,11 @@
-<manifest
-    package="com.tencent.soter.core"
-    >
+<manifest package="com.tencent.soter.core"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="com.soter.permission.ACCESS_SOTER_KEYSTORE" />
+    <application>
+        <uses-library
+            android:name="soterkeystore"
+            android:required="false" />
+    </application>
 
     <!--<application-->
         <!--android:allowBackup="true"-->

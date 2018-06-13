@@ -2,10 +2,7 @@ package com.tencent.soter.core.sotercore;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Base64;
 
-import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
-import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
 import com.tencent.soter.core.keystore.KeyGenParameterSpecCompatBuilder;
 import com.tencent.soter.core.keystore.KeyPropertiesCompact;
 import com.tencent.soter.core.model.ConstantsSoter;
@@ -16,7 +13,6 @@ import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
-import com.tencent.soter.core.model.SoterSignatureResult;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -41,17 +37,21 @@ import java.security.spec.AlgorithmParameterSpec;
  */
 public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSoter, SoterErrCode {
 
-    public static final String TAG = "Soter.SoterCoreBeforeTreble";
+    private static final String TAG = "Soter.SoterCoreBeforeTreble";
+    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
 
     private static boolean isAlreadyCheckedSetUp = false;
 
-    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
+    protected String providerName = SOTER_PROVIDER_NAME;
 
     /**
      * The prepare work before using SOTER. Be sure to call this method before SOTER operation
      */
     @SuppressLint("PrivateApi")
     public static void setUp() {
+        if(isAlreadyCheckedSetUp){
+            return;
+        }
         Class<?> clazz;
         try {
             clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
@@ -71,9 +71,15 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         }
     }
 
+    public SoterCoreBeforeTreble(String providerName){
+        this.providerName = providerName;
+    }
+
+
     @Override
     public boolean initSoter(Context context) {
-        return false;
+        setUp();
+        return true;
     }
 
     public boolean isNativeSupportSoter() {
@@ -90,7 +96,8 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             return false;
         }
         for (Provider provider : providers) {
-            if (SOTER_PROVIDER_NAME.equals(provider.getName())) {
+            String providerName = provider.getName();
+            if (providerName != null && providerName.startsWith(SOTER_PROVIDER_NAME)) {
                 SLogger.i(TAG, "soter: found soter provider");
                 return true;
             }
@@ -102,10 +109,9 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
 
     public SoterCoreResult generateAppGlobalSecureKey() {
         SLogger.i(TAG, "soter: start generate ask");
-        SLogger.i(TAG, "soter: start generate ask for test");
         if (isNativeSupportSoter()) {
             try {
-                KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+                KeyStore keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, SOTER_PROVIDER_NAME);
                 AlgorithmParameterSpec spec = KeyGenParameterSpecCompatBuilder.
@@ -136,7 +142,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         SLogger.i(TAG, "soter: start remove app global secure key");
         if (isNativeSupportSoter()) {
             try {
-                KeyStore keyStore = KeyStore.getInstance("SoterKeyStore");
+                KeyStore keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 keyStore.deleteEntry(SoterCoreData.getInstance().getAskName());
                 return new SoterCoreResult(ERR_OK);
@@ -153,7 +159,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
 
     public boolean hasAppGlobalSecureKey() {
         try {
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            KeyStore keyStore = KeyStore.getInstance(providerName);
             keyStore.load(null);
             return keyStore.getCertificate(SoterCoreData.getInstance().getAskName()) != null;
         } catch (Exception e) {
@@ -173,7 +179,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         if (isNativeSupportSoter()) {
             KeyStore keyStore;
             try {
-                keyStore = KeyStore.getInstance("SoterKeyStore");
+                keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 try {
                     Key key = keyStore.getKey(SoterCoreData.getInstance().getAskName(), "from_soter_ui".toCharArray());
@@ -209,7 +215,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 if (!hasAppGlobalSecureKey()) {
                     return new SoterCoreResult(ERR_ASK_NOT_EXIST, "app secure key not exist");
                 }
-                KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+                KeyStore keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, SOTER_PROVIDER_NAME);
                 try {
@@ -249,7 +255,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         SLogger.i(TAG, "soter: start remove key: " + authKeyName);
         if (isNativeSupportSoter()) {
             try {
-                KeyStore keyStore = KeyStore.getInstance("SoterKeyStore");
+                KeyStore keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 keyStore.deleteEntry(authKeyName);
                 if (isAutoDeleteASK) {
@@ -276,7 +282,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             return false;
         }
         try {
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            KeyStore keyStore = KeyStore.getInstance(providerName);
             keyStore.load(null);
             return keyStore.getCertificate(authKeyName) != null;
         } catch (Exception e) {
@@ -332,7 +338,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         if (isNativeSupportSoter()) {
             KeyStore keyStore;
             try {
-                keyStore = KeyStore.getInstance("SoterKeyStore");
+                keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
                 try {
                     Key key = keyStore.getKey(authKeyName, MAGIC_SOTER_PWD.toCharArray());
@@ -352,7 +358,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 SoterDelegate.onTriggerOOM();
             }
         } else {
-            SLogger.e(TAG, "soter: not support soter " + "AndroidKeyStore");
+            SLogger.e(TAG, "soter: not support soter " + providerName);
         }
         return null;
     }
@@ -379,7 +385,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 return null;
             }
         } else {
-            SLogger.e(TAG, "soter: not support soter" + "AndroidKeyStore");
+            SLogger.e(TAG, "soter: not support soter" + providerName);
             return null;
         }
 
@@ -396,7 +402,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             return null;
         }
         final Signature signature = Signature.getInstance("SHA256withRSA/PSS", "AndroidKeyStoreBCWorkaround");
-        KeyStore soterKeyStore = KeyStore.getInstance("SoterKeyStore");
+        KeyStore soterKeyStore = KeyStore.getInstance(providerName);
         soterKeyStore.load(null);
         KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) soterKeyStore.getEntry(useKeyAlias, null);
         if (entry != null) {

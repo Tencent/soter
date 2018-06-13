@@ -9,8 +9,14 @@
 
 package com.tencent.soter.core.model;
 
+import android.util.Base64;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.security.cert.Certificate;
+import java.util.ArrayList;
 
 /**
  * The public key model for App Secure Key and Auth Key. It consists the whole JSON that wrapper in the
@@ -24,12 +30,14 @@ public class SoterPubKeyModel {
     private static final String JSON_KEY_COUNTER = "counter";
     private static final String JSON_KEY_CPU_ID = "cpu_id";
     private static final String JSON_KEY_UID = "uid";
+    private static final String JSON_KEY_CERTS = "certs";
 
     private long counter = -1;
     private int uid = -1;
     private String cpu_id = "";
     private String pub_key_in_x509 = "";
     private String rawJson = "";
+    private ArrayList<String> certs = null;
 
     @Override
     public String toString() {
@@ -69,6 +77,32 @@ public class SoterPubKeyModel {
         }
         this.signature = signature;
     }
+
+    public SoterPubKeyModel(Certificate[] certificates){
+        try {
+            if(certificates != null){
+                ArrayList<String> certTexts = new ArrayList<String>();
+                JSONArray jsonArray = new JSONArray();
+                for (int i = 0; i < certificates.length; i++) {
+                    Certificate certificate = certificates[i];
+
+                    String certText = Base64.encodeToString(certificate.getEncoded(), Base64.NO_WRAP);
+                    certText = PemUtil.format(certificate);
+                    jsonArray.put(certText);
+                    certTexts.add(certText);
+                }
+                certs = certTexts;
+
+                JSONObject jsonObj = new JSONObject();
+                jsonObj.put("certs", jsonArray);
+
+                setRawJson(jsonObj.toString());
+            }
+        }catch (Exception e){
+            SLogger.e(TAG, "soter: pub key model failed");
+        }
+    }
+
 
     public void setCounter(long counter) {
         this.counter = counter;
