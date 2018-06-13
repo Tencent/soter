@@ -1,20 +1,19 @@
-package com.qualcomm.qti.soterserver;
+package com.tencent.soter.soterserver;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class SoterExportResult implements Parcelable {
-
+public class SoterDeviceResult implements Parcelable {
     public int resultCode;
     public byte[] exportData;
     public int exportDataLength;
 
-    public SoterExportResult(){
+
+    public SoterDeviceResult(){
         super();
     }
 
-
-    public SoterExportResult(Parcel in) {
+    protected SoterDeviceResult(Parcel in) {
         resultCode = in.readInt();
         exportData = in.createByteArray();
         exportDataLength = in.readInt();
@@ -32,15 +31,16 @@ public class SoterExportResult implements Parcelable {
         return 0;
     }
 
-    public static final Creator<SoterExportResult> CREATOR = new Creator<SoterExportResult>() {
+    public static final Creator<SoterDeviceResult> CREATOR = new Creator<SoterDeviceResult>() {
         @Override
-        public SoterExportResult createFromParcel(Parcel in) {
-            return new SoterExportResult(in);
+        public SoterDeviceResult createFromParcel(Parcel in) {
+            return new SoterDeviceResult(in);
         }
 
         @Override
-        public SoterExportResult[] newArray(int size) {
-            return new SoterExportResult[size];
+        public SoterDeviceResult[] newArray(int size) {
+            return new SoterDeviceResult[size];
         }
     };
 }
+

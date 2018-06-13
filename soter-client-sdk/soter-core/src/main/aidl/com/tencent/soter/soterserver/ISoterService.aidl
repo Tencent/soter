@@ -1,12 +1,12 @@
 // ISoterService.aidl
-package com.qualcomm.qti.soterserver;
+package com.tencent.soter.soterserver;
 
 // Declare any non-default types here with import statements
 
-import com.qualcomm.qti.soterserver.SoterExportResult;
-import com.qualcomm.qti.soterserver.SoterSessionResult;
-import com.qualcomm.qti.soterserver.SoterSignResult;
-import com.qualcomm.qti.soterserver.SoterDeviceResult;
+import com.tencent.soter.soterserver.SoterExportResult;
+import com.tencent.soter.soterserver.SoterSessionResult;
+import com.tencent.soter.soterserver.SoterSignResult;
+import com.tencent.soter.soterserver.SoterDeviceResult;
 
 interface ISoterService {
     /**

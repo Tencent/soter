@@ -1,4 +1,4 @@
-package com.qualcomm.qti.soterserver;
+package com.tencent.soter.soterserver;
 
 import android.os.Parcel;
 import android.os.Parcelable;
