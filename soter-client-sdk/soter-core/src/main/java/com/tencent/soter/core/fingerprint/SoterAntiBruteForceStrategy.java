@@ -39,7 +39,7 @@ public class SoterAntiBruteForceStrategy {
      * Check if system itself has already done the anti brute staff.
      * @return true if system has done it.
      */
-    public static boolean isSystemHasAntiBruteForce() {
+    static boolean isSystemHasAntiBruteForce() {
         return android.os.Build.VERSION.SDK_INT >= 23;
     }
 
@@ -94,7 +94,7 @@ public class SoterAntiBruteForceStrategy {
         setCurrentFailTime(context, ++currentFailTime);
     }
 
-    public static boolean isCurrentTweenTimeAvailable(Context context) {
+    static boolean isCurrentTweenTimeAvailable(Context context) {
         int tweenSec = (int)((System.currentTimeMillis()- getLastFreezeTime(context)) / 1000);
         SLogger.i(TAG, "soter: tween sec after last freeze: " + tweenSec);
         if(tweenSec > FREEZE_SECOND) {
@@ -104,7 +104,7 @@ public class SoterAntiBruteForceStrategy {
         return false;
     }
 
-    public static boolean isCurrentFailTimeAvailable(Context context) {
+    static boolean isCurrentFailTimeAvailable(Context context) {
         if(getCurrentFailTime(context) < MAX_FAIL_NUM) {
             SLogger.i(TAG, "soter: fail time available");
             return true;

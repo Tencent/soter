@@ -81,6 +81,23 @@ public class FingerprintManagerCompat {
     }
 
     /**
+     * Check current fail time is available
+     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentFailTimeAvailable() {
+        return SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
+    }
+
+    /**
+     * Check current frozen time is released
+     * @return true if frozen time more than FREEZE_SECOND in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentTweenTimeAvailable(Context context) {
+        return SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
+    }
+
+
+    /**
      * Request authentication of a crypto object. This call warms up the fingerprint hardware
      * and starts scanning for a fingerprint. It terminates when
      * {@link AuthenticationCallback#onAuthenticationError(int, CharSequence)} or

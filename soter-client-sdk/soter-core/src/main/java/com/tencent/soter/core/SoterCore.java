@@ -357,7 +357,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return True if the fingerprint sensor is frozen now.
      */
     public static boolean isCurrentFingerprintFrozen(Context context) {
-        return !SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context) && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context);
+        return !FingerprintManagerCompat.from(context).isCurrentFailTimeAvailable() && !FingerprintManagerCompat.from(context).isCurrentTweenTimeAvailable(context);
     }
 
     /**
