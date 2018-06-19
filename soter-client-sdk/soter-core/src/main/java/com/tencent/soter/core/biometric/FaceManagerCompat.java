@@ -22,6 +22,7 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.biometric.SoterAntiBruteForceStrategy;
 import com.tencent.soter.core.model.SLogger;
 
 import java.security.Signature;
@@ -104,6 +105,24 @@ public class FaceManagerCompat {
                              CancellationSignal cancel, AuthenticationCallback callback,
                              Handler handler) {
         IMPL.authenticate(mContext, crypto, flags, cancel, callback, handler);
+    }
+
+
+
+    /**
+     * Check current fail time is available
+     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentFailTimeAvailable() {
+        return SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
+    }
+
+    /**
+     * Check current frozen time is released
+     * @return true if frozen time more than FREEZE_SECOND in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentTweenTimeAvailable(Context context) {
+        return SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
     }
 
     /**

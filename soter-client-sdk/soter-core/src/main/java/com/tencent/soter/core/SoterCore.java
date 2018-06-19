@@ -370,6 +370,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return !FingerprintManagerCompat.from(context).isCurrentFailTimeAvailable() && !FingerprintManagerCompat.from(context).isCurrentTweenTimeAvailable(context);
     }
 
+    public static boolean isCurrentFaceidFrozen(Context context) {
+        return !FaceManagerCompat.from(context).isCurrentFailTimeAvailable() && !FaceManagerCompat.from(context).isCurrentTweenTimeAvailable(context);
+    }
+
     /**
      * The parameter represents this device software build. It is for remote SOTER support check use.
      * @return The parameter you should put in the request parameter
