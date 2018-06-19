@@ -50,11 +50,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     private boolean connected = false;
 
-    //同步锁
     private final Object lock = new Object();
 
     private SyncJob syncJob = new SyncJob();
-
 
     protected static final int DEFAULT_BLOCK_TIME = 10 * 1000; // Default synchronize block time
 

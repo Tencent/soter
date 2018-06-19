@@ -10,7 +10,6 @@
 package com.tencent.soter.core;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Base64;
 
 import com.tencent.soter.core.biometric.FaceManager;
@@ -47,18 +46,17 @@ import java.security.cert.CertificateException;
 @SuppressWarnings("unused")
 public class SoterCore implements ConstantsSoter, SoterErrCode {
     private static final String TAG = "Soter.SoterCore";
-    public static final int IS_BEFORE_TREBLE = 0;
+    public static final int IS_NOT_TREBLE = 0;
     public static final int IS_TREBLE = 1;
-    public static final int IS_OTHER = 2;
 
     private static boolean isAlreadyCheckedSetUp = false;
     private static SoterCoreBase IMPL;
 
     static {
-        if (SoterCore.soterModelLogic() == SoterCore.IS_TREBLE) {
+        IMPL = getProviderSoterCore();
+
+        if(IMPL == null){
             IMPL = new SoterCoreTreble();
-        } else {
-            IMPL = getProviderSoterCore();
         }
     }
 
@@ -70,13 +68,14 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         IMPL.initSoter(context);
     }
 
-    public static int soterModelLogic (){
-        if (Build.VERSION.SDK_INT > 27){
-            SLogger.i(TAG, "soterModelLogic IS_TREBLE");
+    public static int getSoterCoreType(){
+        if(IMPL instanceof SoterCoreTreble){
+            SLogger.i(TAG, "getSoterCoreType IS TREBLE");
             return IS_TREBLE;
         }
-        SLogger.i(TAG, "soterModelLogic IS_BEFORE_TREBLE");
-        return IS_BEFORE_TREBLE;
+
+        SLogger.i(TAG, "getSoterCoreType IS NOT TREBLE");
+        return IS_NOT_TREBLE;
     }
 
 
