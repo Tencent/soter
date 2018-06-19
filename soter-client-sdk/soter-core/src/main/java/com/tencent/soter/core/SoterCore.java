@@ -13,6 +13,8 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Base64;
 
+import com.tencent.soter.core.biometric.FaceManager;
+import com.tencent.soter.core.biometric.FaceManagerCompat;
 import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
@@ -343,6 +345,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return FingerprintManagerCompat.from(context).isHardwareDetected();
     }
 
+    public static boolean isSupportFaceid(Context context) {
+        return FaceManagerCompat.from(context).isHardwareDetected();
+    }
+
     /**
      * Judge whether there's any fingerprint enrolled in this device
      * @param context The context
@@ -350,6 +356,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     public static boolean isSystemHasFingerprint(Context context) {
         return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
+    }
+
+    public static boolean isSystemHasFaceid(Context context) {
+        return FaceManagerCompat.from(context).hasEnrolledFaces();
     }
 
     /**
