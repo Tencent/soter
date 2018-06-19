@@ -1,5 +1,7 @@
 package com.tencent.soter.core.model;
 
+import android.util.Base64;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -51,7 +53,7 @@ public class PemUtil
         BufferedWriter bufferedWriter = new BufferedWriter(stringWriter);
 
         writePreEncapsulationBoundary(bufferedWriter, type);
-        writeEncoded(bufferedWriter, certificate.getEncoded());
+        writeEncoded(bufferedWriter, Base64.encode(certificate.getEncoded(), Base64.NO_WRAP));
         writePostEncapsulationBoundary(bufferedWriter, type);
         bufferedWriter.close();
 

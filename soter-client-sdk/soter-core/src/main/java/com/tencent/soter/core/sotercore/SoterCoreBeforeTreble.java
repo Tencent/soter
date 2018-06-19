@@ -217,7 +217,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 }
                 KeyStore keyStore = KeyStore.getInstance(providerName);
                 keyStore.load(null);
-                KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, SOTER_PROVIDER_NAME);
+                KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, providerName);
                 try {
                     AlgorithmParameterSpec spec = KeyGenParameterSpecCompatBuilder.newInstance(authKeyName +
                             String.format(".addcounter.auto_signed_when_get_pubkey(%s).secmsg_and_counter_signed_when_sign", SoterCoreData.getInstance().getAskName()), KeyPropertiesCompact.PURPOSE_SIGN).
