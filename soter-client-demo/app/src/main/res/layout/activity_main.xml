@@ -21,4 +21,18 @@
         android:text="@string/use_fp_pay"
         />
 
+    <Button
+        android:id="@+id/action_open_or_close_fc_pay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/open_fc_pay"
+        />
+
+    <Button
+        android:id="@+id/action_use_fc_pay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/use_fc_pay"
+        />
+
 </LinearLayout>

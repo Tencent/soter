@@ -2,6 +2,8 @@
     <string name="app_name">Soter Sample App</string>
     <string name="open_fp_pay">开启或关闭指纹支付</string>
     <string name="use_fp_pay">使用指纹支付</string>
+    <string name="open_fc_pay">开启或关闭人脸支付</string>
+    <string name="use_fc_pay">使用人脸支付</string>
     <string name="input_pay_password">请输入支付密码</string>
     <string name="app_confirm">确定</string>
     <string name="app_cancel">取消</string>

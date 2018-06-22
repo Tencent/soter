@@ -67,6 +67,8 @@ public class SoterDemoUI extends AppCompatActivity {
 
     private Button mOpenOrCloseFingerprintPayment = null;
     private Button mUseFingerprintPay = null;
+    private Button mOpenOrCloseFaceidPayment = null;
+    private Button mUseFaceidPay = null;
 
     private Dialog mPasswordDialog = null;
     private Dialog mFingerprintDialog = null;
@@ -490,6 +492,10 @@ public class SoterDemoUI extends AppCompatActivity {
         mUseFingerprintPay = (Button) findViewById(R.id.action_use_fp_pay);
         mCustomFingerprintView = LayoutInflater.from(this).inflate(R.layout.fingerprint_layout, null);
         mFingerprintStatusHintView = (TextView) mCustomFingerprintView.findViewById(R.id.error_hint_msg);
+
+
+        mOpenOrCloseFaceidPayment = (Button) findViewById(R.id.action_open_or_close_fc_pay);
+        mUseFaceidPay = (Button) findViewById(R.id.action_use_fc_pay);
     }
 
     private void showLoading(String wording) {
