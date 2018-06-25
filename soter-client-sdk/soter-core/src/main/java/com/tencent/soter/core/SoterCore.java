@@ -12,9 +12,8 @@ package com.tencent.soter.core;
 import android.content.Context;
 import android.util.Base64;
 
-import com.tencent.soter.core.biometric.FaceManager;
 import com.tencent.soter.core.biometric.FaceManagerCompat;
-import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
+import com.tencent.soter.core.biometric.BiometricManagerCompat;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
@@ -22,7 +21,6 @@ import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
 import com.tencent.soter.core.model.SoterSignatureResult;
-import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.sotercore.CertSoterCore;
 import com.tencent.soter.core.sotercore.SoterCoreBase;
@@ -341,7 +339,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's fingerprint sensor
      */
     public static boolean isSupportFingerprint(Context context) {
-        return FingerprintManagerCompat.from(context).isHardwareDetected();
+        return BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isHardwareDetected();
     }
 
     public static boolean isSupportFaceid(Context context) {
@@ -354,11 +352,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's fingerprint enrolled
      */
     public static boolean isSystemHasFingerprint(Context context) {
-        return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
+        return BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).hasEnrolledBiometric();
     }
 
     public static boolean isSystemHasFaceid(Context context) {
-        return FaceManagerCompat.from(context).hasEnrolledFaces();
+        return BiometricManagerCompat.from(context, ConstantsSoter.FACEID_AUTH).hasEnrolledBiometric();
     }
 
     /**
@@ -366,11 +364,18 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return True if the fingerprint sensor is frozen now.
      */
     public static boolean isCurrentFingerprintFrozen(Context context) {
-        return !FingerprintManagerCompat.from(context).isCurrentFailTimeAvailable() && !FingerprintManagerCompat.from(context).isCurrentTweenTimeAvailable(context);
+        return !BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isCurrentFailTimeAvailable()
+                && !BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isCurrentTweenTimeAvailable(context);
     }
 
     public static boolean isCurrentFaceidFrozen(Context context) {
-        return !FaceManagerCompat.from(context).isCurrentFailTimeAvailable() && !FaceManagerCompat.from(context).isCurrentTweenTimeAvailable(context);
+        return !BiometricManagerCompat.from(context, ConstantsSoter.FACEID_AUTH).isCurrentFailTimeAvailable()
+                && !BiometricManagerCompat.from(context, ConstantsSoter.FACEID_AUTH).isCurrentTweenTimeAvailable(context);
+    }
+
+    public static boolean isCurrentBiometricFrozen(Context context, int biometricType) {
+        return !BiometricManagerCompat.from(context, biometricType).isCurrentFailTimeAvailable()
+                && !BiometricManagerCompat.from(context, biometricType).isCurrentTweenTimeAvailable(context);
     }
 
     /**

@@ -39,7 +39,7 @@ import javax.crypto.Mac;
 
 @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
 public class FaceManagerCompat {
-    private static final String TAG = "Soter.FingerprintManagerCompat";
+    private static final String TAG = "Soter.BiometricManagerCompat";
 
     private Context mContext;
 
@@ -87,20 +87,7 @@ public class FaceManagerCompat {
         return IMPL.isHardwareDetected(mContext);
     }
 
-    /**
-     * Request authentication of a crypto object. This call warms up the fingerprint hardware
-     * and starts scanning for a fingerprint. It terminates when
-     * {@link AuthenticationCallback#onAuthenticationError(int, CharSequence)} or
-     * {@link AuthenticationCallback#onAuthenticationSucceeded(AuthenticationResult) is called, at
-     * which point the object is no longer valid. The operation can be canceled by using the
-     * provided cancel object.
-     *
-     * @param crypto   object associated with the call or null if none required.
-     * @param flags    optional flags; should be 0
-     * @param cancel   an object that can be used to cancel authentication
-     * @param callback an object to receive authentication events
-     * @param handler  an optional handler for events
-     */
+
     public void authenticate(CryptoObject crypto, int flags,
                              CancellationSignal cancel, AuthenticationCallback callback,
                              Handler handler) {
@@ -109,26 +96,15 @@ public class FaceManagerCompat {
 
 
 
-    /**
-     * Check current fail time is available
-     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterAntiBruteForceStrategy}
-     */
     public boolean isCurrentFailTimeAvailable() {
         return SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
     }
 
-    /**
-     * Check current frozen time is released
-     * @return true if frozen time more than FREEZE_SECOND in {@link SoterAntiBruteForceStrategy}
-     */
+
     public boolean isCurrentTweenTimeAvailable(Context context) {
         return SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
     }
 
-    /**
-     * A wrapper class for the crypto objects supported by FingerprintManager. Currently the
-     * framework supports {@link Signature} and {@link Cipher} objects.
-     */
     public static class CryptoObject {
 
         private final Signature mSignature;
@@ -139,7 +115,6 @@ public class FaceManagerCompat {
             mSignature = signature;
             mCipher = null;
             mMac = null;
-
         }
 
         public CryptoObject(Cipher cipher) {
@@ -154,29 +129,14 @@ public class FaceManagerCompat {
             mSignature = null;
         }
 
-        /**
-         * Get {@link Signature} object.
-         *
-         * @return {@link Signature} object or null if this doesn't contain one.
-         */
         public Signature getSignature() {
             return mSignature;
         }
 
-        /**
-         * Get {@link Cipher} object.
-         *
-         * @return {@link Cipher} object or null if this doesn't contain one.
-         */
         public Cipher getCipher() {
             return mCipher;
         }
 
-        /**
-         * Get {@link Mac} object.
-         *
-         * @return {@link Mac} object or null if this doesn't contain one.
-         */
         public Mac getMac() {
             return mMac;
         }
@@ -185,11 +145,9 @@ public class FaceManagerCompat {
     @SuppressWarnings("unused")
     public static final class AuthenticationResult {
         private CryptoObject mCryptoObject;
-
         public AuthenticationResult(CryptoObject crypto) {
             mCryptoObject = crypto;
         }
-
         public CryptoObject getCryptoObject() {
             return mCryptoObject;
         }
@@ -197,44 +155,19 @@ public class FaceManagerCompat {
 
 
     public static abstract class AuthenticationCallback {
-        /**
-         * Called when an unrecoverable error has been encountered and the operation is complete.
-         * No further callbacks will be made on this object.
-         *
-         * @param errMsgId  An integer identifying the error message
-         * @param errString A human-readable error string that can be shown in UI
-         */
+
         public void onAuthenticationError(int errMsgId, CharSequence errString) {
         }
 
-        /**
-         * Called when a recoverable error has been encountered during authentication. The help
-         * string is provided to give the user guidance for what went wrong, such as
-         * "Sensor dirty, please clean it."
-         *
-         * @param helpMsgId  An integer identifying the error message
-         * @param helpString A human-readable string that can be shown in UI
-         */
         public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
         }
 
-        /**
-         * Called when a fingerprint is recognized.
-         *
-         * @param result An object containing authentication-related data
-         */
         public void onAuthenticationSucceeded(AuthenticationResult result) {
         }
 
-        /**
-         * Called when a fingerprint is valid but not recognized.
-         */
         public void onAuthenticationFailed() {
         }
 
-        /**
-         * Called when the fingerprint is cancelled by user actively.
-         */
         public void onAuthenticationCancelled() {
         }
     }

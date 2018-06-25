@@ -21,9 +21,14 @@ public interface ConstantsSoter {
     String SOTER_COMMON_KEYNAME_PREFIX = "Wechat";
     String COMMON_SOTER_APP_SECURE_KEY_NAME = SOTER_COMMON_KEYNAME_PREFIX + Process.myUid();
     String SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG = "Too many failed times";
+    String SOTER_FACEID_ERR_FAIL_MAX_MSG = "Too many failed times";
     /**
      * The authentication is frozen due to too many failures
      */
     //fingerprint anti brute force. We use 10308 to distinguish some bad implementation which will return 7 in non-predicted situations
     int ERR_FINGERPRINT_FAIL_MAX = 10308; //FingerprintManager.FINGERPRINT_ERROR_LOCKOUT = 7;
+
+    /**biometric auth type*/
+    int FINGERPRINT_AUTH = 0xa;
+    int FACEID_AUTH = 0xb;
 }

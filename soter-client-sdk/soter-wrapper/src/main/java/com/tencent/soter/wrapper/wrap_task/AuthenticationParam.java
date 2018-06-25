@@ -11,6 +11,8 @@ package com.tencent.soter.wrapper.wrap_task;
 
 import android.content.Context;
 
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
@@ -31,8 +33,13 @@ public class AuthenticationParam {
     private IWrapGetChallengeStr mIWrapGetChallengeStr;
     private IWrapUploadSignature mIWrapUploadSignature;
     private Context mContext;
+    private int mBiometricType;
+
     private SoterFingerprintCanceller mFingerprintCanceller;
     private SoterFingerprintStateCallback mSoterFingerprintStateCallback;
+
+    private SoterBiometricCanceller mSoterBiometricCanceller;
+    private SoterBiometricStateCallback mSoterBiometricStateCallback;
 
     private AuthenticationParam() {
         //
@@ -58,12 +65,24 @@ public class AuthenticationParam {
         return mContext;
     }
 
+    public int getBiometricType() {
+        return mBiometricType;
+    }
+
     public SoterFingerprintCanceller getFingerprintCanceller() {
         return mFingerprintCanceller;
     }
 
     public SoterFingerprintStateCallback getSoterFingerprintStateCallback() {
         return mSoterFingerprintStateCallback;
+    }
+
+    public SoterBiometricCanceller getSoterBiometricCanceller() {
+        return mSoterBiometricCanceller;
+    }
+
+    public SoterBiometricStateCallback getSoterBiometricStateCallback() {
+        return mSoterBiometricStateCallback;
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
@@ -145,6 +164,23 @@ public class AuthenticationParam {
             return this;
         }
 
+
+        public AuthenticationParamBuilder setSoterBiometricCanceller(SoterBiometricCanceller soterBiometricCanceller) {
+            mParam.mSoterBiometricCanceller = soterBiometricCanceller;
+            return this;
+        }
+
+
+        public AuthenticationParamBuilder setSoterBiometricStateCallback(SoterBiometricStateCallback soterBiometricStateCallback) {
+            mParam.mSoterBiometricStateCallback = soterBiometricStateCallback;
+            return this;
+        }
+
+        public AuthenticationParamBuilder setBiometricType(int biometricType){
+            mParam.mBiometricType = biometricType;
+            return this;
+        }
+
         public AuthenticationParam build() {
             return mParam;
         }
@@ -158,8 +194,7 @@ public class AuthenticationParam {
                 ", mIWrapGetChallengeStr=" + mIWrapGetChallengeStr +
                 ", mIWrapUploadSignature=" + mIWrapUploadSignature +
                 ", mContext=" + mContext +
-                ", mFingerprintCanceller=" + mFingerprintCanceller +
-                ", mSoterFingerprintStateCallback=" + mSoterFingerprintStateCallback +
+                ", mBiometricType=" + mBiometricType +
                 '}';
     }
 }

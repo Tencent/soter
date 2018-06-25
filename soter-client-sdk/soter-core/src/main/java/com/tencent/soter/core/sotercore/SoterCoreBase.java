@@ -3,13 +3,9 @@ package com.tencent.soter.core.sotercore;
 import android.content.Context;
 import android.util.Base64;
 
-import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
-import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
-import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterPubKeyModel;
-import com.tencent.soter.core.model.SoterSignatureResult;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;

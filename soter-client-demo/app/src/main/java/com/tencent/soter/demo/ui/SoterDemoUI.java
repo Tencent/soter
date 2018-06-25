@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.demo.R;
 import com.tencent.soter.demo.model.ConstantsSoterDemo;
 import com.tencent.soter.demo.model.DemoLogger;
@@ -49,7 +50,6 @@ import com.tencent.soter.wrapper.wrap_callback.SoterProcessCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessKeyPreparationResult;
 import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
-import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
@@ -100,17 +100,34 @@ public class SoterDemoUI extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (SoterDemoData.getInstance().getIsFingerprintPayOpened()) {
-                    doCloseFingerprintPayment();
+                    doCloseBiometricPayment();
                 } else {
-                    doOpenFingerprintPayment();
+                    doOpenBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
                 }
             }
         });
-
         mUseFingerprintPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doUseFingerprintPayment();
+                doUseBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
+            }
+        });
+
+
+        mOpenOrCloseFaceidPayment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (SoterDemoData.getInstance().getIsFaceidPayOpened()) {
+                    doCloseBiometricPayment();
+                } else {
+                    doOpenBiometricPayment(ConstantsSoter.FACEID_AUTH);
+                }
+            }
+        });
+        mUseFaceidPay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doUseBiometricPayment(ConstantsSoter.FACEID_AUTH);
             }
         });
     }
@@ -118,7 +135,7 @@ public class SoterDemoUI extends AppCompatActivity {
     /**
      * 关闭一项业务的时候，除了业务状态之外，切记删除掉本机密钥，以及后台将原本密钥删除或者标记为不可用
      */
-    private void doCloseFingerprintPayment() {
+    private void doCloseBiometricPayment() {
         DemoLogger.i(TAG, "soterdemo: start close fingerprint pay");
         new AlertDialog.Builder(this).setTitle("").setMessage(getString(R.string.app_confirm_close)).setCancelable(true)
                 .setOnCancelListener(null).setPositiveButton(getString(R.string.app_confirm), new DialogInterface.OnClickListener() {
@@ -137,7 +154,7 @@ public class SoterDemoUI extends AppCompatActivity {
      * 2. 指纹识别。对应{@link SoterWrapperApi#requestAuthorizeAndSign(SoterProcessCallback, AuthenticationParam)} (Context, SoterProcessCallback, int, IWrapGetChallengeStr, IWrapUploadSignature, SoterFingerprintStateCallback, SoterFingerprintCanceller)
      * 建议直接使用SoterWrapper实现逻辑，避免直接使用SoterCore接口。
      */
-    private void doOpenFingerprintPayment() {
+    private void doOpenBiometricPayment(final int biometricType) {
         doPrepareAuthKey(new IOnAuthKeyPrepared() {
             @Override
             public void onResult(String pwdDigestUsed, boolean isSuccess) {
@@ -157,7 +174,7 @@ public class SoterDemoUI extends AppCompatActivity {
                                 Toast.makeText(SoterDemoUI.this, String.format("open failed, reason: %s", result.toString()), Toast.LENGTH_LONG).show();
                             }
                         }
-                    }, getString(R.string.app_open_fingerprint_pay), new RemoteOpenFingerprintPay(pwdDigestUsed));
+                    }, getString(R.string.app_open_fingerprint_pay), new RemoteOpenFingerprintPay(pwdDigestUsed), biometricType);
                 } else {
                     DemoLogger.w(TAG, "soterdemo: generate auth key failed!");
                     dismissLoading();
@@ -208,7 +225,7 @@ public class SoterDemoUI extends AppCompatActivity {
      *
      * 同时，需要特殊处理指纹认证失败次数过多的情况。在SOTER中，指纹失败次数过多（一般来说是5次以上）的情况下，指纹传感器会暂时冻结。此时需要及时转换为降级方案进行认证，如支付时转化为密码认证。
      */
-    private void doUseFingerprintPayment() {
+    private void doUseBiometricPayment(int biometricType) {
         DemoLogger.i(TAG, "soterdemo: user request use fingerprint payment");
         startFingerprintAuthentication(new SoterProcessCallback<SoterProcessAuthenticationResult>() {
             @Override
@@ -236,14 +253,14 @@ public class SoterDemoUI extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         startNormalPasswordAuthentication();
                     } else {
-                        DemoLogger.w(TAG, "soterdemo: unknown error in doUseFingerprintPayment : %d", result.errCode);
+                        DemoLogger.w(TAG, "soterdemo: unknown error in doUseBiometricPayment : %d", result.errCode);
                         Toast.makeText(SoterDemoUI.this, "payment error. check log for more information. fallback to normal",
                                 Toast.LENGTH_SHORT).show();
                         startNormalPasswordAuthentication();
                     }
                 }
             }
-        }, getString(R.string.app_use_fingerprint_pay), new RemoteAuthentication());
+        }, getString(R.string.app_use_fingerprint_pay), new RemoteAuthentication(), biometricType);
     }
 
     private void startPrepareAuthKeyAndAuthenticate() {
@@ -324,25 +341,26 @@ public class SoterDemoUI extends AppCompatActivity {
     }
 
     private void startFingerprintAuthentication(SoterProcessCallback<SoterProcessAuthenticationResult> processCallback,
-                                                final String title, IWrapUploadSignature uploadSignatureWrapper) {
+                                                final String title, IWrapUploadSignature uploadSignatureWrapper, int biometricType) {
         DemoLogger.i(TAG, "soterdemo: start authentication: title: %s", title);
         dismissCurrentDialog();
         if (mCanceller != null) {
             DemoLogger.w(TAG, "soterdemo: last canceller is not null. should not happen because we will set it to null every time we finished the process");
             mCanceller = null;
         }
-        mCanceller = new SoterFingerprintCanceller();
+        mCanceller = new SoterBiometricCanceller();
         // 认证逻辑部分
         showLoading(getString(R.string.app_request_challenge));
         // Prepare authentication parameters
         AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder() // 通过Builder来构建认证请求
                 .setScene(ConstantsSoterDemo.SCENE_PAYMENT) // 指定需要认证的场景。必须在init中初始化。必填
+                .setBiometricType(biometricType)
                 .setContext(this) // 指定当前上下文。必填。
                 .setFingerprintCanceller(mCanceller) // 指定当前用于控制指纹取消的控制器。当因为用户退出界面或者进行其他可能引起取消的操作时，需要开发者通过该控制器取消指纹授权。建议必填。
                 .setIWrapGetChallengeStr(new RemoteGetChallengeStr()) // 用于获取挑战因子的网络封装结构体。如果在授权之前已经通过其他模块拿到后台挑战因子，则可以改为调用setPrefilledChallenge。如果两个方法都没有调用，则会引起错误。
 //                .setPrefilledChallenge("prefilled challenge") // 如果之前已经通过其他方式获取了挑战因子，则设置此字段。如果设置了该字段，则忽略获取挑战因子网络封装结构体的设置。如果两个方法都没有调用，则会引起错误。
                 .setIWrapUploadSignature(uploadSignatureWrapper) // 用于上传最终结果的网络封装结构体。该结构体一般来说不独立存在，而是集成在最终授权网络请求中，该请求实现相关接口即可。选填，如果没有填写该字段，则要求应用方自行上传该请求返回字段。
-                .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() { // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作。选填。
+                .setSoterBiometricStateCallback(new SoterBiometricStateCallback() { // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作。选填。
 
                     // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作
                     // Fingerprint state callbacks are only used for updating UI. Any logic operation is not welcomed.
@@ -462,6 +480,14 @@ public class SoterDemoUI extends AppCompatActivity {
             mUseFingerprintPay.setEnabled(true);
         } else {
             mUseFingerprintPay.setEnabled(false);
+        }
+    }
+
+    private void updateUseFaceidPayBtnStatus() {
+        if (SoterDemoData.getInstance().getIsFaceidPayOpened()) {
+            mUseFaceidPay.setEnabled(true);
+        } else {
+            mUseFaceidPay.setEnabled(false);
         }
     }
 

@@ -22,8 +22,11 @@ public class SoterDemoData {
 
     private static final String KEY_IS_FINGERPRINT_PAY_OPENED = "isFingerprintOpened";
 
+    private static final String KEY_IS_FACEID_PAY_OPENED = "isFaceidOpened";
+
     private static SoterDemoData sInstance = null;
     private boolean isFingerprintPayOpened = false;
+    private boolean isFaceidPayOpened = false;
 
     public static SoterDemoData getInstance() {
         if(sInstance == null) {
@@ -41,6 +44,8 @@ public class SoterDemoData {
     public void init(@NonNull Context context) {
         isFingerprintPayOpened = context.getSharedPreferences(DEMO_DISK_CACHE_SP,
                 Context.MODE_PRIVATE).getBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, false);
+        isFaceidPayOpened = context.getSharedPreferences(DEMO_DISK_CACHE_SP,
+                Context.MODE_PRIVATE).getBoolean(KEY_IS_FACEID_PAY_OPENED, false);
     }
 
     public void setIsFingerprintPayOpened(Context context, boolean isOpened) {
@@ -49,7 +54,17 @@ public class SoterDemoData {
                 putBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, isOpened).apply();
     }
 
+    public void setIsFaceidPayOpened(Context context, boolean isOpened) {
+        isFaceidPayOpened = isOpened;
+        context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
+                putBoolean(KEY_IS_FACEID_PAY_OPENED, isOpened).apply();
+    }
+
     public boolean getIsFingerprintPayOpened() {
+        return isFingerprintPayOpened;
+    }
+
+    public boolean getIsFaceidPayOpened() {
         return isFingerprintPayOpened;
     }
 }
