@@ -50,28 +50,31 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     private static SoterCoreBase IMPL;
 
     static {
-        IMPL = getProviderSoterCore();
-
-        if(IMPL == null){
-            IMPL = new SoterCoreTreble();
-        }
+//        IMPL = getProviderSoterCore();
     }
 
-    public static void setUp(Context context) {
-        if (IMPL == null){
-            SLogger.e(TAG, "SoterCore IMPL has not been initialized!");
-            return;
+    public static void tryToInitSoterTreble(Context context) {
+
+        if(IMPL == null ){
+            IMPL = new SoterCoreTreble();
+            if(!IMPL.initSoter(context)){
+                IMPL = null;
+            }
+
         }
-        IMPL.initSoter(context);
     }
 
     public static int getSoterCoreType(){
+        if (IMPL == null){
+            return IS_NOT_TREBLE;
+        }
+
         if(IMPL instanceof SoterCoreTreble){
-            SLogger.i(TAG, "getSoterCoreType IS TREBLE");
+            SLogger.d(TAG, "getSoterCoreType is TREBLE");
             return IS_TREBLE;
         }
 
-        SLogger.i(TAG, "getSoterCoreType IS NOT TREBLE");
+        SLogger.d(TAG, "getSoterCoreType is not TREBLE");
         return IS_NOT_TREBLE;
     }
 
@@ -104,6 +107,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return Whether this device supports SOTER by it's native check result.
      */
     public static boolean isNativeSupportSoter() {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isNativeSupportSoter IMPL is null, not support soter");
+            return false;
+        }
         return IMPL.isNativeSupportSoter();
     }
 
@@ -112,6 +119,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The result of generating process
      */
     public static SoterCoreResult generateAppGlobalSecureKey() {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: generateAppGlobalSecureKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        }
         return IMPL.generateAppGlobalSecureKey();
     }
 
@@ -120,6 +131,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if you delete the App Secure Key, false otherwise
      */
     public static SoterCoreResult removeAppGlobalSecureKey() {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: removeAppGlobalSecureKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        }
         return IMPL.removeAppGlobalSecureKey();
     }
 
@@ -128,6 +143,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's already App Secure Key
      */
     public static boolean hasAppGlobalSecureKey() {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: hasAppGlobalSecureKey IMPL is null, not support soter");
+            return false;
+        }
         return IMPL.hasAppGlobalSecureKey();
     }
 
@@ -137,6 +156,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if the App Secure Key is valid
      */
     public static boolean isAppGlobalSecureKeyValid() {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isAppGlobalSecureKeyValid IMPL is null, not support soter");
+            return false;
+        }
         return IMPL.isAppGlobalSecureKeyValid();
     }
 
@@ -145,7 +168,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The App Secure Key model.
      */
     public static SoterPubKeyModel getAppGlobalSecureKeyModel() {
-
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAppGlobalSecureKeyModel IMPL is null, not support soter");
+            return null;
+        }
         return IMPL.getAppGlobalSecureKeyModel();
 
     }
@@ -156,7 +182,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The result of key generating process.
      */
     public static SoterCoreResult generateAuthKey(String authKeyName) {
-
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: generateAuthKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        }
         return IMPL.generateAuthKey(authKeyName);
 
     }
@@ -168,8 +197,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if the key deleting process is successful
      */
     public static SoterCoreResult removeAuthKey(String authKeyName, boolean isAutoDeleteASK) {
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: removeAuthKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        }
         return IMPL.removeAuthKey(authKeyName, isAutoDeleteASK);
-
     }
 
     /**
@@ -178,7 +210,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's already a pair of auth key
      */
     public static boolean hasAuthKey(String authKeyName) {
-
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: hasAuthKey IMPL is null, not support soter");
+            return false;
+        }
         return IMPL.hasAuthKey(authKeyName);
 
     }
@@ -192,6 +227,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     public static boolean isAuthKeyValid(String authKeyName, @SuppressWarnings("SameParameterValue") boolean autoDelIfNotValid) {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isAuthKeyValid IMPL is null, not support soter");
+            return false;
+        }
         return IMPL.isAuthKeyValid(authKeyName,autoDelIfNotValid);
 
     }
@@ -204,6 +243,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     public static SoterPubKeyModel getAuthKeyModel(String authKeyName) {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAuthKeyModel IMPL is null, not support soter");
+            return null;
+        }
         return IMPL.getAuthKeyModel(authKeyName);
 
     }
@@ -216,6 +259,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     public static Signature getAuthInitAndSign(String useKeyAlias) {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAuthInitAndSign IMPL is null, not support soter");
+            return null;
+        }
         return IMPL.getAuthInitAndSign(useKeyAlias);
 
     }
@@ -227,17 +274,29 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             CertificateException,
             UnrecoverableEntryException {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: initAuthKeySignature IMPL is null, not support soter");
+            return null;
+        }
         return IMPL.initAuthKeySignature(useKeyAlias);
 
     }
 
     public static long initSigh(String mAuthKeyName, String mChallenge) {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: initSigh IMPL is null, not support soter");
+            return 0;
+        }
         return IMPL.initSigh(mAuthKeyName, mChallenge);
     }
 
     public static byte[] finishSign(long session) throws Exception {
 
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: finishSign IMPL is null, not support soter");
+            return new byte[0];
+        }
         return IMPL.finishSign(session);
     }
 

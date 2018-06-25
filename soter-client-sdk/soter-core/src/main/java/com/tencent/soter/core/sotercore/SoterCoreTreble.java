@@ -57,20 +57,41 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     protected static final int DEFAULT_BLOCK_TIME = 10 * 1000; // Default synchronize block time
 
 
+    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+
+        @Override
+        public void binderDied() {
+            // TODO Auto-generated method stub
+            if (mSoterService == null)
+                return;
+            mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
+            mSoterService = null;
+
+            bindService();
+
+
+        }
+    };
+
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(
                 ComponentName className, IBinder service) {
-            SLogger.i(TAG, "onServiceConnected");
+            SLogger.i(TAG, "soter: onServiceConnected");
             synchronized (lock) {
                 connected = true;
                 lock.notifyAll();
             }
 
-            mSoterService =
-                    ISoterService.Stub.asInterface(service);
+            try {
+                service.linkToDeath(mDeathRecipient, 0);
+                mSoterService = ISoterService.Stub.asInterface(service);
+            } catch (RemoteException e) {
+                SLogger.e(TAG, "soter: Binding is error - RemoteException"+ e.toString());
+            }
 
 
-            SLogger.i(TAG, "Binding is done - Service connected");
+
+            SLogger.i(TAG, "soter: Binding is done - Service connected");
 
             syncJob.countDown();
         }
@@ -83,7 +104,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
             mSoterService = null;
 
-            SLogger.i(TAG, "unBinding is done - Service disconnected");
+            SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
 
             syncJob.countDown();
         }
@@ -94,38 +115,43 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         mContext = context;
 
-        bindServiceIfNeeded();
-
-        return true;
-    }
-
-    public void bindServiceIfNeeded() {
-        SoterCoreTaskThread.getInstance().postToWorker(new Runnable() {
+        SLogger.i(TAG, "soter: initSoter in");
+        syncJob.doAsSyncJob(DEFAULT_BLOCK_TIME, new Runnable() {
             @Override
             public void run() {
-
-                if (!connected) {
-                    SLogger.i(TAG, "bindServiceIfNeeded try to bind");
-                    syncJob.doAsSyncJob(DEFAULT_BLOCK_TIME, new Runnable() {
-                        @Override
-                        public void run() {
-                            bindService(mContext);
-                        }
-                    });
-
-                }
+                bindServiceIfNeeded();
+                SLogger.i(TAG, "soter: initSoter binding");
             }
         });
 
+        if(connected){
+            SLogger.i(TAG, "soter: initSoter finish");
+            return true;
+        }else {
+            SLogger.e(TAG, "soter: initSoter error");
+            return false;
+        }
+
     }
 
-    public void bindService(Context context){
+    public void bindServiceIfNeeded() {
+        if (!connected) {
+            SLogger.i(TAG, "soter: bindServiceIfNeeded try to bind");
+            bindService();
+        }
+    }
+
+    public void bindService(){
         Intent intent = new Intent();
         intent.setAction("com.tencent.soter.soterserver.ISoterService");
         intent.setPackage("com.tencent.soter.soterserver");
 
-        context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        SLogger.i(TAG, "Binding is start ");
+        if(mContext == null) {
+            SLogger.e(TAG, "soter: mContext is null ");
+            return;
+        }
+        mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        SLogger.i(TAG, "soter: Binding is start ");
     }
 
     public void unbindService(Context context){
@@ -135,7 +161,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     public boolean isNativeSupportSoter() {
 
         if(SoterDelegate.isTriggeredOOM()) {
-            SLogger.w(TAG, "cq: the device has already triggered OOM. mark as not support");
+            SLogger.w(TAG, "soter: the device has already triggered OOM. mark as not support");
             return false;
         }
 
@@ -145,21 +171,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult generateAppGlobalSecureKey() {
-        SLogger.i(TAG,"cq: generateAppSecureKey in");
+        SLogger.i(TAG,"soter: generateAppSecureKey in");
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
@@ -178,21 +204,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult removeAppGlobalSecureKey() {
-        SLogger.i(TAG, "cq: removeAuthKey in");
+        SLogger.i(TAG, "soter: removeAuthKey in");
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
@@ -211,21 +237,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean hasAppGlobalSecureKey() {
-        SLogger.i(TAG, "cq: hasAppGlobalSecureKey in");
+        SLogger.i(TAG, "soter: hasAppGlobalSecureKey in");
 
         if(!isNativeSupportSoter()){
             return false;
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return false;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return false;
         }
 
@@ -248,7 +274,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterPubKeyModel getAppGlobalSecureKeyModel() {
-        SLogger.i(TAG,"cq: getAppSecureKey in");
+        SLogger.i(TAG,"soter: getAppSecureKey in");
 
 
         if(!isNativeSupportSoter()){
@@ -256,14 +282,14 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return null;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return null;
         }
 
@@ -277,7 +303,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             if (rawBytes != null && rawBytes.length > 0) {
                 return retrieveJsonFromExportedData(rawBytes);
             }else {
-                SLogger.e(TAG, "cq: soter: key can not be retrieved");
+                SLogger.e(TAG, "soter: soter: key can not be retrieved");
                 return null;
             }
         } catch (RemoteException e) {
@@ -290,21 +316,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult generateAuthKey(String authKeyName) {
-        SLogger.i(TAG,"cq: generateAuthKey in");
+        SLogger.i(TAG,"soter: generateAuthKey in");
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
@@ -323,21 +349,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult removeAuthKey(String authKeyName, boolean isAutoDeleteASK) {
-        SLogger.i(TAG,"cq: removeAuthKey in");
+        SLogger.i(TAG,"soter: removeAuthKey in");
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
@@ -362,28 +388,28 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean isAuthKeyValid(String authKeyName, boolean autoDelIfNotValid) {
-        SLogger.i(TAG,"cq: isAuthKeyValid in");
+        SLogger.i(TAG,"soter: isAuthKeyValid in");
         //todo
         return hasAuthKey(authKeyName) && getAuthKeyModel(authKeyName) != null;
     }
 
     @Override
     public SoterPubKeyModel getAuthKeyModel(String authKeyName) {
-        SLogger.i(TAG,"cq: getAppSecureKey in");
+        SLogger.i(TAG,"soter: getAppSecureKey in");
 
         if(!isNativeSupportSoter()){
             return null;
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return null;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return null;
         }
 
@@ -413,6 +439,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean hasAuthKey(String authKeyName) {
+
+        SLogger.i(TAG, "soter: hasAuthKey in");
+
         int uid = android.os.Process.myUid();
 
         if(!isNativeSupportSoter()){
@@ -420,14 +449,14 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return false;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return false;
         }
 
@@ -448,14 +477,14 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return 0;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return 0;
         }
 
@@ -481,14 +510,14 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return null;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return null;
         }
 
@@ -509,21 +538,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     public int getVersion() {
-        SLogger.i(TAG,"cq: getVersion in");
+        SLogger.i(TAG,"soter: getVersion in");
 
         if(!isNativeSupportSoter()){
             return 0;
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return 0;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return 0;
         }
 
@@ -538,21 +567,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     public String getAuth() {
-        SLogger.i(TAG,"cq: getAuth in");
+        SLogger.i(TAG,"soter: getAuth in");
 
         if(!isNativeSupportSoter()){
             return "";
         }
 
         if(mContext == null) {
-            SLogger.w(TAG, "cq: context is null");
+            SLogger.w(TAG, "soter: context is null");
             return "";
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service not found");
+            SLogger.w(TAG, "soter: soter service not found");
             return "";
         }
 
