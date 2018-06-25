@@ -200,7 +200,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
     private void startAuthenticate() {
         if(SoterCore.getSoterCoreType() == SoterCore.IS_TREBLE){
             long session = SoterCore.initSigh(mAuthKeyName, mChallenge);
-            if(session != 0){
+            if(session <= 0){
                 SLogger.w(TAG, "soter: error occurred when init sign");
                 callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
                 return;

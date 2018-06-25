@@ -159,7 +159,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
@@ -192,7 +192,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
@@ -225,7 +225,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return false;
         }
 
@@ -263,7 +263,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return null;
         }
 
@@ -304,7 +304,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
@@ -337,7 +337,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
@@ -383,7 +383,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return null;
         }
 
@@ -427,7 +427,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return false;
         }
 
@@ -455,7 +455,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return 0;
         }
 
@@ -488,7 +488,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
-            SLogger.w(TAG, "cq: soter service is null");
+            SLogger.w(TAG, "cq: soter service not found");
             return null;
         }
 
@@ -506,6 +506,62 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
         return rawBytes;
 
+    }
+
+    public int getVersion() {
+        SLogger.i(TAG,"cq: getVersion in");
+
+        if(!isNativeSupportSoter()){
+            return 0;
+        }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return 0;
+        }
+
+        bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service not found");
+            return 0;
+        }
+
+        int uid = android.os.Process.myUid();
+
+        try {
+            return mSoterService.getVersion() ;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public String getAuth() {
+        SLogger.i(TAG,"cq: getAuth in");
+
+        if(!isNativeSupportSoter()){
+            return "";
+        }
+
+        if(mContext == null) {
+            SLogger.w(TAG, "cq: context is null");
+            return "";
+        }
+
+        bindServiceIfNeeded();
+
+        if(mSoterService == null) {
+            SLogger.w(TAG, "cq: soter service not found");
+            return "";
+        }
+
+        try {
+            return mSoterService.aidlAuth() ;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 }
