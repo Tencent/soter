@@ -45,6 +45,8 @@ import com.tencent.soter.demo.net.RemoteOpenFingerprintPay;
 import com.tencent.soter.demo.net.RemoteUploadASK;
 import com.tencent.soter.demo.net.RemoteUploadPayAuthKey;
 import com.tencent.soter.wrapper.SoterWrapperApi;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessAuthenticationResult;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessKeyPreparationResult;
@@ -76,7 +78,7 @@ public class SoterDemoUI extends AppCompatActivity {
     private View mCustomFingerprintView = null;
     private TextView mFingerprintStatusHintView = null;
 
-    private SoterFingerprintCanceller mCanceller = null;
+    private SoterBiometricCanceller mCanceller = null;
     private Animation mFlashAnimation = null;
 
     @Override
@@ -356,7 +358,8 @@ public class SoterDemoUI extends AppCompatActivity {
                 .setScene(ConstantsSoterDemo.SCENE_PAYMENT) // 指定需要认证的场景。必须在init中初始化。必填
                 .setBiometricType(biometricType)
                 .setContext(this) // 指定当前上下文。必填。
-                .setFingerprintCanceller(mCanceller) // 指定当前用于控制指纹取消的控制器。当因为用户退出界面或者进行其他可能引起取消的操作时，需要开发者通过该控制器取消指纹授权。建议必填。
+                .setSoterBiometricCanceller(mCanceller)
+//                .setFingerprintCanceller(mCanceller) // 指定当前用于控制指纹取消的控制器。当因为用户退出界面或者进行其他可能引起取消的操作时，需要开发者通过该控制器取消指纹授权。建议必填。
                 .setIWrapGetChallengeStr(new RemoteGetChallengeStr()) // 用于获取挑战因子的网络封装结构体。如果在授权之前已经通过其他模块拿到后台挑战因子，则可以改为调用setPrefilledChallenge。如果两个方法都没有调用，则会引起错误。
 //                .setPrefilledChallenge("prefilled challenge") // 如果之前已经通过其他方式获取了挑战因子，则设置此字段。如果设置了该字段，则忽略获取挑战因子网络封装结构体的设置。如果两个方法都没有调用，则会引起错误。
                 .setIWrapUploadSignature(uploadSignatureWrapper) // 用于上传最终结果的网络封装结构体。该结构体一般来说不独立存在，而是集成在最终授权网络请求中，该请求实现相关接口即可。选填，如果没有填写该字段，则要求应用方自行上传该请求返回字段。
@@ -465,7 +468,7 @@ public class SoterDemoUI extends AppCompatActivity {
 
     private void cancelFingerprintAuthentication() {
         if (mCanceller != null) {
-            mCanceller.asyncCancelFingerprintAuthentication();
+            mCanceller.asyncCancelBiometricAuthentication();
         }
     }
 
@@ -481,6 +484,7 @@ public class SoterDemoUI extends AppCompatActivity {
         } else {
             mUseFingerprintPay.setEnabled(false);
         }
+        updateUseFaceidPayBtnStatus();
     }
 
     private void updateUseFaceidPayBtnStatus() {

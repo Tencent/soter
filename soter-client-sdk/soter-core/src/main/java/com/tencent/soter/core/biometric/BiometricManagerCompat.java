@@ -88,6 +88,10 @@ public class BiometricManagerCompat {
      */
     public boolean hasEnrolledBiometric() {
         IBiometricManager IMPL = IMPL_PROVIDER.get(mBiometricType);
+        if (IMPL == null){
+            SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
+            return false;
+        }
         return IMPL.hasEnrolledFingerprints(mContext);
     }
 
@@ -98,6 +102,10 @@ public class BiometricManagerCompat {
      */
     public boolean isHardwareDetected() {
         IBiometricManager IMPL = IMPL_PROVIDER.get(mBiometricType);
+        if (IMPL == null){
+            SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
+            return false;
+        }
         return IMPL.isHardwareDetected(mContext);
     }
 
@@ -136,6 +144,10 @@ public class BiometricManagerCompat {
                              CancellationSignal cancel, AuthenticationCallback callback,
                              Handler handler) {
         IBiometricManager IMPL = IMPL_PROVIDER.get(mBiometricType);
+        if (IMPL == null){
+            SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
+            callback.onAuthenticationCancelled();
+        }
         IMPL.authenticate(mContext, crypto, flags, cancel, callback, handler);
     }
 
