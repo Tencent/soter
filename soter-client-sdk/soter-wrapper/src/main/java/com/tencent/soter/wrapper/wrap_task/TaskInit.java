@@ -84,7 +84,7 @@ public class TaskInit extends BaseSoterTask {
         }
     };
 
-    public TaskInit(Context context, @NonNull InitializeParam param){
+    public TaskInit(final Context context, @NonNull InitializeParam param){
         ISoterLogger loggerImp = param.getSoterLogger();
         // set logger first.
         if(loggerImp != null) {
@@ -94,8 +94,14 @@ public class TaskInit extends BaseSoterTask {
         // set implement to wrapper
         SoterDelegate.setImplement(wrapperDelegate);
 
-        SoterCore.setUp(context);
-        isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
+        SoterTaskThread.getInstance().postToWorker(new Runnable() {
+            @Override
+            public void run() {
+            //try to init soter treble
+            SoterCore.tryToInitSoterTreble(context);
+            isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
+            }
+        });
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();
