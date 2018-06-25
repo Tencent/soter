@@ -99,6 +99,7 @@ public class TaskInit extends BaseSoterTask {
             public void run() {
             //try to init soter treble
             SoterCore.tryToInitSoterTreble(context);
+            SoterCore.setUp();
             isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
             }
         });

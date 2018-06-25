@@ -55,7 +55,12 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     private static SoterCoreBase IMPL;
 
     static {
-//        IMPL = getProviderSoterCore();
+        IMPL = getProviderSoterCore();
+    }
+
+
+    public static void setUp() {
+        SoterCoreBeforeTreble.setUp();
     }
 
     public static void tryToInitSoterTreble(Context context) {
