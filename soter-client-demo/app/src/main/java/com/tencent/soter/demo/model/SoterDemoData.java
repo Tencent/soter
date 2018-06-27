@@ -11,6 +11,8 @@ package com.tencent.soter.demo.model;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.tencent.soter.core.model.ConstantsSoter;
+
 /**
  * Created by henryye on 2017/4/25.
  */
@@ -48,23 +50,30 @@ public class SoterDemoData {
                 Context.MODE_PRIVATE).getBoolean(KEY_IS_FACEID_PAY_OPENED, false);
     }
 
-    public void setIsFingerprintPayOpened(Context context, boolean isOpened) {
-        isFingerprintPayOpened = isOpened;
-        context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
-                putBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, isOpened).apply();
+    public void setIsBiometricPayOpened(Context context, boolean isOpened, int biometricType) {
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:{
+                isFingerprintPayOpened = isOpened;
+                context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
+                        putBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, isOpened).apply();
+                break;
+            }
+            case ConstantsSoter.FACEID_AUTH:{
+                isFaceidPayOpened = isOpened;
+                context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
+                        putBoolean(KEY_IS_FACEID_PAY_OPENED, isOpened).apply();
+                break;
+            }
+        }
     }
 
-    public void setIsFaceidPayOpened(Context context, boolean isOpened) {
-        isFaceidPayOpened = isOpened;
-        context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
-                putBoolean(KEY_IS_FACEID_PAY_OPENED, isOpened).apply();
-    }
-
-    public boolean getIsFingerprintPayOpened() {
-        return isFingerprintPayOpened;
-    }
-
-    public boolean getIsFaceidPayOpened() {
-        return isFingerprintPayOpened;
+    public boolean getIsBiometricPayOpened(int biometricType) {
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:
+                return isFingerprintPayOpened;
+            case ConstantsSoter.FACEID_AUTH:
+                return isFaceidPayOpened;
+        }
+        return false;
     }
 }

@@ -12,11 +12,15 @@
     <string name="app_delete_ask">模拟删除ASK</string>
     <string name="app_delete_auth_key">模拟删除authKey</string>
     <string name="fingerprint_hint_msg">请将手指放置在传感器上</string>
+    <string name="faceid_hint_msg">请将脸部对准摄像头</string>
     <!--<string name="fingerprint_switch_to_pwd">切换为密码支付</string>-->
     <string name="app_request_challenge">正在请求挑战因子</string>
-    <string name="fingerprint_normal_hint">再试一次</string>
+    <string name="biometric_normal_hint">再试一次</string>
     <string name="app_open_fingerprint_pay">开通指纹支付</string>
     <string name="app_use_fingerprint_pay">使用指纹支付</string>
+    <string name="app_open_faceid_pay">开通人脸支付</string>
+    <string name="app_use_faceid_pay">使用人脸支付</string>
     <string name="app_verifying">正在认证</string>
-    <string name="app_confirm_close">指纹支付现在处于开启状态，是否关闭？</string>
+    <string name="app_confirm_fingerprint_close">指纹支付现在处于开启状态，是否关闭？</string>
+    <string name="app_confirm_faceid_close">人脸支付现在处于开启状态，是否关闭？</string>
 </resources>
