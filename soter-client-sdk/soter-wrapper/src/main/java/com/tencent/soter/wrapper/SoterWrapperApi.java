@@ -14,6 +14,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
@@ -112,10 +113,18 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      */
     public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> callback, @NonNull AuthenticationParam param) {
         SLogger.i(TAG, "soter: request authorize provide challenge. scene: %d", param.getScene());
-        TaskBiometricAuthentication taskBiometricAuthentication = new TaskBiometricAuthentication(param);
-        taskBiometricAuthentication.setTaskCallback(callback);
-        if(!SoterTaskManager.getInstance().addToTask(taskBiometricAuthentication, new SoterProcessAuthenticationResult())) {
-            SLogger.d(TAG, "soter: add requestAuthorizeAndSign task failed.");
+        if(param.getBiometricType() == ConstantsSoter.FINGERPRINT_AUTH || param.getBiometricType() == ConstantsSoter.FACEID_AUTH ){
+            TaskBiometricAuthentication taskBiometricAuthentication = new TaskBiometricAuthentication(param);
+            taskBiometricAuthentication.setTaskCallback(callback);
+            if(!SoterTaskManager.getInstance().addToTask(taskBiometricAuthentication, new SoterProcessAuthenticationResult())) {
+                SLogger.d(TAG, "soter: add 2.0 requestAuthorizeAndSign task failed.");
+            }
+        }else {
+            TaskAuthentication taskAuthentication = new TaskAuthentication(param);
+            taskAuthentication.setTaskCallback(callback);
+            if(!SoterTaskManager.getInstance().addToTask(taskAuthentication, new SoterProcessAuthenticationResult())) {
+                SLogger.d(TAG, "soter: add 1.0 requestAuthorizeAndSign task failed.");
+            }
         }
     }
 
