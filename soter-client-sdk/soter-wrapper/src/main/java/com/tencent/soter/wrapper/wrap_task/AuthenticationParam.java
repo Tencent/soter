@@ -13,10 +13,15 @@ import android.content.Context;
 
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
+import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
+import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 
-
+/**
+ * Created by henryye on 2017/5/27.
+ * The authentication parameter to be passed to the constructor of {@link TaskAuthentication}.
+ */
 
 @SuppressWarnings("WeakerAccess")
 public class AuthenticationParam {
@@ -29,6 +34,9 @@ public class AuthenticationParam {
     private IWrapUploadSignature mIWrapUploadSignature;
     private Context mContext;
     private int mBiometricType;
+
+    private SoterFingerprintCanceller mFingerprintCanceller;
+    private SoterFingerprintStateCallback mSoterFingerprintStateCallback;
 
     private SoterBiometricCanceller mSoterBiometricCanceller;
     private SoterBiometricStateCallback mSoterBiometricStateCallback;
@@ -59,6 +67,14 @@ public class AuthenticationParam {
 
     public int getBiometricType() {
         return mBiometricType;
+    }
+
+    public SoterFingerprintCanceller getFingerprintCanceller() {
+        return mFingerprintCanceller;
+    }
+
+    public SoterFingerprintStateCallback getSoterFingerprintStateCallback() {
+        return mSoterFingerprintStateCallback;
     }
 
     public SoterBiometricCanceller getSoterBiometricCanceller() {
@@ -127,9 +143,26 @@ public class AuthenticationParam {
             return this;
         }
 
+        /**
+         * The fingerprint canceller set by the application so that you can control cancellation event from your logic
+         * @param fingerprintCanceller The cancellation controller
+         * @return the param model itself
+         */
+        public AuthenticationParamBuilder setFingerprintCanceller(SoterFingerprintCanceller fingerprintCanceller) {
+            mParam.mFingerprintCanceller = fingerprintCanceller;
+            return this;
+        }
 
-
-
+        /**
+         * The fingerprint status callback so that you can acknowledge the authentication status. Note that it is only the fingerprint authentication callback,
+         * do not use it as the process result, just used for updating UI.
+         * @param soterFingerprintStateCallback The fingerprint callback
+         * @return the param model itself
+         */
+        public AuthenticationParamBuilder setSoterFingerprintStateCallback(SoterFingerprintStateCallback soterFingerprintStateCallback) {
+            mParam.mSoterFingerprintStateCallback = soterFingerprintStateCallback;
+            return this;
+        }
 
 
         public AuthenticationParamBuilder setSoterBiometricCanceller(SoterBiometricCanceller soterBiometricCanceller) {
