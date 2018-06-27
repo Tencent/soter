@@ -71,6 +71,10 @@ public interface SoterProcessErrCode extends SoterErrCode {
      */
     int ERR_NO_FINGERPRINT_ENROLLED = 18;
     /**
+     * No faceid enrolled in the system
+     */
+    int ERR_NO_FACEID_ENROLLED = 181;
+    /**
      * Failed in getting challenge from server
      */
     int ERR_GET_CHALLENGE = 19;
@@ -99,6 +103,11 @@ public interface SoterProcessErrCode extends SoterErrCode {
      * authentication method if you see this error code.
      */
     int ERR_FINGERPRINT_LOCKED = 25;
+    /**
+     * Already reached the maximum fail times in faceid authentication. you should try another
+     * authentication method if you see this error code.
+     */
+    int ERR_FACEID_LOCKED = 251;
 
     /**
      * Add the SOTER task to queue failed. Check the logcat for further information

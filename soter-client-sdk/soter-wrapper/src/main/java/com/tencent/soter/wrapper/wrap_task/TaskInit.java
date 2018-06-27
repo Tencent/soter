@@ -97,10 +97,10 @@ public class TaskInit extends BaseSoterTask {
         SoterTaskThread.getInstance().postToWorker(new Runnable() {
             @Override
             public void run() {
-            //try to init soter treble
-            SoterCore.tryToInitSoterTreble(context);
-            SoterCore.setUp();
-            isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
+                //try to init soter treble
+                SoterCore.tryToInitSoterTreble(context);
+                SoterCore.setUp();
+                isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportFaceid(context));
             }
         });
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();

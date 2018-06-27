@@ -27,7 +27,7 @@ import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
-import com.tencent.soter.wrapper.wrap_task.TaskAuthentication;
+import com.tencent.soter.wrapper.wrap_task.TaskBiometricAuthentication;
 import com.tencent.soter.wrapper.wrap_task.TaskInit;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAppSecureKey;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAuthKey;
@@ -104,9 +104,9 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      */
     public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> callback, @NonNull AuthenticationParam param) {
         SLogger.i(TAG, "soter: request authorize provide challenge. scene: %d", param.getScene());
-        TaskAuthentication taskAuthentication = new TaskAuthentication(param);
-        taskAuthentication.setTaskCallback(callback);
-        if(!SoterTaskManager.getInstance().addToTask(taskAuthentication, new SoterProcessAuthenticationResult())) {
+        TaskBiometricAuthentication taskBiometricAuthentication = new TaskBiometricAuthentication(param);
+        taskBiometricAuthentication.setTaskCallback(callback);
+        if(!SoterTaskManager.getInstance().addToTask(taskBiometricAuthentication, new SoterProcessAuthenticationResult())) {
             SLogger.d(TAG, "soter: add requestAuthorizeAndSign task failed.");
         }
     }
