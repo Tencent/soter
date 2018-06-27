@@ -54,7 +54,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     private SyncJob syncJob = new SyncJob();
 
-    protected static final int DEFAULT_BLOCK_TIME = 10 * 1000; // Default synchronize block time
+    protected static final int DEFAULT_BLOCK_TIME = 3 * 1000; // Default synchronize block time
 
 
     private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {

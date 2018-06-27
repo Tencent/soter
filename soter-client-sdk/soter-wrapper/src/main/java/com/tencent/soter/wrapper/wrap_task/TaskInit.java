@@ -94,15 +94,9 @@ public class TaskInit extends BaseSoterTask {
         // set implement to wrapper
         SoterDelegate.setImplement(wrapperDelegate);
 
-        SoterTaskThread.getInstance().postToWorker(new Runnable() {
-            @Override
-            public void run() {
-                //try to init soter treble
-                SoterCore.tryToInitSoterTreble(context);
-                SoterCore.setUp();
-                isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportFaceid(context));
-            }
-        });
+        SoterCore.tryToInitSoterTreble(context);
+        SoterCore.setUp();
+        isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();

@@ -28,6 +28,8 @@ import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
 import com.tencent.soter.wrapper.wrap_task.TaskBiometricAuthentication;
+import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
+import com.tencent.soter.wrapper.wrap_task.TaskAuthentication;
 import com.tencent.soter.wrapper.wrap_task.TaskInit;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAppSecureKey;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAuthKey;
@@ -50,13 +52,19 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      * @param callback The callback of the process.
      * @param param The parameter if the initialization operation
      */
-    public static void init(Context context, SoterProcessCallback<SoterProcessNoExtResult> callback, @NonNull InitializeParam param) {
+    public static void init(final Context context, final SoterProcessCallback<SoterProcessNoExtResult> callback, @NonNull final InitializeParam param) {
         // prepare set up
-        TaskInit taskInit = new TaskInit(context, param);
-        taskInit.setTaskCallback(callback);
-        if(!SoterTaskManager.getInstance().addToTask(taskInit, new SoterProcessNoExtResult())) {
-            SLogger.e(TAG, "soter: add init task failed.");
-        }
+        // put into worker thread
+        SoterTaskThread.getInstance().postToWorker(new Runnable() {
+            @Override
+            public void run() {
+                TaskInit taskInit = new TaskInit(context, param);
+                taskInit.setTaskCallback(callback);
+                if (!SoterTaskManager.getInstance().addToTask(taskInit, new SoterProcessNoExtResult())) {
+                    SLogger.e(TAG, "soter: add init task failed.");
+                }
+            }
+        });
     }
 
     /**
