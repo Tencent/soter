@@ -12,7 +12,6 @@ package com.tencent.soter.core;
 import android.content.Context;
 import android.util.Base64;
 
-import com.tencent.soter.core.biometric.FaceManagerCompat;
 import com.tencent.soter.core.biometric.BiometricManagerCompat;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
@@ -343,7 +342,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     }
 
     public static boolean isSupportFaceid(Context context) {
-        return FaceManagerCompat.from(context).isHardwareDetected();
+        return BiometricManagerCompat.from(context, ConstantsSoter.FACEID_AUTH).isHardwareDetected();
     }
 
     /**

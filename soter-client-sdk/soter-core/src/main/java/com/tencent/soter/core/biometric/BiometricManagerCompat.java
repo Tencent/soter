@@ -92,7 +92,7 @@ public class BiometricManagerCompat {
             SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
             return false;
         }
-        return IMPL.hasEnrolledFingerprints(mContext);
+        return IMPL.hasEnrolledBiometric(mContext);
     }
 
     /**
@@ -266,7 +266,7 @@ public class BiometricManagerCompat {
     }
 
     private interface IBiometricManager {
-        boolean hasEnrolledFingerprints(Context context);
+        boolean hasEnrolledBiometric(Context context);
 
         boolean isHardwareDetected(Context context);
 
@@ -282,7 +282,7 @@ public class BiometricManagerCompat {
         }
 
         @Override
-        public boolean hasEnrolledFingerprints(Context context) {
+        public boolean hasEnrolledBiometric(Context context) {
             return false;
         }
 
@@ -306,7 +306,7 @@ public class BiometricManagerCompat {
         }
 
         @Override
-        public boolean hasEnrolledFingerprints(Context context) {
+        public boolean hasEnrolledBiometric(Context context) {
             return FingerprintManagerProxy.hasEnrolledFingerprints(context);
         }
 
@@ -477,7 +477,7 @@ public class BiometricManagerCompat {
         }
 
         @Override
-        public boolean hasEnrolledFingerprints(Context context) {
+        public boolean hasEnrolledBiometric(Context context) {
             return FaceidManagerProxy.hasEnrolledFaceids(context);
         }
 

@@ -27,7 +27,6 @@ import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
-import com.tencent.soter.wrapper.wrap_task.TaskAuthentication;
 import com.tencent.soter.wrapper.wrap_task.TaskBiometricAuthentication;
 import com.tencent.soter.wrapper.wrap_task.TaskInit;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAppSecureKey;
