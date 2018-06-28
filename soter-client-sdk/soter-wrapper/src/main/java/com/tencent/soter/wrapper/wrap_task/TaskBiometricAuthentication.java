@@ -21,6 +21,7 @@ import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterSignatureResult;
+import com.tencent.soter.soterserver.SoterSessionResult;
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessAuthenticationResult;
@@ -199,14 +200,23 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void startAuthenticate() {
         if(SoterCore.getSoterCoreType() == SoterCore.IS_TREBLE){
-            long session = SoterCore.initSigh(mAuthKeyName, mChallenge);
-            if(session != 0){
-                SLogger.w(TAG, "soter: error occurred when init sign");
+            SoterSessionResult soterSessionResult = SoterCore.initSigh(mAuthKeyName, mChallenge);
+
+            if(soterSessionResult == null ){
+                SLogger.w(TAG, "soter: error occurred when init sign soterSessionResult is null");
                 callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
                 return;
             }
+
+            if(soterSessionResult.resultCode != 0) {
+                SLogger.w(TAG, "soter: error occurred when init sign resultCode error");
+                callback(new SoterProcessAuthenticationResult(ERR_INIT_SIGN_FAILED));
+                return;
+            }
+            SLogger.d(TAG, "soter: session is %d",soterSessionResult.session);
+
             mAuthenticationCallbackIml = new AuthenticationCallbackImpl(null);
-            mAuthenticationCallbackIml.session = session;
+            mAuthenticationCallbackIml.session = soterSessionResult.session;
             performStartBiometricLogic(null);
             SoterTaskThread.getInstance().postToMainThread(new Runnable() {
                 @Override

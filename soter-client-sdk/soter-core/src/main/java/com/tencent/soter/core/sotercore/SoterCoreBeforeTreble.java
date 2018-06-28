@@ -13,6 +13,7 @@ import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
+import com.tencent.soter.soterserver.SoterSessionResult;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -292,8 +293,8 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
     }
 
     @Override
-    public long initSigh(String kname, String challenge) {
-        return 0;
+    public SoterSessionResult initSigh(String kname, String challenge) {
+        return null;
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.util.Base64;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterPubKeyModel;
+import com.tencent.soter.soterserver.SoterSessionResult;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -116,7 +117,7 @@ public abstract class SoterCoreBase {
      * @param challenge The key challenge
      * @return long session to ensure signature session is begin
      */
-    public abstract long initSigh(String kname, String challenge) ;
+    public abstract SoterSessionResult initSigh(String kname, String challenge) ;
 
     /**
      * finsh signature task

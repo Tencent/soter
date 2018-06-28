@@ -468,24 +468,24 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     @Override
-    public long initSigh(String kname, String challenge) {
+    public SoterSessionResult initSigh(String kname, String challenge) {
 
         SLogger.i(TAG, "soter: initSigh in");
 
         if(!isNativeSupportSoter()){
-            return 0;
+            return null;
         }
 
         if(mContext == null) {
             SLogger.w(TAG, "soter: context is null");
-            return 0;
+            return null;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
             SLogger.w(TAG, "soter: soter service not found");
-            return 0;
+            return null;
         }
 
         int uid = android.os.Process.myUid();
@@ -494,11 +494,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             result =  mSoterService.initSigh(uid, kname, challenge);
-            return result.session;
+            return result;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        return 0;
+        return null;
 
     }
 

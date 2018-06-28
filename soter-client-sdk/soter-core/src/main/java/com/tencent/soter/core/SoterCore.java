@@ -26,6 +26,7 @@ import com.tencent.soter.core.sotercore.CertSoterCore;
 import com.tencent.soter.core.sotercore.SoterCoreBase;
 import com.tencent.soter.core.sotercore.SoterCoreBeforeTreble;
 import com.tencent.soter.core.sotercore.SoterCoreTreble;
+import com.tencent.soter.soterserver.SoterSessionResult;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -288,11 +289,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
 
     }
 
-    public static long initSigh(String mAuthKeyName, String mChallenge) {
+    public static SoterSessionResult initSigh(String mAuthKeyName, String mChallenge) {
 
         if (IMPL == null){
             SLogger.e(TAG, "soter: initSigh IMPL is null, not support soter");
-            return 0;
+            return null;
         }
         return IMPL.initSigh(mAuthKeyName, mChallenge);
     }
