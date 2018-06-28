@@ -42,7 +42,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     public static final String TAG = "Soter.SoterCoreTreble";
 
-    private static boolean isAlreadyCheckedSetUp = false;
 
     private Context mContext;
 
@@ -55,7 +54,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     private SyncJob syncJob = new SyncJob();
 
     protected static final int DEFAULT_BLOCK_TIME = 3 * 1000; // Default synchronize block time
-
 
     private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
 
@@ -86,9 +84,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 service.linkToDeath(mDeathRecipient, 0);
                 mSoterService = ISoterService.Stub.asInterface(service);
             } catch (RemoteException e) {
-                SLogger.e(TAG, "soter: Binding is error - RemoteException"+ e.toString());
+                SLogger.e(TAG, "soter: Binding deathRecipient is error - RemoteException"+ e.toString());
             }
-
 
 
             SLogger.i(TAG, "soter: Binding is done - Service connected");
@@ -147,11 +144,11 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         intent.setPackage("com.tencent.soter.soterserver");
 
         if(mContext == null) {
-            SLogger.e(TAG, "soter: mContext is null ");
+            SLogger.e(TAG, "soter: bindService context is null ");
             return;
         }
         mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        SLogger.i(TAG, "soter: Binding is start ");
+        SLogger.i(TAG, "soter: bindService binding is start ");
     }
 
     public void unbindService(Context context){
@@ -204,7 +201,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterCoreResult removeAppGlobalSecureKey() {
-        SLogger.i(TAG, "soter: removeAuthKey in");
+        SLogger.i(TAG, "soter: removeAppGlobalSecureKey in");
 
         if(!isNativeSupportSoter()){
             return new SoterCoreResult(ERR_REMOVE_ASK);
@@ -269,12 +266,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean isAppGlobalSecureKeyValid() {
+        SLogger.i(TAG,"soter: isAppGlobalSecureKeyValid in");
         return hasAppGlobalSecureKey() && getAppGlobalSecureKeyModel() != null;
     }
 
     @Override
     public SoterPubKeyModel getAppGlobalSecureKeyModel() {
-        SLogger.i(TAG,"soter: getAppSecureKey in");
+        SLogger.i(TAG,"soter: getAppGlobalSecureKeyModel in");
 
 
         if(!isNativeSupportSoter()){
@@ -395,7 +393,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public SoterPubKeyModel getAuthKeyModel(String authKeyName) {
-        SLogger.i(TAG,"soter: getAppSecureKey in");
+        SLogger.i(TAG,"soter: getAuthKeyModel in");
 
         if(!isNativeSupportSoter()){
             return null;
@@ -472,6 +470,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     @Override
     public long initSigh(String kname, String challenge) {
 
+        SLogger.i(TAG, "soter: initSigh in");
+
         if(!isNativeSupportSoter()){
             return 0;
         }
@@ -504,6 +504,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public byte[] finishSign(long signSession) throws Exception{
+
+        SLogger.i(TAG, "soter: finishSign in");
 
         if(!isNativeSupportSoter()){
             return null;
