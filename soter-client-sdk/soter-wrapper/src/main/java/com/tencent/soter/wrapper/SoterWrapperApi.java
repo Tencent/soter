@@ -111,17 +111,17 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      * Wrap the whole authentication process, including request fingerprint authentication, generate the signature and upload the signature to the server.
      * @param param The parameter of the authentication process.
      */
-    public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> callback, @NonNull AuthenticationParam param) {
+    public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> taskCallback, @NonNull AuthenticationParam param) {
         SLogger.i(TAG, "soter: request authorize provide challenge. scene: %d", param.getScene());
         if(param.getBiometricType() == ConstantsSoter.FINGERPRINT_AUTH || param.getBiometricType() == ConstantsSoter.FACEID_AUTH ){
             TaskBiometricAuthentication taskBiometricAuthentication = new TaskBiometricAuthentication(param);
-            taskBiometricAuthentication.setTaskCallback(callback);
+            taskBiometricAuthentication.setTaskCallback(taskCallback);
             if(!SoterTaskManager.getInstance().addToTask(taskBiometricAuthentication, new SoterProcessAuthenticationResult())) {
                 SLogger.d(TAG, "soter: add 2.0 requestAuthorizeAndSign task failed.");
             }
         }else {
             TaskAuthentication taskAuthentication = new TaskAuthentication(param);
-            taskAuthentication.setTaskCallback(callback);
+            taskAuthentication.setTaskCallback(taskCallback);
             if(!SoterTaskManager.getInstance().addToTask(taskAuthentication, new SoterProcessAuthenticationResult())) {
                 SLogger.d(TAG, "soter: add 1.0 requestAuthorizeAndSign task failed.");
             }

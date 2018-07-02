@@ -366,7 +366,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
             SLogger.e(TAG, "soter: on authentication fatal error: %d, %s", errMsgId, errString);
             // We treat too many fingerprint authentication failures as a special case. It's not a kind of fatal failure.
             // Application should handle this as a normal logic, such as change authentication method
-            if(errMsgId != ConstantsSoter.ERR_FINGERPRINT_FAIL_MAX) {
+            if(errMsgId != ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX) {
                 SoterTaskThread.getInstance().postToMainThread(new Runnable() {
                     @Override
                     public void run() {

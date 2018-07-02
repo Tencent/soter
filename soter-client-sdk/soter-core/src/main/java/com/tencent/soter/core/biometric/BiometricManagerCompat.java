@@ -386,7 +386,7 @@ public class BiometricManagerCompat {
                             SoterAntiBruteForceStrategy.freeze(context);
                         }
                         mMarkPermanentlyCallbacked = false;
-                        onAuthenticationError(ConstantsSoter.ERR_FINGERPRINT_FAIL_MAX, ConstantsSoter.SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG);
+                        onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
                         return;
                     }
                     callback.onAuthenticationError(errMsgId, errString);
@@ -467,7 +467,7 @@ public class BiometricManagerCompat {
 
         private static void informTooManyTrial(FingerprintManagerProxy.AuthenticationCallback callback) {
             SLogger.w(TAG, "soter: too many fail fingerprint callback. inform it.");
-            callback.onAuthenticationError(ConstantsSoter.ERR_FINGERPRINT_FAIL_MAX, ConstantsSoter.SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG);
+            callback.onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
         }
     }
 
@@ -538,30 +538,7 @@ public class BiometricManagerCompat {
 
                 @Override
                 public void onAuthenticationError(int errMsgId, CharSequence errString) {
-                    SLogger.d(TAG, "soter: basic onAuthenticationError");
-                    if(mMarkPermanentlyCallbacked) {
-                        return;
-                    }
-                    mMarkPermanentlyCallbacked = true;
-                    // filter cases when user has already cancelled the authentication.
-                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
-                        SLogger.i(TAG, "soter: user cancelled fingerprint authen");
-                        callback.onAuthenticationCancelled();
-                        return;
-                    }
-                    //sync freeze state
-                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT) {
-                        SLogger.i(TAG, "soter: system call too many trial.");
-                        if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.freeze(context);
-                        }
-                        mMarkPermanentlyCallbacked = false;
-                        onAuthenticationError(ConstantsSoter.ERR_FINGERPRINT_FAIL_MAX, ConstantsSoter.SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG);
-                        return;
-                    }
-                    callback.onAuthenticationError(errMsgId, errString);
+                    onAuthenticationHelp(errMsgId,errString);
                 }
 
                 @Override

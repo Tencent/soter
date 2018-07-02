@@ -29,7 +29,7 @@ import junit.framework.Assert;
  * All devices that support SOTER must be at least Android 5.0, so we do not have to check the API-Level
  */
 public class SoterBiometricCanceller {
-    private static final String TAG = "Soter.SoterFaceidCanceller";
+    private static final String TAG = "Soter.SoterBiometricCanceller";
 
     private CancellationSignal mCancellationSignal = null;
     // try to make it sync with worker handler
