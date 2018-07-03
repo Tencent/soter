@@ -104,6 +104,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
 
             syncJob.countDown();
+
+            bindService();
         }
     };
 
@@ -539,56 +541,27 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     }
 
-    public int getVersion() {
+    public String getVersion() {
         SLogger.i(TAG,"soter: getVersion in");
 
         if(!isNativeSupportSoter()){
-            return 0;
+            return "";
         }
 
         if(mContext == null) {
             SLogger.w(TAG, "soter: context is null");
-            return 0;
+            return "";
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
             SLogger.w(TAG, "soter: soter service not found");
-            return 0;
+            return "";
         }
-
-        int uid = android.os.Process.myUid();
 
         try {
             return mSoterService.getVersion() ;
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public String getAuth() {
-        SLogger.i(TAG,"soter: getAuth in");
-
-        if(!isNativeSupportSoter()){
-            return "";
-        }
-
-        if(mContext == null) {
-            SLogger.w(TAG, "soter: context is null");
-            return "";
-        }
-
-        bindServiceIfNeeded();
-
-        if(mSoterService == null) {
-            SLogger.w(TAG, "soter: soter service not found");
-            return "";
-        }
-
-        try {
-            return mSoterService.aidlAuth() ;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
