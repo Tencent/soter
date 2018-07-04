@@ -95,6 +95,15 @@ public class BiometricManagerCompat {
         return IMPL.hasEnrolledBiometric(mContext);
     }
 
+    public String getBiometricName(){
+        IBiometricManager IMPL = IMPL_PROVIDER.get(mBiometricType);
+        if (IMPL == null){
+            SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
+            return null;
+        }
+        return IMPL.getBiometricName(mContext);
+    }
+
     /**
      * Determine if fingerprint hardware is present and functional.
      *
@@ -270,6 +279,8 @@ public class BiometricManagerCompat {
 
         boolean isHardwareDetected(Context context);
 
+        String getBiometricName(Context context);
+
         void authenticate(Context context,
                           CryptoObject crypto, int flags,
                           CancellationSignal cancel,
@@ -292,6 +303,11 @@ public class BiometricManagerCompat {
         }
 
         @Override
+        public String getBiometricName(Context context) {
+            return null;
+        }
+
+        @Override
         public void authenticate(Context context,
                                  CryptoObject crypto, int flags,
                                  CancellationSignal cancel,
@@ -301,6 +317,8 @@ public class BiometricManagerCompat {
     }
 
     private static class FingerprintManagerImpl implements IBiometricManager {
+
+        private static final String TAG = "Soter.BiometricManagerCompat.Fingerprint";
 
         public FingerprintManagerImpl() {
         }
@@ -314,6 +332,11 @@ public class BiometricManagerCompat {
         @Override
         public boolean isHardwareDetected(Context context) {
             return FingerprintManagerProxy.isHardwareDetected(context);
+        }
+
+        @Override
+        public String getBiometricName(Context context) {
+            return "fingerprint";
         }
 
         @Override
@@ -389,6 +412,7 @@ public class BiometricManagerCompat {
                         onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
                         return;
                     }
+
                     callback.onAuthenticationError(errMsgId, errString);
                 }
 
@@ -398,7 +422,7 @@ public class BiometricManagerCompat {
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    if(!shouldInformTooManyTrial(this, context)) {
                         callback.onAuthenticationHelp(helpMsgId, helpString);
                     }
                 }
@@ -410,7 +434,7 @@ public class BiometricManagerCompat {
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    if(!shouldInformTooManyTrial(this, context)) {
                         // unfreeze
                         if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                             SoterAntiBruteForceStrategy.unFreeze(context);
@@ -427,7 +451,7 @@ public class BiometricManagerCompat {
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    if(!shouldInformTooManyTrial(this, context)) {
                         if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                             SoterAntiBruteForceStrategy.addFailTime(context);
                             if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
@@ -444,7 +468,8 @@ public class BiometricManagerCompat {
             };
         }
 
-        private static boolean checkBruteForce(FingerprintManagerProxy.AuthenticationCallback callback, Context context) {
+        //check brute fore strategy should effect, return true when effected, else return false
+        private static boolean shouldInformTooManyTrial(FingerprintManagerProxy.AuthenticationCallback callback, Context context) {
             if(SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                 SLogger.v(TAG, "soter: using system anti brute force strategy");
                 return false;
@@ -473,6 +498,8 @@ public class BiometricManagerCompat {
 
     private static class FaceidManagerImpl implements IBiometricManager {
 
+        private static final String TAG = "Soter.BiometricManagerCompat.Faceid";
+
         public FaceidManagerImpl(){
         }
 
@@ -484,6 +511,11 @@ public class BiometricManagerCompat {
         @Override
         public boolean isHardwareDetected(Context context) {
             return FaceidManagerProxy.isHardwareDetected(context);
+        }
+
+        @Override
+        public String getBiometricName(Context context) {
+            return FaceidManagerProxy.getBiometricName(context);
         }
 
         @Override
@@ -538,35 +570,62 @@ public class BiometricManagerCompat {
 
                 @Override
                 public void onAuthenticationError(int errMsgId, CharSequence errString) {
-                    onAuthenticationHelp(errMsgId,errString);
+                    SLogger.d(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] entered.", errMsgId, errString);
+                    if(mMarkPermanentlyCallbacked) {
+                        SLogger.d(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] returned cause permanently callback.", errMsgId, errString);
+                        return;
+                    }
+                    mMarkPermanentlyCallbacked = true;
+
+                    // filter cases when user has already cancelled the authentication.
+                    if(errMsgId == FaceManager.FACE_ERROR_CANCELED) {
+                        SLogger.i(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] callbacked and returned cause FACE_ERROR_CANCELED got.", errMsgId, errString);
+                        callback.onAuthenticationCancelled();
+                        return;
+                    }
+
+                    //sync freeze state
+                    if(errMsgId == FaceManager.FACE_ERROR_LOCKOUT) {
+                        SLogger.i(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] callbacked and returned cause FACE_ERROR_LOCKOUT got.", errMsgId, errString);
+                        if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
+                                && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
+                                && !SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterAntiBruteForceStrategy.freeze(context);
+                        }
+                        callback.onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
+                        return;
+                    }
+
+
+                    SLogger.d(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] callbacked and returned.", errMsgId, errString);
+                    callback.onAuthenticationError(errMsgId, errString);
                 }
 
                 @Override
                 public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
-                    SLogger.d(TAG, "soter: basic onAuthenticationHelp");
+                    SLogger.d(TAG, "soter: basic onAuthenticationHelp helpMsgId[%d], helpString[%s]", helpMsgId, helpString);
+                    long checkTime = System.currentTimeMillis();
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    if(!shouldInformTooManyTrial(this, context)) {
                         callback.onAuthenticationHelp(helpMsgId, helpString);
                     }
                 }
 
                 @Override
-                public void onAuthenticationSucceeded(
-                        FaceidManagerProxy.AuthenticationResult result) {
+                public void onAuthenticationSucceeded(FaceidManagerProxy.AuthenticationResult result) {
                     SLogger.d(TAG, "soter: basic onAuthenticationSucceeded");
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    mMarkPermanentlyCallbacked = true;
+                    if(!shouldInformTooManyTrial(this, context)) {
                         // unfreeze
                         if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                             SoterAntiBruteForceStrategy.unFreeze(context);
                         }
-                        mMarkPermanentlyCallbacked = true;
-                        callback.onAuthenticationSucceeded(new AuthenticationResult(
-                                unwrapCryptoObject(result.getCryptoObject())));
+                        callback.onAuthenticationSucceeded(new AuthenticationResult(unwrapCryptoObject(result.getCryptoObject())));
                     }
                 }
 
@@ -576,7 +635,8 @@ public class BiometricManagerCompat {
                     if(mMarkPermanentlyCallbacked) {
                         return;
                     }
-                    if(!checkBruteForce(this, context)) {
+                    mMarkPermanentlyCallbacked = true;
+                    if(!shouldInformTooManyTrial(this, context)) {
                         if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                             SoterAntiBruteForceStrategy.addFailTime(context);
                             if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
@@ -586,14 +646,13 @@ public class BiometricManagerCompat {
                                 return;
                             }
                         }
-                        callback.onAuthenticationFailed();
                     }
-
+                    callback.onAuthenticationFailed();
                 }
             };
         }
 
-        private static boolean checkBruteForce(FaceidManagerProxy.AuthenticationCallback callback, Context context) {
+        private static boolean shouldInformTooManyTrial(FaceidManagerProxy.AuthenticationCallback callback, Context context) {
             if(SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                 SLogger.v(TAG, "soter: using system anti brute force strategy");
                 return false;
@@ -615,8 +674,8 @@ public class BiometricManagerCompat {
         }
 
         private static void informTooManyTrial(FaceidManagerProxy.AuthenticationCallback callback) {
-            SLogger.w(TAG, "soter: too many fail fingerprint callback. inform it.");
-            callback.onAuthenticationError(ConstantsSoter.ERR_FINGERPRINT_FAIL_MAX, ConstantsSoter.SOTER_FINGERPRINT_ERR_FAIL_MAX_MSG);
+            SLogger.w(TAG, "soter: too many fail callback. inform it.");
+            callback.onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
         }
     }
 }

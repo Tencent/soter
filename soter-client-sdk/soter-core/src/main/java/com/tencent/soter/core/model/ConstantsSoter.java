@@ -29,8 +29,10 @@ public interface ConstantsSoter {
     //fingerprint anti brute force. We use 10308 to distinguish some bad implementation which will return 7 in non-predicted situations
     int ERR_FINGERPRINT_FAIL_MAX = 10308; //FingerprintManager.FINGERPRINT_ERROR_LOCKOUT = 7;
     int ERR_BIOMETRIC_FAIL_MAX = 10308; //FingerprintManager.FINGERPRINT_ERROR_LOCKOUT = 7;
+    int ERR_BIOMETRIC_WAIT_TIMEOUT = 10309;
 
     /**biometric auth type*/
     int FINGERPRINT_AUTH = 0xa;
     int FACEID_AUTH = 0xb;
+    long FACEID_AUTH_CHECK_TIME = 3000;
 }

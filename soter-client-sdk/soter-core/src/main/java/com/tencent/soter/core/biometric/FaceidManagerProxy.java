@@ -164,6 +164,21 @@ final class FaceidManagerProxy {
         };
     }
 
+    public static String getBiometricName(Context context) {
+        try {
+            FaceManager mgr = getFaceManager(context);
+            if(mgr != null) {
+                return mgr.getBiometricName(context);
+            } else {
+                SLogger.e(TAG, "soter: faceid manager is null! no biometric name returned.");
+                return null;
+            }
+        } catch (Exception e) {
+            SLogger.e(TAG, "soter: triggered SecurityException in getBiometricName! Make sure you declared USE_FACEID in AndroidManifest.xml");
+            return null;
+        }
+    }
+
     public static class CryptoObject {
 
         private final Signature mSignature;

@@ -364,22 +364,22 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         @Override
         public void onAuthenticationError(final int errMsgId, final CharSequence errString) {
             SLogger.e(TAG, "soter: on authentication fatal error: %d, %s", errMsgId, errString);
+            SoterTaskThread.getInstance().postToMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mBiometricStateCallback != null) {
+                        mBiometricStateCallback.onAuthenticationError(errMsgId, errString);
+                    }
+                }
+            });
             // We treat too many fingerprint authentication failures as a special case. It's not a kind of fatal failure.
             // Application should handle this as a normal logic, such as change authentication method
-            if(errMsgId != ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX) {
-                SoterTaskThread.getInstance().postToMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mBiometricStateCallback != null) {
-                            mBiometricStateCallback.onAuthenticationError(errMsgId, errString);
-                        }
-                    }
-                });
-                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
+            if(errMsgId == ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX) {
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_LOCKED,  charSequenceToStringNullAsNil(errString)));
             } else {
-                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_LOCKED,  charSequenceToStringNullAsNil(errString)));
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             }
-            compatLogicWhenDone();
+            authenticationShouldComplete();
         }
 
         @Override
@@ -398,6 +398,14 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         @Override
         public void onAuthenticationSucceeded(BiometricManagerCompat.AuthenticationResult result) {
             SLogger.i(TAG, "soter: authentication succeed. start sign and upload upload signature");
+            SoterTaskThread.getInstance().postToMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mBiometricStateCallback != null) {
+                        mBiometricStateCallback.onAuthenticationSucceed();
+                    }
+                }
+            });
             SoterTaskThread.getInstance().postToWorker(new Runnable() {
                 @Override
                 public void run() {
@@ -429,20 +437,12 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                     }
                 }
             });
-            SoterTaskThread.getInstance().postToMainThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mBiometricStateCallback != null) {
-                        mBiometricStateCallback.onAuthenticationSucceed();
-                    }
-                }
-            });
-            compatLogicWhenDone();
+
+            authenticationShouldComplete();
         }
 
         @Override
         public void onAuthenticationFailed() {
-            super.onAuthenticationFailed();
             SLogger.w(TAG, "soter: authentication failed once");
             SoterTaskThread.getInstance().postToMainThread(new Runnable() {
                 @Override
@@ -452,7 +452,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                     }
                 }
             });
-            compatLogicWhenFail();
+            authenticationMaybeContinue();
         }
 
         @Override
@@ -462,7 +462,6 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 SLogger.v(TAG, "soter: during ignore cancel period");
                 return;
             }
-            super.onAuthenticationCancelled();
             SoterTaskThread.getInstance().postToMainThread(new Runnable() {
                 @Override
                 public void run() {
@@ -472,11 +471,11 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 }
             });
             callback(new SoterProcessAuthenticationResult(ERR_USER_CANCELLED, "user cancelled authentication"));
-            compatLogicWhenDone();
+            authenticationShouldComplete();
         }
 
         @SuppressLint("NewApi")
-        private void compatLogicWhenFail() {
+        private void authenticationMaybeContinue() {
             // in versions below 6.0, you must cancel the authentication and start again when onAuthenticationFailed
             if(mShouldOperateCompatWhenHint) {
                 SLogger.i(TAG, "soter: should compat lower android version logic.");
@@ -495,11 +494,17 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 }, MAGIC_CANCELLATION_WAIT);
 
             }
+
+            // in faceid, you must cancel the authentication when onAuthenticationFailed
+            if(mBiometricType == ConstantsSoter.FACEID_AUTH){
+                SLogger.i(TAG, "soter: should compat faceid logic.");
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED,  "faceid not match"));
+            }
         }
 
         @SuppressLint("NewApi")
-        private void compatLogicWhenDone() {
-            if(mShouldOperateCompatWhenDone) {
+        private void authenticationShouldComplete() {
+            if(mShouldOperateCompatWhenDone || (mBiometricType == ConstantsSoter.FACEID_AUTH)) {
                 mBiometricCancelSignal.asyncCancelBiometricAuthenticationInnerImp(false);
                 mIsAuthenticationAlreadyCancelled = true;
             }
