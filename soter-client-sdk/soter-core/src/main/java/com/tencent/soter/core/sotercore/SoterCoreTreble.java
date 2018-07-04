@@ -66,8 +66,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             mSoterService = null;
 
             bindService();
-
-
         }
     };
 
@@ -111,7 +109,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     @Override
     public boolean initSoter(Context context) {
-
         mContext = context;
 
         SLogger.i(TAG, "soter: initSoter in");
@@ -541,23 +538,23 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     }
 
-    public String getVersion() {
+    public int getVersion() {
         SLogger.i(TAG,"soter: getVersion in");
 
         if(!isNativeSupportSoter()){
-            return "";
+            return 0;
         }
 
         if(mContext == null) {
             SLogger.w(TAG, "soter: context is null");
-            return "";
+            return 0;
         }
 
         bindServiceIfNeeded();
 
         if(mSoterService == null) {
             SLogger.w(TAG, "soter: soter service not found");
-            return "";
+            return 0;
         }
 
         try {
@@ -565,7 +562,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        return "";
+        return 0;
     }
 
 }

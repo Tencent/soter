@@ -36,7 +36,7 @@ interface ISoterService {
 
      SoterDeviceResult getDeviceId() ;
 
-     String getVersion();
+     int getVersion();
 
 
  }
