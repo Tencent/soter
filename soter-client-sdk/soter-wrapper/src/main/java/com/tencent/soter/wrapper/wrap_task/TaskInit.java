@@ -220,6 +220,7 @@ public class TaskInit extends BaseSoterTask {
                 getSupportNetWrapper.execute();
             }
         } else {
+            SLogger.w(TAG, "soter: TaskInit check isNativeSupport["+isNativeSupport+"]");
             callback(new SoterProcessNoExtResult(SoterErrCode.ERR_SOTER_NOT_SUPPORTED));
             synchronized (SoterDataCenter.class) {
                 SoterDataCenter.getInstance().setSupportSoter(false);

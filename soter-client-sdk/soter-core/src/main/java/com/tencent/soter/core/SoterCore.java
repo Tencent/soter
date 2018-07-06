@@ -119,7 +119,9 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             SLogger.e(TAG, "soter: isNativeSupportSoter IMPL is null, not support soter");
             return false;
         }
-        return IMPL.isNativeSupportSoter();
+        boolean isNativeSupportSoter = IMPL.isNativeSupportSoter();
+        SLogger.e(TAG, "soter: isNativeSupportSoter return["+isNativeSupportSoter+"]");
+        return isNativeSupportSoter;
     }
 
     /**
@@ -405,11 +407,15 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's fingerprint sensor
      */
     public static boolean isSupportFingerprint(Context context) {
-        return FingerprintManagerCompat.from(context).isHardwareDetected();
+        boolean isSupportFingerprint = FingerprintManagerCompat.from(context).isHardwareDetected();
+        SLogger.e(TAG, "soter: isSupportFingerprint return["+isSupportFingerprint+"]");
+        return isSupportFingerprint;
     }
 
     public static boolean isSupportBiometric(Context context, int biometricType) {
-        return BiometricManagerCompat.from(context, biometricType).isHardwareDetected();
+        boolean isSupportBiometric = BiometricManagerCompat.from(context, biometricType).isHardwareDetected();
+        SLogger.e(TAG, "soter: isSupportBiometric type["+biometricType+"] return["+isSupportBiometric+"]");
+        return isSupportBiometric;
     }
 
     /**
