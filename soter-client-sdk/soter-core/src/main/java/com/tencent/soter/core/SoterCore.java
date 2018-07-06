@@ -421,6 +421,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
     }
 
+    public static boolean isSystemHasBiometric(Context context, int biometricType){
+        return BiometricManagerCompat.from(context, biometricType).hasEnrolledBiometric();
+    }
+
     /**
      * Judge whether current fingerprint is frozen due to too many failure trials. If true, you should not use fingerprint for authentication in current session.
      * @return True if the fingerprint sensor is frozen now.
