@@ -96,7 +96,7 @@ public class TaskInit extends BaseSoterTask {
 
         SoterCore.tryToInitSoterTreble(context);
         SoterCore.setUp();
-        isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportFaceid(context));
+        isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportBiometric(context, ConstantsSoter.FACEID_AUTH));
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();

@@ -120,18 +120,18 @@ public class BiometricManagerCompat {
 
     /**
      * Check current fail time is available
-     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterAntiBruteForceStrategy}
+     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterBiometricAntiBruteForceStrategy}
      */
     public boolean isCurrentFailTimeAvailable() {
-        return SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
+        return SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
     }
 
     /**
      * Check current frozen time is released
-     * @return true if frozen time more than FREEZE_SECOND in {@link SoterAntiBruteForceStrategy}
+     * @return true if frozen time more than FREEZE_SECOND in {@link SoterBiometricAntiBruteForceStrategy}
      */
     public boolean isCurrentTweenTimeAvailable(Context context) {
-        return SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
+        return SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
     }
 
 
@@ -403,10 +403,10 @@ public class BiometricManagerCompat {
                     //sync freeze state
                     if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT) {
                         SLogger.i(TAG, "soter: system call too many trial.");
-                        if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.freeze(context);
+                        if(!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
+                                && !SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
+                                && !SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.freeze(context);
                         }
                         mMarkPermanentlyCallbacked = false;
                         onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
@@ -436,8 +436,8 @@ public class BiometricManagerCompat {
                     }
                     if(!shouldInformTooManyTrial(this, context)) {
                         // unfreeze
-                        if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.unFreeze(context);
+                        if(!SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.unFreeze(context);
                         }
                         mMarkPermanentlyCallbacked = true;
                         callback.onAuthenticationSucceeded(new AuthenticationResult(
@@ -452,11 +452,11 @@ public class BiometricManagerCompat {
                         return;
                     }
                     if(!shouldInformTooManyTrial(this, context)) {
-                        if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.addFailTime(context);
-                            if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+                        if(!SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.addFailTime(context);
+                            if(!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                                 SLogger.w(TAG, "soter: too many fail trials");
-                                SoterAntiBruteForceStrategy.freeze(context);
+                                SoterBiometricAntiBruteForceStrategy.freeze(context);
                                 informTooManyTrial(this);
                                 return;
                             }
@@ -470,18 +470,18 @@ public class BiometricManagerCompat {
 
         //check brute fore strategy should effect, return true when effected, else return false
         private static boolean shouldInformTooManyTrial(FingerprintManagerProxy.AuthenticationCallback callback, Context context) {
-            if(SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+            if(SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                 SLogger.v(TAG, "soter: using system anti brute force strategy");
                 return false;
             }
-            if (SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)) {
-                if (!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+            if (SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)) {
+                if (!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                     // unfreeze
                     SLogger.v(TAG, "soter: unfreeze former frozen status");
-                    SoterAntiBruteForceStrategy.unFreeze(context);
+                    SoterBiometricAntiBruteForceStrategy.unFreeze(context);
                 }
                 return false;
-            } else if (SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+            } else if (SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                 SLogger.v(TAG, "soter: failure time available");
                 return false;
             } else {
@@ -587,10 +587,10 @@ public class BiometricManagerCompat {
                     //sync freeze state
                     if(errMsgId == FaceManager.FACE_ERROR_LOCKOUT) {
                         SLogger.i(TAG, "soter: basic onAuthenticationError code[%d], msg[%s] callbacked and returned cause FACE_ERROR_LOCKOUT got.", errMsgId, errString);
-                        if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
-                                && !SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.freeze(context);
+                        if(!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
+                                && !SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
+                                && !SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.freeze(context);
                         }
                         callback.onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
                         return;
@@ -622,8 +622,8 @@ public class BiometricManagerCompat {
                     mMarkPermanentlyCallbacked = true;
                     if(!shouldInformTooManyTrial(this, context)) {
                         // unfreeze
-                        if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.unFreeze(context);
+                        if(!SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.unFreeze(context);
                         }
                         callback.onAuthenticationSucceeded(new AuthenticationResult(unwrapCryptoObject(result.getCryptoObject())));
                     }
@@ -637,11 +637,11 @@ public class BiometricManagerCompat {
                     }
                     mMarkPermanentlyCallbacked = true;
                     if(!shouldInformTooManyTrial(this, context)) {
-                        if(!SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
-                            SoterAntiBruteForceStrategy.addFailTime(context);
-                            if(!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+                        if(!SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+                            SoterBiometricAntiBruteForceStrategy.addFailTime(context);
+                            if(!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                                 SLogger.w(TAG, "soter: too many fail trials");
-                                SoterAntiBruteForceStrategy.freeze(context);
+                                SoterBiometricAntiBruteForceStrategy.freeze(context);
                                 informTooManyTrial(this);
                                 return;
                             }
@@ -653,18 +653,18 @@ public class BiometricManagerCompat {
         }
 
         private static boolean shouldInformTooManyTrial(FaceidManagerProxy.AuthenticationCallback callback, Context context) {
-            if(SoterAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
+            if(SoterBiometricAntiBruteForceStrategy.isSystemHasAntiBruteForce()) {
                 SLogger.v(TAG, "soter: using system anti brute force strategy");
                 return false;
             }
-            if (SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)) {
-                if (!SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+            if (SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)) {
+                if (!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                     // unfreeze
                     SLogger.v(TAG, "soter: unfreeze former frozen status");
-                    SoterAntiBruteForceStrategy.unFreeze(context);
+                    SoterBiometricAntiBruteForceStrategy.unFreeze(context);
                 }
                 return false;
-            } else if (SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
+            } else if (SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)) {
                 SLogger.v(TAG, "soter: failure time available");
                 return false;
             } else {

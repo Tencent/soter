@@ -94,7 +94,7 @@ public class SoterAntiBruteForceStrategy {
         setCurrentFailTime(context, ++currentFailTime);
     }
 
-    static boolean isCurrentTweenTimeAvailable(Context context) {
+    public static boolean isCurrentTweenTimeAvailable(Context context) {
         int tweenSec = (int)((System.currentTimeMillis()- getLastFreezeTime(context)) / 1000);
         SLogger.i(TAG, "soter: tween sec after last freeze: " + tweenSec);
         if(tweenSec > FREEZE_SECOND) {
@@ -104,7 +104,7 @@ public class SoterAntiBruteForceStrategy {
         return false;
     }
 
-    static boolean isCurrentFailTimeAvailable(Context context) {
+    public static boolean isCurrentFailTimeAvailable(Context context) {
         if(getCurrentFailTime(context) < MAX_FAIL_NUM) {
             SLogger.i(TAG, "soter: fail time available");
             return true;

@@ -51,8 +51,8 @@ abstract public class SoterProcessResultBase<T> extends SoterCoreResult implemen
             case ERR_CONTEXT_INSTANCE_NOT_EXISTS:
                 this.errMsg = "context instance already released. should not happen normally, you can try to call again";
                 break;
-            case ERR_NO_FINGERPRINT_ENROLLED:
-                this.errMsg = "there must be at least 1 fingerprint enrolled in system to complete this process. please check it previously";
+            case ERR_NO_BIOMETRIC_ENROLLED:
+                this.errMsg = "there must be at least 1 biometric enrolled in system to complete this process. please check it previously";
                 break;
             case ERR_GET_CHALLENGE:
                 this.errMsg = "get challenge failed";

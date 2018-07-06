@@ -139,7 +139,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         boolean hasBiometric = BiometricManagerCompat.from(context,mBiometricType).hasEnrolledBiometric();
         if (!hasBiometric) {
             SLogger.w(TAG, "soter: user has not enrolled any biometric in system.");
-            callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_NO_FINGERPRINT_ENROLLED));
+            callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_NO_BIOMETRIC_ENROLLED));
             return true;
         }
         if(SoterCore.isCurrentBiometricFrozen(context,mBiometricType)) {

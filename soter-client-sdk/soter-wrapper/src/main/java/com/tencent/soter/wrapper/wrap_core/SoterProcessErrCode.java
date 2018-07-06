@@ -73,7 +73,7 @@ public interface SoterProcessErrCode extends SoterErrCode {
     /**
      * No faceid enrolled in the system
      */
-    int ERR_NO_FACEID_ENROLLED = 181;
+    int ERR_NO_BIOMETRIC_ENROLLED = 18;
     /**
      * Failed in getting challenge from server
      */
