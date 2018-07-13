@@ -48,7 +48,8 @@ final class FaceidManagerProxy {
         try {
             faceManager = (FaceManager)Class.forName(FACEMANAGER_FACTORY_CLASS_NAME).getDeclaredMethod("getFaceManager", new Class[]{Context.class}).invoke((Object) null, new Object[]{ctx});
         } catch (Exception e) {
-            SLogger.d(TAG, "soter: FaceManager init failed, maybe not support.", e);
+            SLogger.e(TAG, "soter: FaceManager init failed, maybe not support." + e.toString());
+            e.printStackTrace();
         }
         return faceManager;
     }
@@ -59,11 +60,11 @@ final class FaceidManagerProxy {
             if(mgr != null) {
                 return mgr.hasEnrolledFaces();
             } else {
-                SLogger.e(TAG, "soter: fingerprint manager is null in hasEnrolledBiometric! Should never happen");
+                SLogger.e(TAG, "soter: facemanager is null in hasEnrolledBiometric! Should never happen");
                 return false;
             }
-        } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException in hasEnrolledBiometric! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+        } catch (Exception e) {
+            SLogger.e(TAG, "soter: triggered SecurityException in hasEnrolledBiometric! Make sure you declared USE_FACEID in AndroidManifest.xml");
             return false;
         }
 
@@ -81,11 +82,11 @@ final class FaceidManagerProxy {
             if (mgr != null) {
                 return mgr.isHardwareDetected();
             } else {
-                SLogger.e(TAG, "soter: fingerprint manager is null in isHardwareDetected! Should never happen");
+                SLogger.e(TAG, "soter: facemanager is null in isHardwareDetected! Should never happen");
                 return false;
             }
-        } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException in isHardwareDetected! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+        } catch (Exception e) {
+            SLogger.e(TAG, "soter: triggered SecurityException in isHardwareDetected! Make sure you declared USE_FACEID in AndroidManifest.xml");
             return false;
         }
     }
@@ -99,10 +100,10 @@ final class FaceidManagerProxy {
                         (android.os.CancellationSignal) cancel, flags,
                         wrapCallback(callback), handler);
             } else {
-                SLogger.e(TAG, "soter: fingerprint manager is null in authenticate! Should never happen");
+                SLogger.e(TAG, "soter: facemanager is null in authenticate! Should never happen");
             }
-        } catch (SecurityException e) {
-            SLogger.e(TAG, "soter: triggered SecurityException in authenticate! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
+        } catch (Exception e) {
+            SLogger.e(TAG, "soter: triggered SecurityException in authenticate! Make sure you declared USE_FACEID in AndroidManifest.xml");
         }
     }
 

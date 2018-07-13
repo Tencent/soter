@@ -31,8 +31,8 @@ public interface ConstantsSoter {
     int ERR_BIOMETRIC_FAIL_MAX = 10308; //FingerprintManager.FINGERPRINT_ERROR_LOCKOUT = 7;
     int ERR_BIOMETRIC_WAIT_TIMEOUT = 10309;
 
-    /**biometric auth type*/
-    int FINGERPRINT_AUTH = 0xa;
-    int FACEID_AUTH = 0xb;
+    /**biometric auth type, ths first bit means fingerprint, the second bit for faceid, and go on*/
+    int FINGERPRINT_AUTH = 0x1;
+    int FACEID_AUTH = 0x2;
     long FACEID_AUTH_CHECK_TIME = 3000;
 }
