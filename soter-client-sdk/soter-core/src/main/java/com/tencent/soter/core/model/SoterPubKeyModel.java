@@ -11,17 +11,13 @@ package com.tencent.soter.core.model;
 
 import android.util.Base64;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import org.bouncycastle.asn1.ASN1Sequence;
 
 /**
  * The public key model for App Secure Key and Auth Key. It consists the whole JSON that wrapper in the
