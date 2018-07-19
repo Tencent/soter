@@ -25,6 +25,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     api 'com.android.support:support-annotations:27.0.2'
+    api 'org.bouncycastle:bcpkix-jdk15on:1.55'
 }
 
 version = rootProject.ext.VERSION_NAME

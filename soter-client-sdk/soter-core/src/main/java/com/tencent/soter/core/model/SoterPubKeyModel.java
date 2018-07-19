@@ -11,12 +11,17 @@ package com.tencent.soter.core.model;
 
 import android.util.Base64;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import org.bouncycastle.asn1.ASN1Sequence;
 
 /**
  * The public key model for App Secure Key and Auth Key. It consists the whole JSON that wrapper in the
@@ -26,11 +31,11 @@ import java.util.ArrayList;
 public class SoterPubKeyModel {
     private static final String TAG = "Soter.SoterPubKeyModel";
 
-    private static final String JSON_KEY_PUBLIC = "pub_key";
-    private static final String JSON_KEY_COUNTER = "counter";
-    private static final String JSON_KEY_CPU_ID = "cpu_id";
-    private static final String JSON_KEY_UID = "uid";
-    private static final String JSON_KEY_CERTS = "certs";
+    public static final String JSON_KEY_PUBLIC = "pub_key";
+    public static final String JSON_KEY_COUNTER = "counter";
+    public static final String JSON_KEY_CPU_ID = "cpu_id";
+    public static final String JSON_KEY_UID = "uid";
+    public static final String JSON_KEY_CERTS = "certs";
 
     private long counter = -1;
     private int uid = -1;
@@ -87,7 +92,10 @@ public class SoterPubKeyModel {
                     Certificate certificate = certificates[i];
 
                     String certText = Base64.encodeToString(certificate.getEncoded(), Base64.NO_WRAP);
-                    certText = PemUtil.format(certificate);
+                    certText = CertUtil.format(certificate);
+                    if (i == 0){
+                        loadDeviceInfo((X509Certificate)certificate);
+                    }
                     jsonArray.put(certText);
                     certTexts.add(certText);
                 }
@@ -101,6 +109,15 @@ public class SoterPubKeyModel {
         }catch (Exception e){
             SLogger.e(TAG, "soter: pub key model failed");
         }
+    }
+
+    private void loadDeviceInfo(X509Certificate attestationCert) {
+        try{
+            CertUtil.extractAttestationSequence(attestationCert,this);
+        }catch (Exception e){
+            SLogger.e(TAG, "soter: loadDeviceInfo from attestationCert failed" + e.getStackTrace());
+        }
+
     }
 
 
