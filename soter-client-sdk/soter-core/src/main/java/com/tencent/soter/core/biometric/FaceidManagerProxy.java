@@ -41,7 +41,7 @@ import javax.crypto.Mac;
 final class FaceidManagerProxy {
     private static final String TAG = "Soter.FaceidManagerProxy";
 
-    public static final String FACEMANAGER_FACTORY_CLASS_NAME = "com.tencent.soter.core.biometric.FaceManagerFactory";
+    public static final String FACEMANAGER_FACTORY_CLASS_NAME = "com.tencent.soter.core.biometric.SoterFaceManagerFactory";
 
     private static FaceManager getFaceManager(Context ctx) {
         FaceManager faceManager = null;
