@@ -115,6 +115,9 @@ SoterWrapperApi.release();
 
 TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
+## 参与贡献
+ 
+[腾讯开源激励计划](https://opensource.tencent.com/contribution) 鼓励开发者的参与和贡献，期待你的加入。
 
 
 ## A Quick Look at TENCENT SOTER
@@ -220,3 +223,7 @@ For more information about contributing issues or pull requests, check our [CONT
 ## License
 
 TENCENT SOTER is based on BSD license. Please check our [LICENSE document](./LICENSE).
+
+## Encouraging
+ 
+[Tencent Open Source Contribution Plan](https://opensource.tencent.com/contribution)  encourages your contributing, and looks forward to your attending。
