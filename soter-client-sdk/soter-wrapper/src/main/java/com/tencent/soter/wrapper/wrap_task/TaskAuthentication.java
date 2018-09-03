@@ -127,12 +127,8 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             callback(new SoterProcessAuthenticationResult(ERR_NO_NET_WRAPPER, "neither get challenge wrapper nor challenge str is found in request parameter"));
             return true;
         }
-        // in version 1.1.0, we will compat with this scenario in which you want to upload the signature yourself
-//        if (mUploadSignatureWrapper == null) {
-//            SLogger.w(TAG, "soter: challenge wrap is null!");
-//            callback(new SoterProcessResult(ERR_NO_NET_WRAPPER, "not provide upload signature net wrapper"));
-//            return true;
-//        }
+
+
         Context context = mContextWeakReference.get();
         if (context == null) {
             SLogger.w(TAG, "soter: context instance released in preExecute");
