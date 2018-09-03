@@ -74,7 +74,7 @@ public class BiometricManagerCompat {
 
     public static boolean isNativeSupportFaceid(){
         try {
-            Class t = Class.forName("com.tencent.soter.core.biometric.FaceManagerFactory");
+            Class t = Class.forName(FaceidManagerProxy.FACEMANAGER_FACTORY_CLASS_NAME);
             return  true;
         } catch (Exception e) {
             return false;

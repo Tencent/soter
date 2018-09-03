@@ -65,7 +65,6 @@ public class CertSoterCore extends SoterCoreBeforeTreble {
     @Override
     public SoterPubKeyModel getAppGlobalSecureKeyModel() {
         SLogger.i(TAG, "soter: start get app global secure key pub");
-        SLogger.i(TAG, "soter: start get app global secure key pub for test");
         if (isNativeSupportSoter()) {
 
             KeyStore keyStore;
