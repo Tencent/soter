@@ -93,7 +93,7 @@ public class TaskInit extends BaseSoterTask {
         SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
         // set implement to wrapper
         SoterDelegate.setImplement(wrapperDelegate);
-
+        SoterCore.tryToInitSoterBeforeTreble();
         SoterCore.tryToInitSoterTreble(context);
         SoterCore.setUp();
         isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportBiometric(context, ConstantsSoter.FACEID_AUTH));

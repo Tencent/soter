@@ -53,7 +53,9 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     private static SoterCoreBase IMPL;
 
     static {
+        SLogger.i(TAG,"soter: SoterCore is call static block to init SoterCore IMPL");
         IMPL = getProviderSoterCore();
+        SLogger.i(TAG,"soter: SoterCore is call static block to init SoterCore IMPL, IMPL is null[%b]", (IMPL == null) );
     }
 
 
@@ -62,15 +64,25 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     }
 
     public static void tryToInitSoterTreble(Context context) {
-
         if(IMPL == null ){
+            SLogger.i(TAG,"soter: SoterCore IMPL is null then call tryToInitSoterTreble to init");
             IMPL = new SoterCoreTreble();
             if(!IMPL.initSoter(context)){
                 IMPL = null;
+                SLogger.i(TAG,"soter: SoterCore IMPL is null after call tryToInitSoterTreble to init");
             }
-
         }
     }
+
+    public static void tryToInitSoterBeforeTreble() {
+        if(IMPL == null ){
+            SLogger.i(TAG,"soter: SoterCore IMPL is null then call getProviderSoterCore to init");
+            IMPL = getProviderSoterCore();
+            SLogger.i(TAG,"soter: SoterCore IMPL is null[%b], after call getProviderSoterCore to init", (IMPL == null) );
+        }
+    }
+
+
 
     public static int getSoterCoreType(){
         if (IMPL == null){

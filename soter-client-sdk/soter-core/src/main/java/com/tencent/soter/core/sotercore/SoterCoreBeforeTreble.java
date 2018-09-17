@@ -50,9 +50,6 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
      */
     @SuppressLint("PrivateApi")
     public static void setUp() {
-        if(isAlreadyCheckedSetUp){
-            return;
-        }
         Class<?> clazz;
         try {
             clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
