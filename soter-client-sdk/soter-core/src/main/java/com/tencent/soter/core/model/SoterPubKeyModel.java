@@ -15,7 +15,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
@@ -69,11 +71,27 @@ public class SoterPubKeyModel {
         try {
             jsonObj = new JSONObject(rawJson);
 //            this.rawJson = jsonObj.toString();
-            this.counter = jsonObj.optLong(JSON_KEY_COUNTER);
-            this.uid = jsonObj.optInt(JSON_KEY_UID);
-            this.cpu_id = jsonObj.optString(JSON_KEY_CPU_ID);
-            this.pub_key_in_x509 = jsonObj.optString(JSON_KEY_PUBLIC);
-        } catch (JSONException e) {
+            if(jsonObj.has(JSON_KEY_CERTS)){
+                JSONArray certJsonArray = jsonObj.optJSONArray(JSON_KEY_CERTS);
+                if (certJsonArray.length() < 2) {
+                    SLogger.e(TAG,"certificates train not enough");
+                }
+                SLogger.i(TAG,"certs size: [%d]", certJsonArray.length());
+                certs =  new ArrayList<String>();
+                for (int i = 0; i < certJsonArray.length(); i++) {
+                    String certText = certJsonArray.getString(i);
+                    certs.add(certText);
+                }
+                CertificateFactory factory = CertificateFactory.getInstance("X.509");
+                X509Certificate askCertificate = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certs.get(0).getBytes()));
+                loadDeviceInfo(askCertificate);
+            }else{
+                this.counter = jsonObj.optLong(JSON_KEY_COUNTER);
+                this.uid = jsonObj.optInt(JSON_KEY_UID);
+                this.cpu_id = jsonObj.optString(JSON_KEY_CPU_ID);
+                this.pub_key_in_x509 = jsonObj.optString(JSON_KEY_PUBLIC);
+            }
+        } catch (Exception e) {
             SLogger.e(TAG, "soter: pub key model failed");
         }
         this.signature = signature;

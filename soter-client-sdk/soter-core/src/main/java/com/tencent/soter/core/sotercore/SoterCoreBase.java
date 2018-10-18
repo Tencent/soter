@@ -148,6 +148,8 @@ public abstract class SoterCoreBase {
         return iOutcome;
     }
 
+
+
     // Magic warning. Do not modify anyway
     protected static SoterPubKeyModel retrieveJsonFromExportedData(byte[] origin) {
         if (origin == null) {
@@ -166,7 +168,7 @@ public abstract class SoterCoreBase {
             return null;
         }
         byte[] rawJsonBytes = new byte[rawLength];
-        if (origin.length <= RAW_LENGTH_PREFIX + rawLength) {
+        if (origin.length < RAW_LENGTH_PREFIX + rawLength) {
             SLogger.e(TAG, "length not correct 2");
             return null;
         }
@@ -178,11 +180,12 @@ public abstract class SoterCoreBase {
         SoterPubKeyModel model = new SoterPubKeyModel(jsonStr, "");
         int signatureLength = origin.length - (RAW_LENGTH_PREFIX + rawLength);
         SLogger.d(TAG, "soter: signature length: " + signatureLength);
-        byte[] signature = new byte[signatureLength];
-        System.arraycopy(origin, rawLength + RAW_LENGTH_PREFIX, signature, 0, signatureLength);
-        model.setSignature(Base64.encodeToString(signature, Base64.NO_WRAP));
+        if(signatureLength != 0) {
+            byte[] signature = new byte[signatureLength];
+            System.arraycopy(origin, rawLength + RAW_LENGTH_PREFIX, signature, 0, signatureLength);
+            model.setSignature(Base64.encodeToString(signature, Base64.NO_WRAP));
+        }
         return model;
     }
-
 
 }
