@@ -18,6 +18,8 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 
 接入TENCENT SOTER，你可以在**不获取用户指纹图案的前提下**，在Android设备上实现可信的指纹认证，获得与微信指纹支付一致的安全快捷认证体验。
 
+2.0版本加入了对华为设备的支持和人脸识别功能。
+
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
 
@@ -69,7 +71,7 @@ param);
 SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparationResult>() {...},false, true, 0, null, null);
 ```
 
-### 进行指纹认证
+### 进行指纹/人脸认证
 
 密钥生成完毕之后，可以使用封装接口调用指纹传感器进行认证。
 
@@ -77,9 +79,13 @@ SoterWrapperApi.prepareAuthKey(new SoterProcessCallback<SoterProcessKeyPreparati
 AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
                                     .setScene(0)
                                     .setContext(MainActivity.this)
-                                    .setFingerprintCanceller(mSoterFingerprintCanceller)
+    								// fingerprint
+    								.setBiometricType(ConstantsSoter.FINGERPRINT_AUTH)
+    								// faceid
+    								//.setBiometricType(ConstantsSoter.FACEID_AUTH)
+    								.setSoterBiometricCanceller(mSoterBiometricCanceller)
                                     .setPrefilledChallenge("test challenge")
-                                    .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() {...}).build();
+                                    .setSoterBiometricStateCallback(new 			SoterBiometricStateCallback() {...}).build();
 SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAuthenticationResult>() {...}, param);
 ```
 
@@ -126,6 +132,8 @@ There are more than 100 models, hundreds of millions Android devices supporting 
 TENCENT SOTER has been already used in scenarios like WeChat fingerprint payment, fingerprint authentication in Official Account Webpages and Mini Programs.
 
 You can get a consistent experience in fingerprint authenticating in your application, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
+
+We added support for HUAWEI devices and FaceID in version 2.0.
 
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
@@ -186,9 +194,13 @@ You can use wrapped interface to authenticate when fingerprint.
 AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder()
                                     .setScene(0)
                                     .setContext(MainActivity.this)
-                                    .setFingerprintCanceller(mSoterFingerprintCanceller)
+    								// fingerprint
+    								.setBiometricType(ConstantsSoter.FINGERPRINT_AUTH)
+    								// faceid
+    								//.setBiometricType(ConstantsSoter.FACEID_AUTH)
+    								.setSoterBiometricCanceller(mSoterBiometricCanceller)
                                     .setPrefilledChallenge("test challenge")
-                                    .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() {...}).build();
+                                    .setSoterBiometricStateCallback(new 			SoterBiometricStateCallback() {...}).build();
 SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAuthenticationResult>() {...}, param);
 ```
 
