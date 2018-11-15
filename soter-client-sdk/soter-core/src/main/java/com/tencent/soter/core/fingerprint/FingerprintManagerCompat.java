@@ -39,6 +39,7 @@ import javax.crypto.Mac;
  */
 
 @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
+@Deprecated
 public class FingerprintManagerCompat {
     private static final String TAG = "Soter.FingerprintManagerCompat";
 

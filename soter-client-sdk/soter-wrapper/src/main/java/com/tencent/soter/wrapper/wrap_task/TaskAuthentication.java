@@ -42,7 +42,7 @@ import java.security.SignatureException;
  * Created by henryye on 2017/4/24.
  * Task to execute real authentication stuff
  */
-
+@Deprecated
 public class TaskAuthentication extends BaseSoterTask implements AuthCancellationCallable {
     private static final String TAG = "Soter.TaskAuthentication";
 

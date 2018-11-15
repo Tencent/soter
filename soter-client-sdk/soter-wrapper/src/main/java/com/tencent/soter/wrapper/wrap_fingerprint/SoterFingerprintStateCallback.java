@@ -14,7 +14,7 @@ package com.tencent.soter.wrapper.wrap_fingerprint;
  * The callback for fingerprint authentication prpcess. Note that do not directly rely on the callback to do logic, you should only use it
  * to refresh the UI components.
  */
-
+@Deprecated
 public interface SoterFingerprintStateCallback {
     /**
      * Callback when fingerprint sensor start listening

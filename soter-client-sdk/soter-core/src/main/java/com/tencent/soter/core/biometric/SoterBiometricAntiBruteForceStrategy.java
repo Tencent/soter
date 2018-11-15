@@ -25,7 +25,7 @@ import com.tencent.soter.core.model.SLogger;
  * NOTE: Only for fingerprint
  */
 @SuppressWarnings("WeakerAccess")
-public class SoterBiometricAntiBruteForceStrategy {
+class SoterBiometricAntiBruteForceStrategy {
     private static final String TAG = "Soter.SoterBiometricAntiBruteForceStrategy";
     //constants
     private static final int MAX_FAIL_NUM = 5;
