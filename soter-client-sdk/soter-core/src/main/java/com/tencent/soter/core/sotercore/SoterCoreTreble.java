@@ -60,8 +60,15 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         @Override
         public void binderDied() {
             // TODO Auto-generated method stub
+            SLogger.i(TAG, "soter: binder died");
             if (mSoterService == null)
                 return;
+
+            synchronized (lock) {
+                connected = false;
+                lock.notifyAll();
+            }
+
             mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
             mSoterService = null;
 
