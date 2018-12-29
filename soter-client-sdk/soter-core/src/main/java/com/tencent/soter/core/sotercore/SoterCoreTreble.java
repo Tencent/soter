@@ -375,6 +375,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             if(mSoterService.removeAuthKey(uid, authKeyName) == ERR_OK) {
+                if (isAutoDeleteASK) {
+                    if (mSoterService.generateAppSecureKey(uid) == ERR_OK) {
+                        return new SoterCoreResult(ERR_OK);
+                    } else {
+                        return new SoterCoreResult(ERR_REMOVE_ASK);
+                    }
+                }
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
