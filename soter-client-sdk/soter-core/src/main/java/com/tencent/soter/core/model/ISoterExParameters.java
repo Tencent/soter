@@ -19,6 +19,10 @@ interface ISoterExParameters {
     String FINGERPRINT_HARDWARE_POSITION = "fingerprint_hardware_position";
 
     /**
+     * Vendor undefine the type
+     */
+    int FINGERPRINT_TYPE_UNDEFINE = 0;
+    /**
      * Normal fingerprint type
      */
     int FINGERPRINT_TYPE_NORMAL = 1;

@@ -42,11 +42,11 @@ public class SoterExParameters {
     }
 
     public int getFingerprintType() {
-        Object result = getParam(ISoterExParameters.FINGERPRINT_TYPE, ISoterExParameters.FINGERPRINT_TYPE_NORMAL);
+        Object result = getParam(ISoterExParameters.FINGERPRINT_TYPE, ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE);
         if (result instanceof Integer) {
             return (int) result;
         } else {
-            return ISoterExParameters.FINGERPRINT_TYPE_NORMAL;
+            return ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE;
         }
     }
 
