@@ -25,9 +25,14 @@ public interface IWrapGetSupportNet extends ISoterNetBaseWrapper<IWrapGetSupport
 
     class GetSupportResult {
         public boolean isSupport = false;
-
+        public int supportType = -1;
         public GetSupportResult(boolean isSupport) {
+            this(isSupport, -1);
+        }
+
+        public GetSupportResult(boolean isSupport, int supportType) {
             this.isSupport = isSupport;
+            this.supportType = supportType;
         }
     }
 

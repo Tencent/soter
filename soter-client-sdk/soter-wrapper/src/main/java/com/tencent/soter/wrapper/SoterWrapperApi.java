@@ -137,6 +137,14 @@ public class SoterWrapperApi implements SoterProcessErrCode {
     }
 
     /**
+     * Get the support type, this is just the server result, you should also judge the hardware support yourself.
+     * @return see {@link SoterDataCenter#SUPPORT_FINGERPRINT}、 {@link SoterDataCenter#SUPPORT_FACEID} and {@link SoterDataCenter#SUPPORT_ALL}
+     */
+    public static int getSupportType() {
+        return SoterDataCenter.getInstance().getSupportType();
+    }
+
+    /**
      * Check whether SOTER is initialized.
      * @return true if already initialized
      */
