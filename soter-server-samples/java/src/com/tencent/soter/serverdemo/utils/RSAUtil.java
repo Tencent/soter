@@ -15,6 +15,9 @@ import java.security.spec.PSSParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import com.tencent.soter.serverdemo.SoterPubKeyModel;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 import org.json.JSONObject;
@@ -28,6 +31,8 @@ public class RSAUtil {
 	private static final String ALGORITHM_NAME = "RSA";
 
 	private static final String KEY_DESCRIPTION_OID = "1.3.6.1.4.1.11129.2.1.17";
+
+	private static final int ATTESTATION_CHALLENGE_INDEX = 4;
 
 	/**
 	 * load PublicKey from file
@@ -93,40 +98,33 @@ public class RSAUtil {
 			throw new Exception("Couldn't find the keystore attestation " + "extension data.");
 		}
 
-		try {
-			int jsonStartOff = 0;
-			int jsonEndOff = 0;
-			int jsonLength = 0;
-
-			byte jsonStartTag = "{".getBytes()[0];
-			byte jsonEndTag = "}".getBytes()[0];
-
-			for (int i = 0; i < attestationExtensionBytes.length; i++) {
-				byte b = attestationExtensionBytes[i];
-				if (b==jsonStartTag) {
-					jsonStartOff = i;
-				}else if(b==jsonEndTag){
-					jsonEndOff = i;
-				}
+		ASN1Sequence decodedSequence;
+		try (ASN1InputStream asn1InputStream =
+					 new ASN1InputStream(attestationExtensionBytes)) {
+			// The extension contains one object, a sequence, in the
+			// Distinguished Encoding Rules (DER)-encoded form. Get the DER
+			// bytes.
+			byte[] derSequenceBytes = ((ASN1OctetString) asn1InputStream
+					.readObject()).getOctets();
+			// Decode the bytes as an ASN1 sequence object.
+			try (ASN1InputStream seqInputStream =
+						 new ASN1InputStream(derSequenceBytes)) {
+				decodedSequence = (ASN1Sequence) seqInputStream.readObject();
 			}
-			if (jsonStartOff > 0 && jsonStartOff < jsonEndOff) {
-				assert attestationExtensionBytes[jsonStartOff-1]==(jsonEndOff-jsonStartOff+1);
-				jsonLength = (jsonEndOff-jsonStartOff+1);
 
-				byte[] jsonBytes = new byte[jsonLength];
-				System.arraycopy(attestationExtensionBytes, jsonStartOff, jsonBytes, 0, jsonLength);
-				String jsonString = new String(jsonBytes);
-				JSONObject jsonObject = new JSONObject(jsonString);
+			byte[] attestationChallenge = ((ASN1OctetString)
+					decodedSequence.getObjectAt(ATTESTATION_CHALLENGE_INDEX))
+					.getOctets();
 
-				System.out.println("soter: challenge json in attestation certificate " + jsonString);
+			String jsonString = new String(attestationChallenge);
+			JSONObject jsonObject = new JSONObject(jsonString);
 
+			System.out.println("soter: challenge json in attestation certificate " + jsonString);
 
-
-				soterPubKeyModel.setCpu_id(jsonObject.getString("cpu_id"));
-				soterPubKeyModel.setUid(jsonObject.getInt("uid"));
-				soterPubKeyModel.setCounter(jsonObject.getLong("counter"));
-			}
-		}catch (Exception e){
+			soterPubKeyModel.setCpu_id(jsonObject.getString("cpu_id"));
+			soterPubKeyModel.setUid(jsonObject.getInt("uid"));
+			soterPubKeyModel.setCounter(jsonObject.getLong("counter"));
+		} catch (Exception e){
 			throw new Exception("Couldn't parse challenge json string in the attestation certificate" + e.getStackTrace());
 		}
 	}
