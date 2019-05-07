@@ -20,6 +20,12 @@ import android.util.SparseArray;
 public class SoterDataCenter {
     private static volatile SoterDataCenter sInstance = null;
 
+    public static final int SUPPORT_UNDEFINED = -1;
+    public static final int SUPPORT_NOSUPPORT = 0x00;
+    public static final int SUPPORT_FINGERPRINT = 0x01;
+    public static final int SUPPORT_FACEID = 0x02;
+    public static final int SUPPORT_ALL = 0x03;
+
     public static SoterDataCenter getInstance() {
         if(sInstance == null) {
             synchronized (SoterDataCenter.class) {
@@ -35,6 +41,7 @@ public class SoterDataCenter {
 
     private boolean              isInit = false;
     private boolean              isSupportSoter = false;
+    private int                  supportType = 0;
     private SparseArray<String>  sAuthKeyNames = new SparseArray<>(10);
     private SharedPreferences    sStatusSharedPreference = null;
 
@@ -60,6 +67,16 @@ public class SoterDataCenter {
         synchronized (SoterDataCenter.class) {
             isSupportSoter = supportSoter;
         }
+    }
+
+    public int getSupportType() {
+        synchronized (SoterDataCenter.class) {
+            return supportType;
+        }
+    }
+
+    public void setSupportType(int supportType) {
+        this.supportType = supportType;
     }
 
     public SparseArray<String> getAuthKeyNames() {

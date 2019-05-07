@@ -205,6 +205,7 @@ public class TaskInit extends BaseSoterTask {
                             synchronized (SoterDataCenter.class) {
                                 SoterDataCenter.getInstance().setSupportSoter(callbackDataModel.isSupport);
                                 SoterDataCenter.getInstance().setInit(true);
+                                SoterDataCenter.getInstance().setSupportType(callbackDataModel.supportType);
                             }
                             callback(new SoterProcessNoExtResult(ERR_OK));
                         } else {

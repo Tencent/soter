@@ -414,10 +414,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     }
 
     /**
-     * Judge whether there's fingerprint sensor in this device,
+     * Judge whether there's fingerprint sensor in this device
      * @param context The context
      * @return true if there's fingerprint sensor
      */
+    @Deprecated
     public static boolean isSupportFingerprint(Context context) {
         boolean isSupportFingerprint = FingerprintManagerCompat.from(context).isHardwareDetected();
         SLogger.e(TAG, "soter: isSupportFingerprint return["+isSupportFingerprint+"]");
@@ -435,6 +436,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @param context The context
      * @return true if there's fingerprint enrolled
      */
+    @Deprecated
     public static boolean isSystemHasFingerprint(Context context) {
         return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
     }
@@ -447,6 +449,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * Judge whether current fingerprint is frozen due to too many failure trials. If true, you should not use fingerprint for authentication in current session.
      * @return True if the fingerprint sensor is frozen now.
      */
+    @Deprecated
     public static boolean isCurrentFingerprintFrozen(Context context) {
         return !SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context) && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context);
     }

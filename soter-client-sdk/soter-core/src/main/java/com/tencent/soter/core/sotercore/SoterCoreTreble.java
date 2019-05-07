@@ -60,8 +60,15 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         @Override
         public void binderDied() {
             // TODO Auto-generated method stub
+            SLogger.i(TAG, "soter: binder died");
             if (mSoterService == null)
                 return;
+
+            synchronized (lock) {
+                connected = false;
+                lock.notifyAll();
+            }
+
             mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
             mSoterService = null;
 
@@ -192,8 +199,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
-
+            SLogger.printErrStackTrace(TAG, e, "soter: generateAppSecureKey fail: ");
         }
         return new SoterCoreResult(ERR_ASK_GEN_FAILED);
     }
@@ -225,7 +231,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: removeAppGlobalSecureKey fail: ");
         }
         return new SoterCoreResult(ERR_REMOVE_ASK);
 
@@ -256,7 +262,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             return mSoterService.hasAskAlready(uid);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: hasAppGlobalSecureKey fail: ");
             return false;
         }
 
@@ -304,8 +310,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return null;
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
-
+            SLogger.printErrStackTrace(TAG, e, "soter: getAppGlobalSecureKeyModel fail: ");
         }
         return null;
 
@@ -338,7 +343,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: generateAuthKey fail: ");
         }
 
         return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
@@ -368,10 +373,17 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             if(mSoterService.removeAuthKey(uid, authKeyName) == ERR_OK) {
+                if (isAutoDeleteASK) {
+                    if (mSoterService.removeAllAuthKey(uid) == ERR_OK) {
+                        return new SoterCoreResult(ERR_OK);
+                    } else {
+                        return new SoterCoreResult(ERR_REMOVE_ASK);
+                    }
+                }
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: removeAuthKey fail: ");
         }
         return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
     }
@@ -423,7 +435,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return null;
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: getAuthKeyModel fail: ");
         }
         return null;
 
@@ -460,7 +472,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             return mSoterService.hasAuthKey(uid,authKeyName);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: hasAuthKey fail: ");
             return false;
         }
 
@@ -495,7 +507,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             result =  mSoterService.initSigh(uid, kname, challenge);
             return result;
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: initSigh fail: ");
         }
         return null;
 
@@ -532,7 +544,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             }
 
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: finishSign fail: ");
         }
         return rawBytes;
 
@@ -560,7 +572,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             return mSoterService.getVersion() ;
         } catch (RemoteException e) {
-            e.printStackTrace();
+            SLogger.printErrStackTrace(TAG, e, "soter: getVersion fail: ");
         }
         return 0;
     }

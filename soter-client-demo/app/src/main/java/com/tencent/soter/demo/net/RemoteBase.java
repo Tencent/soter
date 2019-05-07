@@ -43,7 +43,7 @@ abstract class RemoteBase {
             mResultJson = getSimulateJsonResult(mRequestJson);
         }
         String url = getNetUrl();
-        DemoLogger.i(TAG, "soterdemo: url is: %s", url);
+        DemoLogger.i(TAG, "soterdemo: url is: %s, request: %s", url, mRequestJson);
         // 模拟网络操作
         DemoNetworkThread.getInstance().postTaskDelayed(new Runnable() {
             @Override

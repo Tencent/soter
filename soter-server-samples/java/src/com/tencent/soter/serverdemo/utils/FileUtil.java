@@ -55,6 +55,37 @@ public class FileUtil {
 		}
 	}
 
+	public static String readFromFile(String fileName) {
+		File file = new File(fileName);
+		if (!file.exists()) {
+			System.err.println("Error: file " + fileName + " not found!");
+			return null;
+		}
+
+		BufferedReader reader = null;
+		InputStream in = null;
+		try {
+			in = new FileInputStream(new File(fileName));
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = null;
+			StringBuilder stringBuilder = new StringBuilder();
+			while ((line = reader.readLine()) != null) {
+				stringBuilder.append(line);
+			}
+			return stringBuilder.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	}
 	public static byte[] readByteArrayFromFile(String fileName) {
 		BufferedInputStream in = null;
 		try {

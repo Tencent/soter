@@ -1,15 +1,20 @@
 package com.tencent.soter.serverdemo;
 
-import java.security.Security;
-import java.security.interfaces.RSAPublicKey;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import com.tencent.soter.serverdemo.utils.FileUtil;
 import com.tencent.soter.serverdemo.utils.RSAUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 
 public class SoterServerDemo {
-	
 	public static void main(String[] args) {
 		
 		Security.addProvider(new BouncyCastleProvider());
@@ -37,6 +42,20 @@ public class SoterServerDemo {
 		else {
 			System.err.println("Verify Final signature failed");
 		}
-		
+
+		// load ask cert
+		try {
+			String certs = FileUtil.readFromFile("example/ask_cert_json.txt");
+			JSONObject jsonObject = new JSONObject(certs);
+			JSONArray certsJson = jsonObject.optJSONArray("certs");
+			CertificateFactory factory = CertificateFactory.getInstance("X.509");
+			X509Certificate askCertificate = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certsJson.getString(0).getBytes()));
+			SoterPubKeyModel soterPubKeyModel = new SoterPubKeyModel();
+			RSAUtil.extractAttestationSequence(askCertificate, soterPubKeyModel);
+			System.out.println("cert ask encode: " + Base64.getEncoder().encodeToString(askCertificate.getPublicKey().getEncoded()));
+			System.out.println("cert ask model: " + soterPubKeyModel.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

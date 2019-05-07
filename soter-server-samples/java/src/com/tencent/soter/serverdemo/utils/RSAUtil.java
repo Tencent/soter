@@ -1,19 +1,26 @@
 package com.tencent.soter.serverdemo.utils;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import com.tencent.soter.serverdemo.SoterPubKeyModel;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
+import org.json.JSONObject;
 
 /**
  * RSAUtil is the helper class to load keys and verify signature and so on.
@@ -22,7 +29,11 @@ import org.bouncycastle.util.encoders.Base64;
 public class RSAUtil {
 
 	private static final String ALGORITHM_NAME = "RSA";
-	
+
+	private static final String KEY_DESCRIPTION_OID = "1.3.6.1.4.1.11129.2.1.17";
+
+	private static final int ATTESTATION_CHALLENGE_INDEX = 4;
+
 	/**
 	 * load PublicKey from file
 	 */
@@ -79,5 +90,42 @@ public class RSAUtil {
 
 	public static boolean verify(RSAPublicKey publicKey, String data, byte[] signature) {
 		return verify(publicKey, data.getBytes(), signature);
+	}
+
+	public static void extractAttestationSequence(X509Certificate attestationCert, SoterPubKeyModel soterPubKeyModel) throws Exception, IOException {
+		byte[] attestationExtensionBytes = attestationCert.getExtensionValue(KEY_DESCRIPTION_OID);
+		if (attestationExtensionBytes == null || attestationExtensionBytes.length == 0) {
+			throw new Exception("Couldn't find the keystore attestation " + "extension data.");
+		}
+
+		ASN1Sequence decodedSequence;
+		try (ASN1InputStream asn1InputStream =
+					 new ASN1InputStream(attestationExtensionBytes)) {
+			// The extension contains one object, a sequence, in the
+			// Distinguished Encoding Rules (DER)-encoded form. Get the DER
+			// bytes.
+			byte[] derSequenceBytes = ((ASN1OctetString) asn1InputStream
+					.readObject()).getOctets();
+			// Decode the bytes as an ASN1 sequence object.
+			try (ASN1InputStream seqInputStream =
+						 new ASN1InputStream(derSequenceBytes)) {
+				decodedSequence = (ASN1Sequence) seqInputStream.readObject();
+			}
+
+			byte[] attestationChallenge = ((ASN1OctetString)
+					decodedSequence.getObjectAt(ATTESTATION_CHALLENGE_INDEX))
+					.getOctets();
+
+			String jsonString = new String(attestationChallenge);
+			JSONObject jsonObject = new JSONObject(jsonString);
+
+			System.out.println("soter: challenge json in attestation certificate " + jsonString);
+
+			soterPubKeyModel.setCpu_id(jsonObject.getString("cpu_id"));
+			soterPubKeyModel.setUid(jsonObject.getInt("uid"));
+			soterPubKeyModel.setCounter(jsonObject.getLong("counter"));
+		} catch (Exception e){
+			throw new Exception("Couldn't parse challenge json string in the attestation certificate" + e.getStackTrace());
+		}
 	}
 }

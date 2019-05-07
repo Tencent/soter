@@ -66,8 +66,8 @@ public class SoterPubKeyModel {
     }
 
     public SoterPubKeyModel(String rawJson, String signature) {
-        this.rawJson = rawJson;
         JSONObject jsonObj;
+        setRawJson(rawJson);
         try {
             jsonObj = new JSONObject(rawJson);
 //            this.rawJson = jsonObj.toString();
@@ -85,6 +85,10 @@ public class SoterPubKeyModel {
                 CertificateFactory factory = CertificateFactory.getInstance("X.509");
                 X509Certificate askCertificate = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certs.get(0).getBytes()));
                 loadDeviceInfo(askCertificate);
+                jsonObj.put(JSON_KEY_CPU_ID, cpu_id);
+                jsonObj.put(JSON_KEY_UID, uid);
+                jsonObj.put(JSON_KEY_COUNTER, counter);
+                setRawJson(jsonObj.toString());
             }else{
                 this.counter = jsonObj.optLong(JSON_KEY_COUNTER);
                 this.uid = jsonObj.optInt(JSON_KEY_UID);
@@ -116,8 +120,10 @@ public class SoterPubKeyModel {
                 certs = certTexts;
 
                 JSONObject jsonObj = new JSONObject();
-                jsonObj.put("certs", jsonArray);
-
+                jsonObj.put(JSON_KEY_CERTS, jsonArray);
+                jsonObj.put(JSON_KEY_CPU_ID, cpu_id);
+                jsonObj.put(JSON_KEY_UID, uid);
+                jsonObj.put(JSON_KEY_COUNTER, counter);
                 setRawJson(jsonObj.toString());
             }
         }catch (Exception e){
