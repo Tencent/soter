@@ -114,7 +114,7 @@ public class RemoteAuthentication extends RemoteBase implements IWrapUploadSigna
 
     @Override
     protected String getNetUrl() {
-        return "https://www.grouppic.cn/soter/authentication";
+        return "http://simulate.soter_demo/authentication";
     }
 
     /**

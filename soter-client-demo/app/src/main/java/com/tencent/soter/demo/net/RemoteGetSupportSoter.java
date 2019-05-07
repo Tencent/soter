@@ -73,6 +73,6 @@ public class RemoteGetSupportSoter extends RemoteBase implements IWrapGetSupport
 
     @Override
     protected String getNetUrl() {
-        return "https://www.grouppic.cn/soter/get_is_support";
+        return "http://simulate.soter_demo/get_is_support";
     }
 }

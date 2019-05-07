@@ -28,7 +28,7 @@ public class RemoteUploadPayAuthKey extends RemoteUploadAuthKeyBase {
 
     @Override
     protected String getNetUrl() {
-        return "https://www.grouppic.cn/soter/upload_pay_auth_key";
+        return "http://simulate.soter_demo/upload_pay_auth_key";
     }
 
     @Override

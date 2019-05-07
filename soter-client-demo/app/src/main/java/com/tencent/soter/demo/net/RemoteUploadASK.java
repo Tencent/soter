@@ -101,6 +101,6 @@ public class RemoteUploadASK extends RemoteBase implements IWrapUploadKeyNet {
 
     @Override
     protected String getNetUrl() {
-        return "https://www.grouppic.cn/soter/upload_ask_key";
+        return "http://simulate.soter_demo/upload_ask_key";
     }
 }
