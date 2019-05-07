@@ -18,8 +18,6 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 
 接入TENCENT SOTER，你可以在**不获取用户指纹图案的前提下**，在Android设备上实现可信的指纹认证，获得与微信指纹支付一致的安全快捷认证体验。
 
-2.0版本加入了对华为设备的支持和人脸识别功能。
-
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
 
@@ -37,7 +35,7 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.12'
+    compile 'com.tencent.soter:soter-wrapper:2.0.0'
     ...
 }
 ```
@@ -97,13 +95,18 @@ SoterWrapperApi.requestAuthorizeAndSign(new SoterProcessCallback<SoterProcessAut
 SoterWrapperApi.release();
 ```
 
+## 2.0版本变化
+* 增加对华为设备的支持。
+* 增加人脸识别功能。
+* 后台ASK的解析有少量变动，看[这里](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5%E2%80%94%E2%80%94%E5%90%8E%E5%8F%B0)。
+
 ## 更多文档
 
 * 想了解TENCENT SOTER更多信息与原理？看[这里](https://github.com/Tencent/soter/wiki)。
 
 * 想要更高的安全性，用于登录甚至支付场景中？看[这里](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5)。
 
-  ​
+  
 
 ## 联系我们
 
@@ -122,7 +125,7 @@ SoterWrapperApi.release();
 TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 ## 参与贡献
- 
+
 [腾讯开源激励计划](https://opensource.tencent.com/contribution) 鼓励开发者的参与和贡献，期待你的加入。
 
 
@@ -135,8 +138,6 @@ There are more than 100 models, hundreds of millions Android devices supporting 
 TENCENT SOTER has been already used in scenarios like WeChat fingerprint payment, fingerprint authentication in Official Account Webpages and Mini Programs.
 
 You can get a consistent experience in fingerprint authenticating in your application, like what it is like in WeChat Payment, by getting access to TENCENT SOTER. 
-
-We added support for HUAWEI devices and FaceID in version 2.0.
 
 ![SoterFramework](https://github.com/WeMobileDev/article/blob/master/assets/soter/SoterFramework.png)
 
@@ -155,7 +156,7 @@ Add TENCENT SOTER dependency in your project's `build.gradle`
 ```groovy
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:1.3.10'
+    compile 'com.tencent.soter:soter-wrapper:2.0.0'
     ...
 }
 ```
@@ -215,6 +216,10 @@ You can release all the resource when you do not use TENCENT SOTER again by call
 SoterWrapperApi.release();
 ```
 
+## Changelog
+* Adding support for Huawei device
+* Adding FaceId function
+* A few changes in backend parsing ASK，Check [this](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5%E2%80%94%E2%80%94%E5%90%8E%E5%8F%B0).
 ## More Document
 
 - Want to know more about TENCENT SOTER's mechanism? Check [this](https://github.com/Tencent/soter/wiki).
@@ -237,5 +242,5 @@ For more information about contributing issues or pull requests, check our [CONT
 TENCENT SOTER is based on BSD license. Please check our [LICENSE document](./LICENSE).
 
 ## Encouraging
- 
+
 [Tencent Open Source Contribution Plan](https://opensource.tencent.com/contribution)  encourages your contributing, and looks forward to your attending。
