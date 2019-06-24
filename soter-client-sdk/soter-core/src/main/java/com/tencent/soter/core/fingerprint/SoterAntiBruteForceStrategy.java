@@ -26,7 +26,7 @@ import com.tencent.soter.core.model.SLogger;
  */
 @SuppressWarnings("WeakerAccess")
 @Deprecated
-class SoterAntiBruteForceStrategy {
+public class SoterAntiBruteForceStrategy {
     private static final String TAG = "Soter.SoterAntiBruteForceStrategy";
     //constants
     private static final int MAX_FAIL_NUM = 5;
