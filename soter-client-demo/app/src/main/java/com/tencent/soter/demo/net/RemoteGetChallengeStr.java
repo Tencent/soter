@@ -72,6 +72,6 @@ public class RemoteGetChallengeStr extends RemoteBase implements IWrapGetChallen
 
     @Override
     protected String getNetUrl() {
-        return "http://simulate.soter_demo/get_challenge";
+        return BASE_URL + "/get_challenge";
     }
 }

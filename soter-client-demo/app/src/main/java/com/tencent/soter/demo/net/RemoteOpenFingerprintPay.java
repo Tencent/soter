@@ -86,6 +86,6 @@ public class RemoteOpenFingerprintPay extends RemoteBase implements IWrapUploadS
 
     @Override
     protected String getNetUrl() {
-        return "http://simulate.soter_demo/open_fingerprintpay";
+        return BASE_URL + "/open_fingerprintpay";
     }
 }

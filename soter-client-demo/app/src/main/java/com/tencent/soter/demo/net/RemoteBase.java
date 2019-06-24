@@ -32,7 +32,7 @@ abstract class RemoteBase {
     private JSONObject mResultJson = null;
 
     private static final long SIMULATE_NETWORK_DELAY = 1000;
-
+    protected static final String BASE_URL = "http://simulate.soter_demo";
     public void execute() {
         DemoLogger.i(TAG, "soterdemo: simulate execute");
         JSONObject result = getSimulateJsonResult(mRequestJson);
