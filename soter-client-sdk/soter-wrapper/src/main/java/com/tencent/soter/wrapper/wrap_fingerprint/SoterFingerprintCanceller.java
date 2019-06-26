@@ -29,6 +29,7 @@ import junit.framework.Assert;
  *
  * All devices that support SOTER must be at least Android 5.0, so we do not have to check the API-Level
  */
+@Deprecated
 public class SoterFingerprintCanceller {
     private static final String TAG = "Soter.SoterFingerprintCanceller";
 

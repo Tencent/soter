@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.demo.R;
 import com.tencent.soter.demo.model.ConstantsSoterDemo;
 import com.tencent.soter.demo.model.DemoLogger;
@@ -44,12 +45,12 @@ import com.tencent.soter.demo.net.RemoteOpenFingerprintPay;
 import com.tencent.soter.demo.net.RemoteUploadASK;
 import com.tencent.soter.demo.net.RemoteUploadPayAuthKey;
 import com.tencent.soter.wrapper.SoterWrapperApi;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessAuthenticationResult;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessKeyPreparationResult;
 import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
-import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
-import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
@@ -67,14 +68,20 @@ public class SoterDemoUI extends AppCompatActivity {
 
     private Button mOpenOrCloseFingerprintPayment = null;
     private Button mUseFingerprintPay = null;
+    private Button mOpenOrCloseFaceidPayment = null;
+    private Button mUseFaceidPay = null;
 
     private Dialog mPasswordDialog = null;
-    private Dialog mFingerprintDialog = null;
+    private Dialog mBiometricDialog = null;
     private ProgressDialog mLoadingDialog = null;
+
     private View mCustomFingerprintView = null;
     private TextView mFingerprintStatusHintView = null;
 
-    private SoterFingerprintCanceller mCanceller = null;
+    private View mCustomFaceidView = null;
+    private TextView mFaceidStatusHintView = null;
+
+    private SoterBiometricCanceller mCanceller = null;
     private Animation mFlashAnimation = null;
 
     @Override
@@ -97,18 +104,35 @@ public class SoterDemoUI extends AppCompatActivity {
         mOpenOrCloseFingerprintPayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SoterDemoData.getInstance().getIsFingerprintPayOpened()) {
-                    doCloseFingerprintPayment();
+                if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FINGERPRINT_AUTH)) {
+                    doCloseBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
                 } else {
-                    doOpenFingerprintPayment();
+                    doOpenBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
                 }
             }
         });
-
         mUseFingerprintPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doUseFingerprintPayment();
+                doUseBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
+            }
+        });
+
+
+        mOpenOrCloseFaceidPayment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FACEID_AUTH)) {
+                    doCloseBiometricPayment(ConstantsSoter.FACEID_AUTH);
+                } else {
+                    doOpenBiometricPayment(ConstantsSoter.FACEID_AUTH);
+                }
+            }
+        });
+        mUseFaceidPay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doUseBiometricPayment(ConstantsSoter.FACEID_AUTH);
             }
         });
     }
@@ -116,15 +140,16 @@ public class SoterDemoUI extends AppCompatActivity {
     /**
      * 关闭一项业务的时候，除了业务状态之外，切记删除掉本机密钥，以及后台将原本密钥删除或者标记为不可用
      */
-    private void doCloseFingerprintPayment() {
-        DemoLogger.i(TAG, "soterdemo: start close fingerprint pay");
-        new AlertDialog.Builder(this).setTitle("").setMessage(getString(R.string.app_confirm_close)).setCancelable(true)
+    private void doCloseBiometricPayment(final int biometricType) {
+        DemoLogger.i(TAG, "soterdemo: start close biometric pay type["+ biometricType+"]");
+        String confirmMsg = ConstantsSoter.FINGERPRINT_AUTH == biometricType ? getString(R.string.app_confirm_fingerprint_close) : getString(R.string.app_confirm_faceid_close);
+        new AlertDialog.Builder(this).setTitle("").setMessage(confirmMsg).setCancelable(true)
                 .setOnCancelListener(null).setPositiveButton(getString(R.string.app_confirm), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 SoterWrapperApi.removeAuthKeyByScene(ConstantsSoterDemo.SCENE_PAYMENT);
-                SoterDemoData.getInstance().setIsFingerprintPayOpened(SoterDemoUI.this, false);
-                updateUseFingerprintPayBtnStatus();
+                SoterDemoData.getInstance().setIsBiometricPayOpened(SoterDemoUI.this, false, biometricType);
+                updateUseBiometricPayBtnStatus();
             }
         }).setNegativeButton(getString(R.string.app_cancel), null).show();
     }
@@ -132,30 +157,30 @@ public class SoterDemoUI extends AppCompatActivity {
     /**
      * 这里介绍了开启指纹业务的一个典型场景：开启指纹支付。共分为如下两个流程：
      * 1. 准备密钥（authKey，如果ASK也没有的话需要重新生成ASK）。对应{@link SoterWrapperApi#prepareAuthKey(SoterProcessCallback, boolean, boolean, int, IWrapUploadKeyNet, IWrapUploadKeyNet)}
-     * 2. 指纹识别。对应{@link SoterWrapperApi#requestAuthorizeAndSign(SoterProcessCallback, AuthenticationParam)} (Context, SoterProcessCallback, int, IWrapGetChallengeStr, IWrapUploadSignature, SoterFingerprintStateCallback, SoterFingerprintCanceller)
+     * 2. 指纹识别。
      * 建议直接使用SoterWrapper实现逻辑，避免直接使用SoterCore接口。
      */
-    private void doOpenFingerprintPayment() {
+    private void doOpenBiometricPayment(final int biometricType) {
         doPrepareAuthKey(new IOnAuthKeyPrepared() {
             @Override
             public void onResult(String pwdDigestUsed, boolean isSuccess) {
                 if (isSuccess) {
 
-                    startFingerprintAuthentication(new SoterProcessCallback<SoterProcessAuthenticationResult>() {
+                    startBiometricAuthentication(new SoterProcessCallback<SoterProcessAuthenticationResult>() {
                         @Override
                         public void onResult(@NonNull SoterProcessAuthenticationResult result) {
                             DemoLogger.i(TAG, "soterdemo: open finished: result: %s, signature data is: %s", result.toString(), result.getExtData() != null ? result.getExtData().toString() : null);
                             dismissCurrentDialog();
                             dismissLoading();
                             if (result.isSuccess()) {
-                                SoterDemoData.getInstance().setIsFingerprintPayOpened(SoterDemoUI.this, true);
-                                updateUseFingerprintPayBtnStatus();
+                                SoterDemoData.getInstance().setIsBiometricPayOpened(SoterDemoUI.this, true, biometricType);
+                                updateUseBiometricPayBtnStatus();
                                 Toast.makeText(SoterDemoUI.this, "open success", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(SoterDemoUI.this, String.format("open failed, reason: %s", result.toString()), Toast.LENGTH_LONG).show();
                             }
                         }
-                    }, getString(R.string.app_open_fingerprint_pay), new RemoteOpenFingerprintPay(pwdDigestUsed));
+                    }, getString(biometricType==ConstantsSoter.FINGERPRINT_AUTH?R.string.app_open_fingerprint_pay:R.string.app_open_faceid_pay), new RemoteOpenFingerprintPay(pwdDigestUsed), biometricType);
                 } else {
                     DemoLogger.w(TAG, "soterdemo: generate auth key failed!");
                     dismissLoading();
@@ -206,12 +231,12 @@ public class SoterDemoUI extends AppCompatActivity {
      *
      * 同时，需要特殊处理指纹认证失败次数过多的情况。在SOTER中，指纹失败次数过多（一般来说是5次以上）的情况下，指纹传感器会暂时冻结。此时需要及时转换为降级方案进行认证，如支付时转化为密码认证。
      */
-    private void doUseFingerprintPayment() {
-        DemoLogger.i(TAG, "soterdemo: user request use fingerprint payment");
-        startFingerprintAuthentication(new SoterProcessCallback<SoterProcessAuthenticationResult>() {
+    private void doUseBiometricPayment(final int biometricType) {
+        DemoLogger.i(TAG, "soterdemo: user request use biometric payment type["+biometricType+"]");
+        startBiometricAuthentication(new SoterProcessCallback<SoterProcessAuthenticationResult>() {
             @Override
             public void onResult(@NonNull SoterProcessAuthenticationResult result) {
-                DemoLogger.d(TAG, "soterdemo: use fingerprint payment result: %s, signature data is: %s", result.toString(), result.getExtData() != null ? result.getExtData().toString() : null);
+                DemoLogger.d(TAG, "soterdemo: use biometric["+biometricType+"] payment result: %s, signature data is: %s", result.toString(), result.getExtData() != null ? result.getExtData().toString() : null);
                 dismissLoading();
                 if (result.isSuccess()) {
                     Toast.makeText(SoterDemoUI.this, "authenticate success!", Toast.LENGTH_SHORT).show();
@@ -234,14 +259,14 @@ public class SoterDemoUI extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         startNormalPasswordAuthentication();
                     } else {
-                        DemoLogger.w(TAG, "soterdemo: unknown error in doUseFingerprintPayment : %d", result.errCode);
+                        DemoLogger.w(TAG, "soterdemo: unknown error in doUseBiometricPayment : %d", result.errCode);
                         Toast.makeText(SoterDemoUI.this, "payment error. check log for more information. fallback to normal",
                                 Toast.LENGTH_SHORT).show();
                         startNormalPasswordAuthentication();
                     }
                 }
             }
-        }, getString(R.string.app_use_fingerprint_pay), new RemoteAuthentication());
+        }, getString(biometricType==ConstantsSoter.FINGERPRINT_AUTH?R.string.app_use_fingerprint_pay:R.string.app_use_faceid_pay), new RemoteAuthentication(), biometricType);
     }
 
     private void startPrepareAuthKeyAndAuthenticate() {
@@ -321,26 +346,28 @@ public class SoterDemoUI extends AppCompatActivity {
         mPasswordDialog = builder.show();
     }
 
-    private void startFingerprintAuthentication(SoterProcessCallback<SoterProcessAuthenticationResult> processCallback,
-                                                final String title, IWrapUploadSignature uploadSignatureWrapper) {
+    private void startBiometricAuthentication(SoterProcessCallback<SoterProcessAuthenticationResult> processCallback,
+                                              final String title, IWrapUploadSignature uploadSignatureWrapper, final int biometricType) {
         DemoLogger.i(TAG, "soterdemo: start authentication: title: %s", title);
         dismissCurrentDialog();
         if (mCanceller != null) {
             DemoLogger.w(TAG, "soterdemo: last canceller is not null. should not happen because we will set it to null every time we finished the process");
             mCanceller = null;
         }
-        mCanceller = new SoterFingerprintCanceller();
+        mCanceller = new SoterBiometricCanceller();
         // 认证逻辑部分
         showLoading(getString(R.string.app_request_challenge));
         // Prepare authentication parameters
         AuthenticationParam param = new AuthenticationParam.AuthenticationParamBuilder() // 通过Builder来构建认证请求
                 .setScene(ConstantsSoterDemo.SCENE_PAYMENT) // 指定需要认证的场景。必须在init中初始化。必填
+                .setBiometricType(biometricType)
                 .setContext(this) // 指定当前上下文。必填。
-                .setFingerprintCanceller(mCanceller) // 指定当前用于控制指纹取消的控制器。当因为用户退出界面或者进行其他可能引起取消的操作时，需要开发者通过该控制器取消指纹授权。建议必填。
+                .setSoterBiometricCanceller(mCanceller)
+//                .setFingerprintCanceller(mCanceller) // 指定当前用于控制指纹取消的控制器。当因为用户退出界面或者进行其他可能引起取消的操作时，需要开发者通过该控制器取消指纹授权。建议必填。
                 .setIWrapGetChallengeStr(new RemoteGetChallengeStr()) // 用于获取挑战因子的网络封装结构体。如果在授权之前已经通过其他模块拿到后台挑战因子，则可以改为调用setPrefilledChallenge。如果两个方法都没有调用，则会引起错误。
 //                .setPrefilledChallenge("prefilled challenge") // 如果之前已经通过其他方式获取了挑战因子，则设置此字段。如果设置了该字段，则忽略获取挑战因子网络封装结构体的设置。如果两个方法都没有调用，则会引起错误。
                 .setIWrapUploadSignature(uploadSignatureWrapper) // 用于上传最终结果的网络封装结构体。该结构体一般来说不独立存在，而是集成在最终授权网络请求中，该请求实现相关接口即可。选填，如果没有填写该字段，则要求应用方自行上传该请求返回字段。
-                .setSoterFingerprintStateCallback(new SoterFingerprintStateCallback() { // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作。选填。
+                .setSoterBiometricStateCallback(new SoterBiometricStateCallback() { // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作。选填。
 
                     // 指纹回调仅仅用来更新UI相关，不建议在指纹回调中进行任何业务操作
                     // Fingerprint state callbacks are only used for updating UI. Any logic operation is not welcomed.
@@ -348,7 +375,7 @@ public class SoterDemoUI extends AppCompatActivity {
                     public void onStartAuthentication() {
                         DemoLogger.d(TAG, "soterdemo: start authentication. dismiss loading");
                         dismissLoading();
-                        showFingerprintDialog(title);
+                        showBiometricDialog(title, biometricType);
                     }
 
                     @Override
@@ -369,7 +396,7 @@ public class SoterDemoUI extends AppCompatActivity {
                     @Override
                     public void onAuthenticationFailed() {
                         DemoLogger.w(TAG, "soterdemo: onAuthenticationFailed once:");
-                        setFingerprintHintMsg(getString(R.string.fingerprint_normal_hint), true);
+                        setBiometricHintMsg(getString(R.string.biometric_normal_hint), true, biometricType);
                     }
 
                     @Override
@@ -390,35 +417,62 @@ public class SoterDemoUI extends AppCompatActivity {
         SoterWrapperApi.requestAuthorizeAndSign(processCallback, param);
     }
 
-    private void showFingerprintDialog(String title) {
-        if (mFingerprintDialog == null) {
+    private void showBiometricDialog(String title, int biometricType) {
+        View customBiometricView = null;
+
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:{
+                customBiometricView = mCustomFingerprintView;
+                break;
+            }
+            case ConstantsSoter.FACEID_AUTH:{
+                customBiometricView = mCustomFaceidView;
+                break;
+            }
+        }
+
+        if (mBiometricDialog == null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(SoterDemoUI.this).setTitle(title).setCancelable(true)
                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
-                            cancelFingerprintAuthentication();
+                            cancelBiometricAuthentication();
                             dismissCurrentDialog();
                         }
                     }).setNegativeButton(getString(R.string.app_cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            cancelFingerprintAuthentication();
+                            cancelBiometricAuthentication();
                             dismissCurrentDialog();
                         }
-                    }).setView(mCustomFingerprintView);
-            mFingerprintDialog = builder.create();
+                    }).setView(customBiometricView);
+            mBiometricDialog = builder.create();
         } else {
-            setFingerprintHintMsg("", false);
-            mFingerprintDialog.setTitle(title);
+            setBiometricHintMsg("", false, biometricType);
+            mBiometricDialog.setTitle(title);
         }
-        mFingerprintDialog.show();
+        mBiometricDialog.show();
     }
 
-    private void setFingerprintHintMsg(String msg, boolean isFlash) {
-        if (mCustomFingerprintView != null) {
-            mFingerprintStatusHintView.setText(msg);
-            if (isFlash) {
-                mFingerprintStatusHintView.startAnimation(mFlashAnimation);
+    private void setBiometricHintMsg(String msg, boolean isFlash, int biometricType) {
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:{
+                if (mCustomFingerprintView != null) {
+                    mFingerprintStatusHintView.setText(msg);
+                    if (isFlash) {
+                        mFingerprintStatusHintView.startAnimation(mFlashAnimation);
+                    }
+                }
+                break;
+            }
+            case ConstantsSoter.FACEID_AUTH:{
+                if (mCustomFaceidView != null) {
+                    mFaceidStatusHintView.setText(msg);
+                    if (isFlash) {
+                        mFaceidStatusHintView.startAnimation(mFlashAnimation);
+                    }
+                }
+                break;
             }
         }
     }
@@ -427,8 +481,8 @@ public class SoterDemoUI extends AppCompatActivity {
         if (mPasswordDialog != null && mPasswordDialog.isShowing()) {
             mPasswordDialog.dismiss();
         }
-        if (mFingerprintDialog != null && mFingerprintDialog.isShowing()) {
-            mFingerprintDialog.dismiss();
+        if (mBiometricDialog != null && mBiometricDialog.isShowing()) {
+            mBiometricDialog.dismiss();
         }
     }
 
@@ -436,30 +490,35 @@ public class SoterDemoUI extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         // 确保在onPause的时候结束指纹监听，以免影响其他模块以及应用
-        cancelFingerprintAuthentication();
+        cancelBiometricAuthentication();
         // 建议在onPause的时候结束掉SOTER相关事件。当然，也可以选择自己管理，但是会更加复杂
         SoterWrapperApi.tryStopAllSoterTask();
         dismissCurrentDialog();
         dismissLoading();
     }
 
-    private void cancelFingerprintAuthentication() {
+    private void cancelBiometricAuthentication() {
         if (mCanceller != null) {
-            mCanceller.asyncCancelFingerprintAuthentication();
+            mCanceller.asyncCancelBiometricAuthentication();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        updateUseFingerprintPayBtnStatus();
+        updateUseBiometricPayBtnStatus();
     }
 
-    private void updateUseFingerprintPayBtnStatus() {
-        if (SoterDemoData.getInstance().getIsFingerprintPayOpened()) {
+    private void updateUseBiometricPayBtnStatus() {
+        if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FINGERPRINT_AUTH)) {
             mUseFingerprintPay.setEnabled(true);
         } else {
             mUseFingerprintPay.setEnabled(false);
+        }
+        if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FACEID_AUTH)) {
+            mUseFaceidPay.setEnabled(true);
+        } else {
+            mUseFaceidPay.setEnabled(false);
         }
     }
 
@@ -488,8 +547,16 @@ public class SoterDemoUI extends AppCompatActivity {
     private void initViews() {
         mOpenOrCloseFingerprintPayment = (Button) findViewById(R.id.action_open_or_close_fp_pay);
         mUseFingerprintPay = (Button) findViewById(R.id.action_use_fp_pay);
+
         mCustomFingerprintView = LayoutInflater.from(this).inflate(R.layout.fingerprint_layout, null);
         mFingerprintStatusHintView = (TextView) mCustomFingerprintView.findViewById(R.id.error_hint_msg);
+
+
+        mOpenOrCloseFaceidPayment = (Button) findViewById(R.id.action_open_or_close_fc_pay);
+        mUseFaceidPay = (Button) findViewById(R.id.action_use_fc_pay);
+
+        mCustomFaceidView = LayoutInflater.from(this).inflate(R.layout.faceid_layout, null);
+        mFaceidStatusHintView = (TextView) mCustomFaceidView.findViewById(R.id.error_hint_msg);
     }
 
     private void showLoading(String wording) {

@@ -28,7 +28,7 @@ public class RemoteUploadPayAuthKey extends RemoteUploadAuthKeyBase {
 
     @Override
     protected String getNetUrl() {
-        return "http://qcloud.simulate.soter_demo/upload_pay_auth_key";
+        return BASE_URL + "/upload_pay_auth_key";
     }
 
     @Override

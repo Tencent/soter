@@ -25,7 +25,7 @@ public class RemoteGetSupportSoter extends RemoteBase implements IWrapGetSupport
     private static final String TAG = "SoterDemo.RemoteGetSupportSoter";
 
     private static final String KEY_REQUEST_DEVICE_REQUEST_JSON = "request";
-    private static final String KEY_RESULT_IS_SUPPORT = "isSupport";
+    private static final String KEY_RESULT_IS_SUPPORT = "is_support";
     private ISoterNetCallback<GetSupportResult> mCallback = null;
 
     @Override
@@ -73,6 +73,6 @@ public class RemoteGetSupportSoter extends RemoteBase implements IWrapGetSupport
 
     @Override
     protected String getNetUrl() {
-        return "http://simulate.soter_demo/get_is_support";
+        return BASE_URL + "/get_is_support";
     }
 }

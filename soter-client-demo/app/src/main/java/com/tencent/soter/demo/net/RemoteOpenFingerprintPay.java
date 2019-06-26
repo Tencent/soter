@@ -25,6 +25,7 @@ public class RemoteOpenFingerprintPay extends RemoteBase implements IWrapUploadS
     private static final String TAG = "SoterDemo.RemoteOpenFingerprintPay";
 
     private static final String KEY_REQUEST_SIGNATURE_JSON = "signatureJson";
+    private static final String KEY_REQUEST_SIGNATURE = "signature";
     private static final String KEY_REQUEST_VERIFY_SALT_LENGTH = "saltlen";
     private static final String KEY_REQUEST_PWD_DIGEST = "pwdDigest";
     private static final String KEY_RESULT_IS_OPEN_SUCCESS = "isOpenSuccess";
@@ -41,6 +42,7 @@ public class RemoteOpenFingerprintPay extends RemoteBase implements IWrapUploadS
         JSONObject requestJson = new JSONObject();
         try {
             requestJson.put(KEY_REQUEST_SIGNATURE_JSON, requestDataModel.signatureJson);
+            requestJson.put(KEY_REQUEST_SIGNATURE, requestDataModel.signatureData);
             requestJson.put(KEY_REQUEST_VERIFY_SALT_LENGTH, requestDataModel.signatureSaltLength);
             requestJson.put(KEY_REQUEST_PWD_DIGEST, mPwdDigest);
         } catch (JSONException e) {
@@ -84,6 +86,6 @@ public class RemoteOpenFingerprintPay extends RemoteBase implements IWrapUploadS
 
     @Override
     protected String getNetUrl() {
-        return null;
+        return BASE_URL + "/open_fingerprintpay";
     }
 }

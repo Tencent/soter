@@ -11,6 +11,8 @@ package com.tencent.soter.demo.model;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.tencent.soter.core.model.ConstantsSoter;
+
 /**
  * Created by henryye on 2017/4/25.
  */
@@ -22,8 +24,11 @@ public class SoterDemoData {
 
     private static final String KEY_IS_FINGERPRINT_PAY_OPENED = "isFingerprintOpened";
 
+    private static final String KEY_IS_FACEID_PAY_OPENED = "isFaceidOpened";
+
     private static SoterDemoData sInstance = null;
     private boolean isFingerprintPayOpened = false;
+    private boolean isFaceidPayOpened = false;
 
     public static SoterDemoData getInstance() {
         if(sInstance == null) {
@@ -41,15 +46,34 @@ public class SoterDemoData {
     public void init(@NonNull Context context) {
         isFingerprintPayOpened = context.getSharedPreferences(DEMO_DISK_CACHE_SP,
                 Context.MODE_PRIVATE).getBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, false);
+        isFaceidPayOpened = context.getSharedPreferences(DEMO_DISK_CACHE_SP,
+                Context.MODE_PRIVATE).getBoolean(KEY_IS_FACEID_PAY_OPENED, false);
     }
 
-    public void setIsFingerprintPayOpened(Context context, boolean isOpened) {
-        isFingerprintPayOpened = isOpened;
-        context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
-                putBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, isOpened).apply();
+    public void setIsBiometricPayOpened(Context context, boolean isOpened, int biometricType) {
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:{
+                isFingerprintPayOpened = isOpened;
+                context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
+                        putBoolean(KEY_IS_FINGERPRINT_PAY_OPENED, isOpened).apply();
+                break;
+            }
+            case ConstantsSoter.FACEID_AUTH:{
+                isFaceidPayOpened = isOpened;
+                context.getSharedPreferences(DEMO_DISK_CACHE_SP, Context.MODE_PRIVATE).edit().
+                        putBoolean(KEY_IS_FACEID_PAY_OPENED, isOpened).apply();
+                break;
+            }
+        }
     }
 
-    public boolean getIsFingerprintPayOpened() {
-        return isFingerprintPayOpened;
+    public boolean getIsBiometricPayOpened(int biometricType) {
+        switch (biometricType){
+            case ConstantsSoter.FINGERPRINT_AUTH:
+                return isFingerprintPayOpened;
+            case ConstantsSoter.FACEID_AUTH:
+                return isFaceidPayOpened;
+        }
+        return false;
     }
 }

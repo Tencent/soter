@@ -39,6 +39,7 @@ import javax.crypto.Mac;
  */
 @SuppressWarnings({"ResourceType", "WeakerAccess"})
 @SuppressLint("NewApi")
+@Deprecated
 final class FingerprintManagerCompatApi23 {
     private static final String TAG = "Soter.FingerprintManagerCompatApi23";
 

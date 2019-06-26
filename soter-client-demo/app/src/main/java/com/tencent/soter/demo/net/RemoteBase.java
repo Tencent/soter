@@ -10,7 +10,15 @@ package com.tencent.soter.demo.net;
 
 import com.tencent.soter.demo.model.DemoLogger;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Created by henryye on 2017/4/25.
@@ -24,7 +32,7 @@ abstract class RemoteBase {
     private JSONObject mResultJson = null;
 
     private static final long SIMULATE_NETWORK_DELAY = 1000;
-
+    protected static final String BASE_URL = "http://simulate.soter_demo";
     public void execute() {
         DemoLogger.i(TAG, "soterdemo: simulate execute");
         JSONObject result = getSimulateJsonResult(mRequestJson);
@@ -35,7 +43,7 @@ abstract class RemoteBase {
             mResultJson = getSimulateJsonResult(mRequestJson);
         }
         String url = getNetUrl();
-        DemoLogger.i(TAG, "soterdemo: url is: %s", url);
+        DemoLogger.i(TAG, "soterdemo: url is: %s, request: %s", url, mRequestJson);
         // 模拟网络操作
         DemoNetworkThread.getInstance().postTaskDelayed(new Runnable() {
             @Override

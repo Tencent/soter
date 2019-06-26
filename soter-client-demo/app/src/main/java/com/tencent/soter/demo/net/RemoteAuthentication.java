@@ -31,9 +31,9 @@ public class RemoteAuthentication extends RemoteBase implements IWrapUploadSigna
     private static final String SAMPLE_FINAL_SIGNATURE_PATH = ConstantsSoterDemo.SAMPLE_EXTERNAL_PATH + "final_signature.bin";
     private static final String SAMPLE_FINAL_SALTLEN_PATH = ConstantsSoterDemo.SAMPLE_EXTERNAL_PATH + "final_salt_len.txt";
 
-    private static final String KEY_REQUEST_SIGNATURE_JSON = "signature_json";
-    private static final String KEY_REQUEST_SIGNATURE_DATA = "signature_data";
-    private static final String KEY_REQUEST_SIGNATURE_SALT_LEN = "signature_salt_len";
+    private static final String KEY_REQUEST_SIGNATURE_JSON = "signatureJson";
+    private static final String KEY_REQUEST_SIGNATURE_DATA = "signature";
+    private static final String KEY_REQUEST_SIGNATURE_SALT_LEN = "saltlen";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_RESULT_IS_AUTHENTICATED = "is_authenticated";
 
@@ -114,7 +114,7 @@ public class RemoteAuthentication extends RemoteBase implements IWrapUploadSigna
 
     @Override
     protected String getNetUrl() {
-        return "http://simulate.soter_demo/authentication";
+        return BASE_URL + "/authentication";
     }
 
     /**

@@ -9,8 +9,17 @@
 
 package com.tencent.soter.core.model;
 
+import android.util.Base64;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 
 /**
  * The public key model for App Secure Key and Auth Key. It consists the whole JSON that wrapper in the
@@ -20,16 +29,18 @@ import org.json.JSONObject;
 public class SoterPubKeyModel {
     private static final String TAG = "Soter.SoterPubKeyModel";
 
-    private static final String JSON_KEY_PUBLIC = "pub_key";
-    private static final String JSON_KEY_COUNTER = "counter";
-    private static final String JSON_KEY_CPU_ID = "cpu_id";
-    private static final String JSON_KEY_UID = "uid";
+    public static final String JSON_KEY_PUBLIC = "pub_key";
+    public static final String JSON_KEY_COUNTER = "counter";
+    public static final String JSON_KEY_CPU_ID = "cpu_id";
+    public static final String JSON_KEY_UID = "uid";
+    public static final String JSON_KEY_CERTS = "certs";
 
     private long counter = -1;
     private int uid = -1;
     private String cpu_id = "";
     private String pub_key_in_x509 = "";
     private String rawJson = "";
+    private ArrayList<String> certs = null;
 
     @Override
     public String toString() {
@@ -55,20 +66,80 @@ public class SoterPubKeyModel {
     }
 
     public SoterPubKeyModel(String rawJson, String signature) {
-        this.rawJson = rawJson;
         JSONObject jsonObj;
+        setRawJson(rawJson);
         try {
             jsonObj = new JSONObject(rawJson);
 //            this.rawJson = jsonObj.toString();
-            this.counter = jsonObj.optLong(JSON_KEY_COUNTER);
-            this.uid = jsonObj.optInt(JSON_KEY_UID);
-            this.cpu_id = jsonObj.optString(JSON_KEY_CPU_ID);
-            this.pub_key_in_x509 = jsonObj.optString(JSON_KEY_PUBLIC);
-        } catch (JSONException e) {
+            if(jsonObj.has(JSON_KEY_CERTS)){
+                JSONArray certJsonArray = jsonObj.optJSONArray(JSON_KEY_CERTS);
+                if (certJsonArray.length() < 2) {
+                    SLogger.e(TAG,"certificates train not enough");
+                }
+                SLogger.i(TAG,"certs size: [%d]", certJsonArray.length());
+                certs =  new ArrayList<String>();
+                for (int i = 0; i < certJsonArray.length(); i++) {
+                    String certText = certJsonArray.getString(i);
+                    certs.add(certText);
+                }
+                CertificateFactory factory = CertificateFactory.getInstance("X.509");
+                X509Certificate askCertificate = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certs.get(0).getBytes()));
+                loadDeviceInfo(askCertificate);
+                jsonObj.put(JSON_KEY_CPU_ID, cpu_id);
+                jsonObj.put(JSON_KEY_UID, uid);
+                jsonObj.put(JSON_KEY_COUNTER, counter);
+                setRawJson(jsonObj.toString());
+            }else{
+                this.counter = jsonObj.optLong(JSON_KEY_COUNTER);
+                this.uid = jsonObj.optInt(JSON_KEY_UID);
+                this.cpu_id = jsonObj.optString(JSON_KEY_CPU_ID);
+                this.pub_key_in_x509 = jsonObj.optString(JSON_KEY_PUBLIC);
+            }
+        } catch (Exception e) {
             SLogger.e(TAG, "soter: pub key model failed");
         }
         this.signature = signature;
     }
+
+    public SoterPubKeyModel(Certificate[] certificates){
+        try {
+            if(certificates != null){
+                ArrayList<String> certTexts = new ArrayList<String>();
+                JSONArray jsonArray = new JSONArray();
+                for (int i = 0; i < certificates.length; i++) {
+                    Certificate certificate = certificates[i];
+
+                    String certText = Base64.encodeToString(certificate.getEncoded(), Base64.NO_WRAP);
+                    certText = CertUtil.format(certificate);
+                    if (i == 0){
+                        loadDeviceInfo((X509Certificate)certificate);
+                    }
+                    jsonArray.put(certText);
+                    certTexts.add(certText);
+                }
+                certs = certTexts;
+
+                JSONObject jsonObj = new JSONObject();
+                jsonObj.put(JSON_KEY_CERTS, jsonArray);
+                jsonObj.put(JSON_KEY_CPU_ID, cpu_id);
+                jsonObj.put(JSON_KEY_UID, uid);
+                jsonObj.put(JSON_KEY_COUNTER, counter);
+                setRawJson(jsonObj.toString());
+            }
+        }catch (Exception e){
+            SLogger.e(TAG, "soter: pub key model failed");
+        }
+    }
+
+    private void loadDeviceInfo(X509Certificate attestationCert) {
+        try{
+            CertUtil.extractAttestationSequence(attestationCert,this);
+        }catch (Exception e){
+            SLogger.e(TAG, "soter: loadDeviceInfo from attestationCert failed" + e.getStackTrace());
+        }
+
+    }
+
 
     public void setCounter(long counter) {
         this.counter = counter;

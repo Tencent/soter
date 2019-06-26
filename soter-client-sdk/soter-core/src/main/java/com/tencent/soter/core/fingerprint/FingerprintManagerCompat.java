@@ -39,6 +39,7 @@ import javax.crypto.Mac;
  */
 
 @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
+@Deprecated
 public class FingerprintManagerCompat {
     private static final String TAG = "Soter.FingerprintManagerCompat";
 
@@ -79,6 +80,23 @@ public class FingerprintManagerCompat {
     public boolean isHardwareDetected() {
         return IMPL.isHardwareDetected(mContext);
     }
+
+    /**
+     * Check current fail time is available
+     * @return true if fail time less than MAX_FAIL_NUM in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentFailTimeAvailable() {
+        return SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(mContext);
+    }
+
+    /**
+     * Check current frozen time is released
+     * @return true if frozen time more than FREEZE_SECOND in {@link SoterAntiBruteForceStrategy}
+     */
+    public boolean isCurrentTweenTimeAvailable(Context context) {
+        return SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(mContext);
+    }
+
 
     /**
      * Request authentication of a crypto object. This call warms up the fingerprint hardware

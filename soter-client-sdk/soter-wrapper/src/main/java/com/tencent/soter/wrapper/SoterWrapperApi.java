@@ -14,6 +14,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
@@ -27,6 +28,8 @@ import com.tencent.soter.wrapper.wrap_net.IWrapUploadKeyNet;
 import com.tencent.soter.wrapper.wrap_task.AuthenticationParam;
 import com.tencent.soter.wrapper.wrap_task.InitializeParam;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
+import com.tencent.soter.wrapper.wrap_task.TaskBiometricAuthentication;
+import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
 import com.tencent.soter.wrapper.wrap_task.TaskAuthentication;
 import com.tencent.soter.wrapper.wrap_task.TaskInit;
 import com.tencent.soter.wrapper.wrap_task.TaskPrepareAppSecureKey;
@@ -50,13 +53,19 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      * @param callback The callback of the process.
      * @param param The parameter if the initialization operation
      */
-    public static void init(Context context, SoterProcessCallback<SoterProcessNoExtResult> callback, @NonNull InitializeParam param) {
+    public static void init(final Context context, final SoterProcessCallback<SoterProcessNoExtResult> callback, @NonNull final InitializeParam param) {
         // prepare set up
-        TaskInit taskInit = new TaskInit(context, param);
-        taskInit.setTaskCallback(callback);
-        if(!SoterTaskManager.getInstance().addToTask(taskInit, new SoterProcessNoExtResult())) {
-            SLogger.e(TAG, "soter: add init task failed.");
-        }
+        // put into worker thread
+        SoterTaskThread.getInstance().postToWorker(new Runnable() {
+            @Override
+            public void run() {
+                TaskInit taskInit = new TaskInit(context, param);
+                taskInit.setTaskCallback(callback);
+                if (!SoterTaskManager.getInstance().addToTask(taskInit, new SoterProcessNoExtResult())) {
+                    SLogger.e(TAG, "soter: add init task failed.");
+                }
+            }
+        });
     }
 
     /**
@@ -102,12 +111,20 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      * Wrap the whole authentication process, including request fingerprint authentication, generate the signature and upload the signature to the server.
      * @param param The parameter of the authentication process.
      */
-    public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> callback, @NonNull AuthenticationParam param) {
+    public static void requestAuthorizeAndSign(SoterProcessCallback<SoterProcessAuthenticationResult> taskCallback, @NonNull AuthenticationParam param) {
         SLogger.i(TAG, "soter: request authorize provide challenge. scene: %d", param.getScene());
-        TaskAuthentication taskAuthentication = new TaskAuthentication(param);
-        taskAuthentication.setTaskCallback(callback);
-        if(!SoterTaskManager.getInstance().addToTask(taskAuthentication, new SoterProcessAuthenticationResult())) {
-            SLogger.d(TAG, "soter: add requestAuthorizeAndSign task failed.");
+        if(param.getBiometricType() == ConstantsSoter.FINGERPRINT_AUTH || param.getBiometricType() == ConstantsSoter.FACEID_AUTH ){
+            TaskBiometricAuthentication taskBiometricAuthentication = new TaskBiometricAuthentication(param);
+            taskBiometricAuthentication.setTaskCallback(taskCallback);
+            if(!SoterTaskManager.getInstance().addToTask(taskBiometricAuthentication, new SoterProcessAuthenticationResult())) {
+                SLogger.d(TAG, "soter: add 2.0 requestAuthorizeAndSign task failed.");
+            }
+        }else {
+            TaskAuthentication taskAuthentication = new TaskAuthentication(param);
+            taskAuthentication.setTaskCallback(taskCallback);
+            if(!SoterTaskManager.getInstance().addToTask(taskAuthentication, new SoterProcessAuthenticationResult())) {
+                SLogger.d(TAG, "soter: add 1.0 requestAuthorizeAndSign task failed.");
+            }
         }
     }
 
@@ -117,6 +134,14 @@ public class SoterWrapperApi implements SoterProcessErrCode {
      */
     public static boolean isSupportSoter() {
         return SoterDataCenter.getInstance().isInit() && SoterDataCenter.getInstance().isSupportSoter();
+    }
+
+    /**
+     * Get the support type, this is just the server result, you should also judge the hardware support yourself.
+     * @return see {@link SoterDataCenter#SUPPORT_FINGERPRINT}、 {@link SoterDataCenter#SUPPORT_FACEID} and {@link SoterDataCenter#SUPPORT_ALL}
+     */
+    public static int getSupportType() {
+        return SoterDataCenter.getInstance().getSupportType();
     }
 
     /**

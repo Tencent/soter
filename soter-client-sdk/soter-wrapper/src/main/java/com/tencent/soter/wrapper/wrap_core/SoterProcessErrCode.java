@@ -71,6 +71,10 @@ public interface SoterProcessErrCode extends SoterErrCode {
      */
     int ERR_NO_FINGERPRINT_ENROLLED = 18;
     /**
+     * No faceid enrolled in the system
+     */
+    int ERR_NO_BIOMETRIC_ENROLLED = 18;
+    /**
      * Failed in getting challenge from server
      */
     int ERR_GET_CHALLENGE = 19;
@@ -82,6 +86,10 @@ public interface SoterProcessErrCode extends SoterErrCode {
      * Failed in Fingerprint authentication
      */
     int ERR_FINGERPRINT_AUTHENTICATION_FAILED = 21;
+    /**
+     * Failed in Fingerprint authentication
+     */
+    int ERR_BIOMETRIC_AUTHENTICATION_FAILED = 21;
     /**
      * Failed in signing
      */
@@ -99,6 +107,11 @@ public interface SoterProcessErrCode extends SoterErrCode {
      * authentication method if you see this error code.
      */
     int ERR_FINGERPRINT_LOCKED = 25;
+    /**
+     * Already reached the maximum fail times in faceid authentication. you should try another
+     * authentication method if you see this error code.
+     */
+    int ERR_BIOMETRIC_LOCKED = 25;
 
     /**
      * Add the SOTER task to queue failed. Check the logcat for further information

@@ -11,6 +11,8 @@ package com.tencent.soter.wrapper.wrap_task;
 
 import android.content.Context;
 
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
+import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintCanceller;
 import com.tencent.soter.wrapper.wrap_fingerprint.SoterFingerprintStateCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
@@ -31,8 +33,13 @@ public class AuthenticationParam {
     private IWrapGetChallengeStr mIWrapGetChallengeStr;
     private IWrapUploadSignature mIWrapUploadSignature;
     private Context mContext;
+    private int mBiometricType;
+
     private SoterFingerprintCanceller mFingerprintCanceller;
     private SoterFingerprintStateCallback mSoterFingerprintStateCallback;
+
+    private SoterBiometricCanceller mSoterBiometricCanceller;
+    private SoterBiometricStateCallback mSoterBiometricStateCallback;
 
     private AuthenticationParam() {
         //
@@ -58,12 +65,24 @@ public class AuthenticationParam {
         return mContext;
     }
 
+    public int getBiometricType() {
+        return mBiometricType;
+    }
+
     public SoterFingerprintCanceller getFingerprintCanceller() {
         return mFingerprintCanceller;
     }
 
     public SoterFingerprintStateCallback getSoterFingerprintStateCallback() {
         return mSoterFingerprintStateCallback;
+    }
+
+    public SoterBiometricCanceller getSoterBiometricCanceller() {
+        return mSoterBiometricCanceller;
+    }
+
+    public SoterBiometricStateCallback getSoterBiometricStateCallback() {
+        return mSoterBiometricStateCallback;
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
@@ -125,10 +144,12 @@ public class AuthenticationParam {
         }
 
         /**
-         * The fingerprint canceller set by the application so that you can control cancellation event from your logic
+         * The fingerprint canceller set by the application so that you can control cancellation event from your logic. <br/>
+         * use {@link #setSoterBiometricCanceller} instead
          * @param fingerprintCanceller The cancellation controller
          * @return the param model itself
          */
+        @Deprecated
         public AuthenticationParamBuilder setFingerprintCanceller(SoterFingerprintCanceller fingerprintCanceller) {
             mParam.mFingerprintCanceller = fingerprintCanceller;
             return this;
@@ -136,12 +157,45 @@ public class AuthenticationParam {
 
         /**
          * The fingerprint status callback so that you can acknowledge the authentication status. Note that it is only the fingerprint authentication callback,
-         * do not use it as the process result, just used for updating UI.
+         * do not use it as the process result, just used for updating UI. <br/>
+         * use {@link #setSoterBiometricStateCallback} instead
          * @param soterFingerprintStateCallback The fingerprint callback
          * @return the param model itself
          */
+        @Deprecated
         public AuthenticationParamBuilder setSoterFingerprintStateCallback(SoterFingerprintStateCallback soterFingerprintStateCallback) {
             mParam.mSoterFingerprintStateCallback = soterFingerprintStateCallback;
+            return this;
+        }
+
+        /**
+         * The biometric canceller set by the application so that you can control cancellation event from your logic
+         * @param soterBiometricCanceller The cancellation controller
+         * @return the param model itself
+         */
+        public AuthenticationParamBuilder setSoterBiometricCanceller(SoterBiometricCanceller soterBiometricCanceller) {
+            mParam.mSoterBiometricCanceller = soterBiometricCanceller;
+            return this;
+        }
+
+        /**
+         * The biometric status callback so that you can acknowledge the authentication status. Note that it is only the fingerprint authentication callback,
+         * do not use it as the process result, just used for updating UI.
+         * @param soterBiometricStateCallback The biometric callback
+         * @return the param model itself
+         */
+        public AuthenticationParamBuilder setSoterBiometricStateCallback(SoterBiometricStateCallback soterBiometricStateCallback) {
+            mParam.mSoterBiometricStateCallback = soterBiometricStateCallback;
+            return this;
+        }
+
+        /**
+         * The type of biometric authentication.
+         * @param biometricType must be {@link com.tencent.soter.core.model.ConstantsSoter#FINGERPRINT_AUTH} or {@link com.tencent.soter.core.model.ConstantsSoter#FACEID_AUTH}
+         * @return
+         */
+        public AuthenticationParamBuilder setBiometricType(int biometricType){
+            mParam.mBiometricType = biometricType;
             return this;
         }
 
@@ -158,8 +212,7 @@ public class AuthenticationParam {
                 ", mIWrapGetChallengeStr=" + mIWrapGetChallengeStr +
                 ", mIWrapUploadSignature=" + mIWrapUploadSignature +
                 ", mContext=" + mContext +
-                ", mFingerprintCanceller=" + mFingerprintCanceller +
-                ", mSoterFingerprintStateCallback=" + mSoterFingerprintStateCallback +
+                ", mBiometricType=" + mBiometricType +
                 '}';
     }
 }

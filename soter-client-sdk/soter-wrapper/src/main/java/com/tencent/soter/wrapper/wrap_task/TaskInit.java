@@ -84,7 +84,7 @@ public class TaskInit extends BaseSoterTask {
         }
     };
 
-    public TaskInit(Context context, @NonNull InitializeParam param){
+    public TaskInit(final Context context, @NonNull InitializeParam param){
         ISoterLogger loggerImp = param.getSoterLogger();
         // set logger first.
         if(loggerImp != null) {
@@ -93,9 +93,10 @@ public class TaskInit extends BaseSoterTask {
         SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
         // set implement to wrapper
         SoterDelegate.setImplement(wrapperDelegate);
-
+        SoterCore.tryToInitSoterBeforeTreble();
+        SoterCore.tryToInitSoterTreble(context);
         SoterCore.setUp();
-        isNativeSupport = SoterCore.isNativeSupportSoter() && SoterCore.isSupportFingerprint(context);
+        isNativeSupport = SoterCore.isNativeSupportSoter() && (SoterCore.isSupportFingerprint(context) || SoterCore.isSupportBiometric(context, ConstantsSoter.FACEID_AUTH));
         this.getSupportNetWrapper = param.getGetSupportNetWrapper();
         this.scenes = param.getScenes();
         this.distinguishSalt = param.getDistinguishSalt();
@@ -204,6 +205,7 @@ public class TaskInit extends BaseSoterTask {
                             synchronized (SoterDataCenter.class) {
                                 SoterDataCenter.getInstance().setSupportSoter(callbackDataModel.isSupport);
                                 SoterDataCenter.getInstance().setInit(true);
+                                SoterDataCenter.getInstance().setSupportType(callbackDataModel.supportType);
                             }
                             callback(new SoterProcessNoExtResult(ERR_OK));
                         } else {
@@ -219,6 +221,7 @@ public class TaskInit extends BaseSoterTask {
                 getSupportNetWrapper.execute();
             }
         } else {
+            SLogger.w(TAG, "soter: TaskInit check isNativeSupport["+isNativeSupport+"]");
             callback(new SoterProcessNoExtResult(SoterErrCode.ERR_SOTER_NOT_SUPPORTED));
             synchronized (SoterDataCenter.class) {
                 SoterDataCenter.getInstance().setSupportSoter(false);

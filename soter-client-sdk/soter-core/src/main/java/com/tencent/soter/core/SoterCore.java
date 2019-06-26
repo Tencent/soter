@@ -9,14 +9,12 @@
 
 package com.tencent.soter.core;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
 
+import com.tencent.soter.core.biometric.BiometricManagerCompat;
 import com.tencent.soter.core.fingerprint.SoterAntiBruteForceStrategy;
-import com.tencent.soter.core.keystore.KeyGenParameterSpecCompatBuilder;
 import com.tencent.soter.core.model.SLogger;
-import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
@@ -24,16 +22,15 @@ import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.core.model.SoterPubKeyModel;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
-import com.tencent.soter.core.keystore.KeyPropertiesCompact;
 import com.tencent.soter.core.model.ConstantsSoter;
+import com.tencent.soter.core.sotercore.CertSoterCore;
+import com.tencent.soter.core.sotercore.SoterCoreBase;
+import com.tencent.soter.core.sotercore.SoterCoreBeforeTreble;
+import com.tencent.soter.core.sotercore.SoterCoreTreble;
+import com.tencent.soter.soterserver.SoterSessionResult;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -42,43 +39,87 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
 
 /**
  * The SOTER Core APIs for developer to handle keys and other basic stuff. Do not change this file because there're many magic codes in it.
  */
 @SuppressWarnings("unused")
 public class SoterCore implements ConstantsSoter, SoterErrCode {
-    public static final String TAG = "Soter.SoterCore";
+    private static final String TAG = "Soter.SoterCore";
+    public static final int IS_NOT_TREBLE = 0;
+    public static final int IS_TREBLE = 1;
 
     private static boolean isAlreadyCheckedSetUp = false;
+    private static SoterCoreBase IMPL;
+
+    static {
+        SLogger.i(TAG,"soter: SoterCore is call static block to init SoterCore IMPL");
+        IMPL = getProviderSoterCore();
+        SLogger.i(TAG,"soter: SoterCore is call static block to init SoterCore IMPL, IMPL is null[%b]", (IMPL == null) );
+    }
 
 
-    private static final String MAGIC_SOTER_PWD = "from_soter_ui";
-
-    /**
-     * The prepare work before using SOTER. Be sure to call this method before SOTER operation
-     */
-    @SuppressLint("PrivateApi")
     public static void setUp() {
-        Class<?> clazz;
-        try {
-            clazz = Class.forName("android.security.keystore.SoterKeyStoreProvider");
-            Method method = clazz.getMethod("install");
-            method.setAccessible(true);
-            method.invoke(null);
-        } catch (ClassNotFoundException e) {
-            SLogger.i(TAG, "soter: no SoterProvider found");
-        } catch (NoSuchMethodException e) {
-            SLogger.i(TAG, "soter: function not found");
-        } catch (IllegalAccessException e) {
-            SLogger.i(TAG, "soter: cannot access");
-        } catch (InvocationTargetException e) {
-            SLogger.i(TAG, "soter: InvocationTargetException");
-        } finally {
-            isAlreadyCheckedSetUp = true;
+        SoterCoreBeforeTreble.setUp();
+    }
+
+    public static void tryToInitSoterTreble(Context context) {
+        if(IMPL == null ){
+            SLogger.i(TAG,"soter: SoterCore IMPL is null then call tryToInitSoterTreble to init");
+            IMPL = new SoterCoreTreble();
+            if(!IMPL.initSoter(context)){
+                IMPL = null;
+                SLogger.i(TAG,"soter: SoterCore IMPL is null after call tryToInitSoterTreble to init");
+            }
         }
     }
+
+    public static void tryToInitSoterBeforeTreble() {
+        if(IMPL == null ){
+            SLogger.i(TAG,"soter: SoterCore IMPL is null then call getProviderSoterCore to init");
+            IMPL = getProviderSoterCore();
+            SLogger.i(TAG,"soter: SoterCore IMPL is null[%b], after call getProviderSoterCore to init", (IMPL == null) );
+        }
+    }
+
+
+
+    public static int getSoterCoreType(){
+        if (IMPL == null){
+            return IS_NOT_TREBLE;
+        }
+
+        if(IMPL instanceof SoterCoreTreble){
+            SLogger.d(TAG, "getSoterCoreType is TREBLE");
+            return IS_TREBLE;
+        }
+
+        SLogger.d(TAG, "getSoterCoreType is not TREBLE");
+        return IS_NOT_TREBLE;
+    }
+
+
+    public static SoterCoreBase getProviderSoterCore(){
+        SoterCoreBeforeTreble.setUp();
+        if(SoterDelegate.isTriggeredOOM()) {
+            return null;
+        }
+        Provider[] providers = Security.getProviders();
+        if (providers == null) {
+            return null;
+        }
+        for (Provider provider : providers) {
+            String providerName = provider.getName();
+            if (providerName != null && providerName.startsWith(SoterCore.SOTER_PROVIDER_NAME)) {
+                if(providerName.split("\\.").length > 1){
+                    return new CertSoterCore(providerName);
+                }
+                return new SoterCoreBeforeTreble(providerName);
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Check whether this device supports SOTER by checking native interfaces. Remind that you should check the server side as well,
@@ -86,26 +127,13 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return Whether this device supports SOTER by it's native check result.
      */
     public static boolean isNativeSupportSoter() {
-        if(!isAlreadyCheckedSetUp) {
-            setUp();
-        }
-        if(SoterDelegate.isTriggeredOOM()) {
-            SLogger.w(TAG, "hy: the device has already triggered OOM. mark as not support");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isNativeSupportSoter IMPL is null, not support soter");
             return false;
         }
-        Provider[] providers = Security.getProviders();
-        if (providers == null) {
-            SLogger.e(TAG, "soter: no provider supported");
-            return false;
-        }
-        for (Provider provider : providers) {
-            if (SOTER_PROVIDER_NAME.equals(provider.getName())) {
-                SLogger.i(TAG, "soter: found soter provider");
-                return true;
-            }
-        }
-        SLogger.i(TAG, "soter: soter provider not found");
-        return false;
+        boolean isNativeSupportSoter = IMPL.isNativeSupportSoter();
+        SLogger.e(TAG, "soter: isNativeSupportSoter return["+isNativeSupportSoter+"]");
+        return isNativeSupportSoter;
     }
 
     /**
@@ -113,34 +141,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The result of generating process
      */
     public static SoterCoreResult generateAppGlobalSecureKey() {
-        SLogger.i(TAG, "soter: start generate ask");
-        if (isNativeSupportSoter()) {
-            try {
-                KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-                keyStore.load(null);
-                KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, SOTER_PROVIDER_NAME);
-                AlgorithmParameterSpec spec = KeyGenParameterSpecCompatBuilder.
-                        newInstance(SoterCoreData.getInstance().getAskName() +
-                                ".addcounter.auto_signed_when_get_pubkey_attk", KeyPropertiesCompact.PURPOSE_SIGN).setDigests(KeyPropertiesCompact.DIGEST_SHA256)
-                        .setSignaturePaddings(KeyPropertiesCompact.SIGNATURE_PADDING_RSA_PSS).build();
-                generator.initialize(spec);
-                long currentTicks = SoterCoreUtil.getCurrentTicks();
-                generator.generateKeyPair();
-                long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
-                SLogger.i(TAG, "soter: generate successfully. cost: %d ms", cost);
-                return new SoterCoreResult(ERR_OK);
-            } catch (Exception e) {
-                SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
-                SLogger.printErrStackTrace(TAG, e, "soter: generateAppGlobalSecureKey error");
-                return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
-            } catch (OutOfMemoryError oomError) {
-                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
-                SoterDelegate.onTriggerOOM();
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: generateAppGlobalSecureKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
         }
-        return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        return IMPL.generateAppGlobalSecureKey();
     }
 
     /**
@@ -148,21 +153,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if you delete the App Secure Key, false otherwise
      */
     public static SoterCoreResult removeAppGlobalSecureKey() {
-        SLogger.i(TAG, "soter: start remove app global secure key");
-        if (isNativeSupportSoter()) {
-            try {
-                KeyStore keyStore = KeyStore.getInstance("SoterKeyStore");
-                keyStore.load(null);
-                keyStore.deleteEntry(SoterCoreData.getInstance().getAskName());
-                return new SoterCoreResult(ERR_OK);
-            } catch (Exception e) {
-                SLogger.e(TAG, "soter: removeAppGlobalSecureKey " + e.toString());
-                return new SoterCoreResult(ERR_REMOVE_ASK, e.toString());
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: removeAppGlobalSecureKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
         }
-        return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        return IMPL.removeAppGlobalSecureKey();
     }
 
     /**
@@ -170,14 +165,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's already App Secure Key
      */
     public static boolean hasAppGlobalSecureKey() {
-        try {
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-            return keyStore.getCertificate(SoterCoreData.getInstance().getAskName()) != null;
-        } catch (Exception e) {
-            SLogger.e(TAG, "soter: hasAppGlobalSecureKey exception: " + e.toString());
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: hasAppGlobalSecureKey IMPL is null, not support soter");
+            return false;
         }
-        return false;
+        return IMPL.hasAppGlobalSecureKey();
     }
 
     /**
@@ -186,7 +178,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if the App Secure Key is valid
      */
     public static boolean isAppGlobalSecureKeyValid() {
-        return hasAppGlobalSecureKey() && getAppGlobalSecureKeyModel() != null;
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isAppGlobalSecureKeyValid IMPL is null, not support soter");
+            return false;
+        }
+        return IMPL.isAppGlobalSecureKeyValid();
     }
 
     /**
@@ -194,33 +190,12 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The App Secure Key model.
      */
     public static SoterPubKeyModel getAppGlobalSecureKeyModel() {
-        SLogger.i(TAG, "soter: start get app global secure key pub");
-        if (isNativeSupportSoter()) {
-            KeyStore keyStore;
-            try {
-                keyStore = KeyStore.getInstance("SoterKeyStore");
-                keyStore.load(null);
-                try {
-                    Key key = keyStore.getKey(SoterCoreData.getInstance().getAskName(), "from_soter_ui".toCharArray());
-                    if (key != null) {
-                        return retrieveJsonFromExportedData(key.getEncoded());
-                    }
-                    SLogger.e(TAG, "soter: key can not be retrieved");
-                    return null;
-                } catch (ClassCastException e) {
-                    SLogger.e(TAG, "soter: cast error: " + e.toString());
-                }
-                return null;
-            } catch (Exception e) {
-                SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
-            } catch (OutOfMemoryError oomError) {
-                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
-                SoterDelegate.onTriggerOOM();
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAppGlobalSecureKeyModel IMPL is null, not support soter");
+            return null;
         }
-        return null;
+        return IMPL.getAppGlobalSecureKeyModel();
+
     }
 
     /**
@@ -229,44 +204,12 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The result of key generating process.
      */
     public static SoterCoreResult generateAuthKey(String authKeyName) {
-        if (SoterCoreUtil.isNullOrNil(authKeyName)) {
-            SLogger.e(TAG, "soter: auth key name is null or nil. abort.");
-            return new SoterCoreResult(ERR_PARAMERROR, "no authKeyName");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: generateAuthKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
         }
-        if (isNativeSupportSoter()) {
-            try {
-                if (!hasAppGlobalSecureKey()) {
-                    return new SoterCoreResult(ERR_ASK_NOT_EXIST, "app secure key not exist");
-                }
-                KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-                keyStore.load(null);
-                KeyPairGenerator generator = KeyPairGenerator.getInstance(KeyPropertiesCompact.KEY_ALGORITHM_RSA, SOTER_PROVIDER_NAME);
-                try {
-                    AlgorithmParameterSpec spec = KeyGenParameterSpecCompatBuilder.newInstance(authKeyName +
-                            String.format(".addcounter.auto_signed_when_get_pubkey(%s).secmsg_and_counter_signed_when_sign", SoterCoreData.getInstance().getAskName()), KeyPropertiesCompact.PURPOSE_SIGN).
-                            setDigests(KeyPropertiesCompact.DIGEST_SHA256).setUserAuthenticationRequired(true)
-                            .setSignaturePaddings(KeyPropertiesCompact.SIGNATURE_PADDING_RSA_PSS).build();
-                    generator.initialize(spec);
-                    long currentTicks = SoterCoreUtil.getCurrentTicks();
-                    generator.generateKeyPair();
-                    long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
-                    SLogger.i(TAG, "soter: generate successfully, cost: %d ms", cost);
-                    return new SoterCoreResult(ERR_OK);
-                } catch (Exception e) {
-                    SLogger.e(TAG, "soter: cause exception. maybe reflection exception: " + e.toString());
-                    return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
-                }
-            } catch (Exception e) {
-                SLogger.e(TAG, "soter: generate auth key failed: " + e.toString());
-                return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
-            } catch (OutOfMemoryError oomError) {
-                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
-                SoterDelegate.onTriggerOOM();
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter");
-        }
-        return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        return IMPL.generateAuthKey(authKeyName);
+
     }
 
     /**
@@ -276,31 +219,11 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if the key deleting process is successful
      */
     public static SoterCoreResult removeAuthKey(String authKeyName, boolean isAutoDeleteASK) {
-        if (SoterCoreUtil.isNullOrNil(authKeyName)) {
-            SLogger.e(TAG, "soter: auth key name is null or nil. abort.");
-            return new SoterCoreResult(ERR_PARAMERROR, "no authKeyName");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: removeAuthKey IMPL is null, not support soter");
+            return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
         }
-        SLogger.i(TAG, "soter: start remove key: " + authKeyName);
-        if (isNativeSupportSoter()) {
-            try {
-                KeyStore keyStore = KeyStore.getInstance("SoterKeyStore");
-                keyStore.load(null);
-                keyStore.deleteEntry(authKeyName);
-                if (isAutoDeleteASK) {
-                    SLogger.i(TAG, "soter: auto delete ask");
-                    if (hasAppGlobalSecureKey()) {
-                        removeAppGlobalSecureKey();
-                    }
-                }
-                return new SoterCoreResult(ERR_OK);
-            } catch (Exception e) {
-                SLogger.e(TAG, "soter: removeAuthKey " + e.toString());
-                return new SoterCoreResult(ERR_REMOVE_AUTH_KEY, e.toString());
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter");
-        }
-        return new SoterCoreResult(ERR_SOTER_NOT_SUPPORTED);
+        return IMPL.removeAuthKey(authKeyName, isAutoDeleteASK);
     }
 
     /**
@@ -309,18 +232,12 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return true if there's already a pair of auth key
      */
     public static boolean hasAuthKey(String authKeyName) {
-        if (SoterCoreUtil.isNullOrNil(authKeyName)) {
-            SLogger.e(TAG, "soter: authkey name not correct");
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: hasAuthKey IMPL is null, not support soter");
             return false;
         }
-        try {
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-            return keyStore.getCertificate(authKeyName) != null;
-        } catch (Exception e) {
-            SLogger.e(TAG, "soter: hasAppGlobalSecureKey exception: " + e.toString());
-        }
-        return false;
+        return IMPL.hasAuthKey(authKeyName);
+
     }
 
     /**
@@ -331,30 +248,13 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return If the key is valid
      */
     public static boolean isAuthKeyValid(String authKeyName, @SuppressWarnings("SameParameterValue") boolean autoDelIfNotValid) {
-        SLogger.i(TAG, String.format("soter: checking key valid: auth key name: %s, autoDelIfNotValid: %b ", authKeyName, autoDelIfNotValid));
-        if (SoterCoreUtil.isNullOrNil(authKeyName)) {
-            SLogger.e(TAG, "soter: checking key valid: authkey name not correct");
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: isAuthKeyValid IMPL is null, not support soter");
             return false;
         }
-        try {
-            initAuthKeySignature(authKeyName);
-            SLogger.i(TAG, "soter: key valid");
-            return true;
-        } catch (UnrecoverableEntryException | InvalidKeyException e) {
-            SLogger.e(TAG, "soter: key invalid.");
-            if (autoDelIfNotValid) {
-                removeAuthKey(authKeyName, false);
-            }
-            return false;
-        } catch (Exception e) {
-            SLogger.e(TAG, "soter: occurs other exceptions: %s", e.toString());
-            SLogger.printErrStackTrace(TAG, e, "soter: occurs other exceptions");
-            return false;
-        } catch (OutOfMemoryError oomError) {
-            SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when isAuthKeyValid!! maybe no attk inside");
-            SoterDelegate.onTriggerOOM();
-            return false;
-        }
+        return IMPL.isAuthKeyValid(authKeyName,autoDelIfNotValid);
+
     }
 
 
@@ -364,36 +264,13 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The public key model of the Auth Key
      */
     public static SoterPubKeyModel getAuthKeyModel(String authKeyName) {
-        if (SoterCoreUtil.isNullOrNil(authKeyName)) {
-            SLogger.e(TAG, "soter: auth key name is null or nil. abort.");
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAuthKeyModel IMPL is null, not support soter");
             return null;
         }
-        if (isNativeSupportSoter()) {
-            KeyStore keyStore;
-            try {
-                keyStore = KeyStore.getInstance("SoterKeyStore");
-                keyStore.load(null);
-                try {
-                    Key key = keyStore.getKey(authKeyName, MAGIC_SOTER_PWD.toCharArray());
-                    if (key != null) {
-                        return retrieveJsonFromExportedData(key.getEncoded());
-                    }
-                    SLogger.e(TAG, "soter: key can not be retrieved");
-                    return null;
-                } catch (ClassCastException e) {
-                    SLogger.e(TAG, "soter: cast error: " + e.toString());
-                }
-                return null;
-            } catch (Exception e) {
-                SLogger.printErrStackTrace(TAG, e, "soter: error in get auth key model");
-            } catch (OutOfMemoryError oomError) {
-                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthKeyModel!! maybe no attk inside");
-                SoterDelegate.onTriggerOOM();
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter " + "AndroidKeyStore");
-        }
-        return null;
+        return IMPL.getAuthKeyModel(authKeyName);
+
     }
 
     /**
@@ -403,29 +280,12 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The prepared Signature. It would be null if the prepare process fails, or the Auth Key is already invalid.
      */
     public static Signature getAuthInitAndSign(String useKeyAlias) {
-        if (SoterCoreUtil.isNullOrNil(useKeyAlias)) {
-            SLogger.e(TAG, "soter: auth key name is null or nil. abort.");
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: getAuthInitAndSign IMPL is null, not support soter");
             return null;
         }
-        if (isNativeSupportSoter()) {
-            try {
-                return initAuthKeySignature(useKeyAlias);
-            } catch (UnrecoverableEntryException | InvalidKeyException e) {
-                SLogger.e(TAG, "soter: key invalid. Advice remove the key");
-                return null;
-            } catch (Exception e) {
-                SLogger.e(TAG, "soter: exception when getSignatureResult: " + e.toString());
-                SLogger.printErrStackTrace(TAG, e, "soter: exception when getSignatureResult");
-                return null;
-            } catch (OutOfMemoryError oomError) {
-                SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthInitAndSign!! maybe no attk inside");
-                SoterDelegate.onTriggerOOM();
-                return null;
-            }
-        } else {
-            SLogger.e(TAG, "soter: not support soter" + "AndroidKeyStore");
-            return null;
-        }
+        return IMPL.getAuthInitAndSign(useKeyAlias);
 
     }
 
@@ -435,22 +295,33 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
             IOException,
             CertificateException,
             UnrecoverableEntryException {
-        if (SoterCoreUtil.isNullOrNil(useKeyAlias)) {
-            SLogger.e(TAG, "soter: auth key name is null or nil. abort.");
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: initAuthKeySignature IMPL is null, not support soter");
             return null;
         }
-        final Signature signature = Signature.getInstance("SHA256withRSA/PSS", "AndroidKeyStoreBCWorkaround");
-        KeyStore soterKeyStore = KeyStore.getInstance("SoterKeyStore");
-        soterKeyStore.load(null);
-        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) soterKeyStore.getEntry(useKeyAlias, null);
-        if (entry != null) {
-            signature.initSign(entry.getPrivateKey());
-            return signature;
-        } else {
-            SLogger.e(TAG, "soter: entry not exists");
-            return null;
-        }
+        return IMPL.initAuthKeySignature(useKeyAlias);
+
     }
+
+    public static SoterSessionResult initSigh(String mAuthKeyName, String mChallenge) {
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: initSigh IMPL is null, not support soter");
+            return null;
+        }
+        return IMPL.initSigh(mAuthKeyName, mChallenge);
+    }
+
+    public static byte[] finishSign(long session) throws Exception {
+
+        if (IMPL == null){
+            SLogger.e(TAG, "soter: finishSign IMPL is null, not support soter");
+            return new byte[0];
+        }
+        return IMPL.finishSign(session);
+    }
+
 
     /**
      * Convert the byte array got from {@link Signature#sign()} to {@link SoterSignatureResult} model.
@@ -458,6 +329,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @return The signature model
      */
     public static SoterSignatureResult convertFromBytesToSignatureResult(byte[] origin) {
+
         if (SoterCoreUtil.isNullOrNil(origin)) {
             SLogger.e(TAG, "origin is null or nil. abort");
             return null;
@@ -542,12 +414,21 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     }
 
     /**
-     * Judge whether there's fingerprint sensor in this device,
+     * Judge whether there's fingerprint sensor in this device
      * @param context The context
      * @return true if there's fingerprint sensor
      */
+    @Deprecated
     public static boolean isSupportFingerprint(Context context) {
-        return FingerprintManagerCompat.from(context).isHardwareDetected();
+        boolean isSupportFingerprint = FingerprintManagerCompat.from(context).isHardwareDetected();
+        SLogger.e(TAG, "soter: isSupportFingerprint return["+isSupportFingerprint+"]");
+        return isSupportFingerprint;
+    }
+
+    public static boolean isSupportBiometric(Context context, int biometricType) {
+        boolean isSupportBiometric = BiometricManagerCompat.from(context, biometricType).isHardwareDetected();
+        SLogger.e(TAG, "soter: isSupportBiometric type["+biometricType+"] return["+isSupportBiometric+"]");
+        return isSupportBiometric;
     }
 
     /**
@@ -555,16 +436,27 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      * @param context The context
      * @return true if there's fingerprint enrolled
      */
+    @Deprecated
     public static boolean isSystemHasFingerprint(Context context) {
         return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
+    }
+
+    public static boolean isSystemHasBiometric(Context context, int biometricType){
+        return BiometricManagerCompat.from(context, biometricType).hasEnrolledBiometric();
     }
 
     /**
      * Judge whether current fingerprint is frozen due to too many failure trials. If true, you should not use fingerprint for authentication in current session.
      * @return True if the fingerprint sensor is frozen now.
      */
+    @Deprecated
     public static boolean isCurrentFingerprintFrozen(Context context) {
         return !SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context) && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context);
+    }
+
+    public static boolean isCurrentBiometricFrozen(Context context, int biometricType) {
+        return !BiometricManagerCompat.from(context, biometricType).isCurrentFailTimeAvailable()
+                && !BiometricManagerCompat.from(context, biometricType).isCurrentTweenTimeAvailable(context);
     }
 
     /**
@@ -593,5 +485,6 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         SLogger.d(TAG, "soter: getFingerprint  " + key.toString());
         return key.toString();
     }
+
 
 }

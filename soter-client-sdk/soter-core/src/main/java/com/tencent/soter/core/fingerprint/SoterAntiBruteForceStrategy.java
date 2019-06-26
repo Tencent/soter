@@ -25,6 +25,7 @@ import com.tencent.soter.core.model.SLogger;
  * NOTE: Only for fingerprint
  */
 @SuppressWarnings("WeakerAccess")
+@Deprecated
 public class SoterAntiBruteForceStrategy {
     private static final String TAG = "Soter.SoterAntiBruteForceStrategy";
     //constants
@@ -39,7 +40,7 @@ public class SoterAntiBruteForceStrategy {
      * Check if system itself has already done the anti brute staff.
      * @return true if system has done it.
      */
-    public static boolean isSystemHasAntiBruteForce() {
+    static boolean isSystemHasAntiBruteForce() {
         return android.os.Build.VERSION.SDK_INT >= 23;
     }
 

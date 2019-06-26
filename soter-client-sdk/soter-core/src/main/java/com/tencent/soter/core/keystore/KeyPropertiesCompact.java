@@ -49,6 +49,11 @@ public class KeyPropertiesCompact {
     public static final String KEY_ALGORITHM_HMAC_SHA512 = "HmacSHA512";
 
     /**
+     * Purpose of key: generate ASK
+     */
+    public static final int PURPOSE_SOTER_ATTEST_KEY = 1 << 4;
+
+    /**
      * Purpose of key: encryption.
      */
     public static final int PURPOSE_ENCRYPT = 1;
