@@ -192,10 +192,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_ASK_GEN_FAILED);
         }
 
-        int uid = android.os.Process.myUid();
-
         try {
-            if(mSoterService.generateAppSecureKey(uid) == ERR_OK) {
+            if(mSoterService.generateAppSecureKey(0) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
@@ -224,10 +222,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_REMOVE_ASK);
         }
 
-        int uid = android.os.Process.myUid();
-
         try {
-            if(mSoterService.removeAllAuthKey(uid) == ERR_OK) {
+            if(mSoterService.removeAllAuthKey(0) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
@@ -257,10 +253,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return false;
         }
 
-        int uid = android.os.Process.myUid();
-
         try {
-            return mSoterService.hasAskAlready(uid);
+            return mSoterService.hasAskAlready(0);
         } catch (RemoteException e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAppGlobalSecureKey fail: ");
             return false;
@@ -297,10 +291,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         SoterExportResult soterExportResult;
-        int uid = android.os.Process.myUid();
 
         try {
-            soterExportResult =  mSoterService.getAppSecureKey(uid);
+            soterExportResult =  mSoterService.getAppSecureKey(0);
             byte[] rawBytes = soterExportResult.exportData;
 
             if (rawBytes != null && rawBytes.length > 0) {
@@ -336,10 +329,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
         }
 
-        int uid = android.os.Process.myUid();
-
         try {
-            if(mSoterService.generateAuthKey(uid, authKeyName) == ERR_OK) {
+            if(mSoterService.generateAuthKey(0, authKeyName) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
         } catch (RemoteException e) {
@@ -369,12 +360,10 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
         }
 
-        int uid = android.os.Process.myUid();
-
         try {
-            if(mSoterService.removeAuthKey(uid, authKeyName) == ERR_OK) {
+            if(mSoterService.removeAuthKey(0, authKeyName) == ERR_OK) {
                 if (isAutoDeleteASK) {
-                    if (mSoterService.removeAllAuthKey(uid) == ERR_OK) {
+                    if (mSoterService.removeAllAuthKey(0) == ERR_OK) {
                         return new SoterCoreResult(ERR_OK);
                     } else {
                         return new SoterCoreResult(ERR_REMOVE_ASK);
@@ -423,10 +412,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         SoterExportResult soterExportResult;
-        int uid = android.os.Process.myUid();
 
         try {
-            soterExportResult =  mSoterService.getAuthKey(uid, authKeyName);
+            soterExportResult =  mSoterService.getAuthKey(0, authKeyName);
             byte[] rawBytes = soterExportResult.exportData;
             if (rawBytes != null && rawBytes.length > 0) {
                 return retrieveJsonFromExportedData(rawBytes);
@@ -451,8 +439,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         SLogger.i(TAG, "soter: hasAuthKey in");
 
-        int uid = android.os.Process.myUid();
-
         if(!isNativeSupportSoter()){
             return false;
         }
@@ -470,7 +456,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         }
 
         try {
-            return mSoterService.hasAuthKey(uid,authKeyName);
+            return mSoterService.hasAuthKey(0,authKeyName);
         } catch (RemoteException e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAuthKey fail: ");
             return false;
@@ -499,12 +485,10 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return null;
         }
 
-        int uid = android.os.Process.myUid();
-
         SoterSessionResult result;
 
         try {
-            result =  mSoterService.initSigh(uid, kname, challenge);
+            result =  mSoterService.initSigh(0, kname, challenge);
             return result;
         } catch (RemoteException e) {
             SLogger.printErrStackTrace(TAG, e, "soter: initSigh fail: ");
