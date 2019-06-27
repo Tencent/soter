@@ -14,8 +14,11 @@ buildscript {
 allprojects {
     repositories {
         mavenLocal()
-        jcenter()
         google()
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/tencent-soter/maven/"
+        }
     }
 
     tasks.withType(Javadoc).all {
