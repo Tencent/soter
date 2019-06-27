@@ -38,6 +38,14 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 在项目的`build.gradle`中，添加TENCENT SOTER依赖
 
 ```groovy
+repositories {
+    ...
+    maven {
+            url "https://dl.bintray.com/tencent-soter/maven/"
+    }
+    ...
+}
+
 dependencies {
     ...
     compile 'com.tencent.soter:soter-wrapper:2.0.0'
@@ -160,6 +168,15 @@ You should make sure your device for testing is in [support list](http://mp.weix
 Add TENCENT SOTER dependency in your project's `build.gradle`
 
 ```groovy
+
+repositories {
+    ...
+    maven {
+            url "https://dl.bintray.com/tencent-soter/maven/"
+    }
+    ...
+}
+
 dependencies {
     ...
     compile 'com.tencent.soter:soter-wrapper:2.0.0'
