@@ -126,6 +126,25 @@ public abstract class SoterCoreBase {
      */
     public abstract byte[] finishSign(long signSession) throws Exception;
 
+    /**
+     * Only in TrebleCore this method can be meaningful
+     * @return weather the Soter Service is connected
+     */
+    public boolean isTrebleServiceConnected() {
+        return true;
+    }
+
+    public void triggerTrebleServiceConnecting() {
+
+    }
+
+    public void releaseTrebleServiceConnection() {
+
+    }
+
+    public void setTrebleServiceListener(SoterCoreTrebleServiceListener listener) {
+
+    }
 
     public abstract Signature initAuthKeySignature(String useKeyAlias) throws InvalidKeyException, NoSuchProviderException,
             NoSuchAlgorithmException,

@@ -13,6 +13,7 @@ package com.tencent.soter.wrapper.wrap_task;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -26,6 +27,7 @@ import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
 import com.tencent.soter.core.model.SoterErrCode;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessNoExtResult;
+import com.tencent.soter.wrapper.wrap_callback.SoterProcessResultBase;
 import com.tencent.soter.wrapper.wrap_core.ConstantsSoterProcess;
 import com.tencent.soter.wrapper.wrap_core.SoterDataCenter;
 import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
@@ -47,6 +49,9 @@ public class TaskInit extends BaseSoterTask {
     private static final String SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME = "soter_triggered_oom"
             + SoterCoreUtil.getMessageDigest(SoterCore.generateRemoteCheckRequestParam().getBytes(Charset.forName("UTF-8")));
 
+    private static final String SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME = "soter_triggered_oom_count"
+            + SoterCoreUtil.getMessageDigest(SoterCore.generateRemoteCheckRequestParam().getBytes(Charset.forName("UTF-8")));
+
     private static final int MAX_SALT_STR_LEN = 16;
     private static final int MAX_CUSTOM_KEY_LEN = 24;
 
@@ -66,7 +71,9 @@ public class TaskInit extends BaseSoterTask {
             SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
             if(preferences != null) {
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, true);
+//                editor.putBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, true);
+                int count = preferences.getInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, 0);
+                editor.putInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, count + 1);
                 editor.commit();
             }
         }
@@ -75,11 +82,25 @@ public class TaskInit extends BaseSoterTask {
         public boolean isTriggeredOOM() {
             SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
             if(preferences != null) {
-                boolean isTriggeredOOM = preferences.getBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, false);
-                SLogger.i(TAG, "soter: is triggered OOM: %b", isTriggeredOOM);
-                return isTriggeredOOM;
+//                boolean isTriggeredOOM = preferences.getBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, false);
+                int count = preferences.getInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, 0);
+                SLogger.i(TAG, "soter: is triggered OOM: %b", count);
+
+                if (count >= 10) {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
+            }
+        }
+
+        @Override
+        public void reset() {
+            SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
+            if (preferences != null) {
+                preferences.edit().putInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, 0).apply();
             }
         }
     };
@@ -89,6 +110,11 @@ public class TaskInit extends BaseSoterTask {
         // set logger first.
         if(loggerImp != null) {
             SLogger.setLogImp(loggerImp);
+        }
+
+        HandlerThread customTaskHandlerThread = param.getCustomTaskHandlerThread();
+        if (customTaskHandlerThread != null) {
+            SoterTaskThread.getInstance().setTaskHandlerThread(customTaskHandlerThread);
         }
         SoterDataCenter.getInstance().setStatusSharedPreference(context.getSharedPreferences(SOTER_STATUS_SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE));
         // set implement to wrapper
@@ -105,6 +131,11 @@ public class TaskInit extends BaseSoterTask {
 
     @Override
     boolean preExecute() {
+        if (SoterDataCenter.getInstance().isSupportSoter()) {
+            SLogger.e(TAG, "soter: duplicate initialize soter");
+            callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_ALREADY_INITIALIZED, "soter already have initialized"));
+            return true;
+        }
         if(SoterCoreUtil.isNullOrNil(scenes)) {
             SLogger.e(TAG, "soter: the salt string used to distinguish is longer than 24");
             callback(new SoterProcessNoExtResult(SoterProcessErrCode.ERR_NO_BUSINESS_SCENE_PROVIDED, "no business scene provided"));
@@ -158,18 +189,25 @@ public class TaskInit extends BaseSoterTask {
     // check if there's any keys invalid and need to be deleted
     private void removeAbnormalKeys() {
         SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
-        int askStatus = preferences.getInt(SoterCoreData.getInstance().getAskName(), ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL);
+        int askStatus = preferences.getInt(SoterCoreData.getInstance().getAskName(), ConstantsSoterProcess.KeyStatus.KEY_STATUS_UNDEFINED);
         SLogger.d(TAG, "soter: ask status: %d", askStatus);
         if(isKeyStatusInvalid(askStatus) && SoterCore.hasAppGlobalSecureKey()) {
+            SLogger.i(TAG, "invalid ask, remove all key");
             SoterCore.removeAppGlobalSecureKey();
-        }
-        for (int scene : scenes) {
-            String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
-            if(!SoterCoreUtil.isNullOrNil(keyName)) {
-                int keyStatus = preferences.getInt(keyName, ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL);
-                SLogger.d(TAG, "soter: %s status: %d", keyName, keyStatus);
-                if(isKeyStatusInvalid(keyStatus) && SoterCore.hasAuthKey(keyName)) {
-                    SoterCore.removeAuthKey(keyName, false);
+            for (int scene : scenes) {
+                String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
+                SoterCore.removeAuthKey(keyName, false);
+            }
+        } else {
+            for (int scene : scenes) {
+                String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
+                if(!SoterCoreUtil.isNullOrNil(keyName)) {
+                    int keyStatus = preferences.getInt(keyName, ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL);
+                    SLogger.d(TAG, "soter: %s status: %d", keyName, keyStatus);
+                    if(isKeyStatusInvalid(keyStatus) && SoterCore.hasAuthKey(keyName)) {
+                        SLogger.i(TAG, "remove invalid ask: %s", keyName);
+                        SoterCore.removeAuthKey(keyName, false);
+                    }
                 }
             }
         }
@@ -230,6 +268,10 @@ public class TaskInit extends BaseSoterTask {
         }
     }
 
+    @Override
+    void onExecuteCallback(SoterProcessResultBase result) {
+    }
+
     // Generate auth key names. Keep scene name unique every uid. Make it protected in case you want to generate key names by your self
     @SuppressWarnings("WeakerAccess")
     @SuppressLint("DefaultLocale")
@@ -241,7 +283,6 @@ public class TaskInit extends BaseSoterTask {
     }
 
     private boolean isKeyStatusInvalid(int keyStatus) {
-        return keyStatus == ConstantsSoterProcess.KeyStatus.KEY_STATUS_GENERATED_BUT_NOT_UPLOADED
-                || keyStatus == ConstantsSoterProcess.KeyStatus.KEY_STATUS_GENERATING;
+        return keyStatus != ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL;
     }
 }

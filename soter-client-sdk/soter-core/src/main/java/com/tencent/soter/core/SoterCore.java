@@ -27,6 +27,7 @@ import com.tencent.soter.core.sotercore.CertSoterCore;
 import com.tencent.soter.core.sotercore.SoterCoreBase;
 import com.tencent.soter.core.sotercore.SoterCoreBeforeTreble;
 import com.tencent.soter.core.sotercore.SoterCoreTreble;
+import com.tencent.soter.core.sotercore.SoterCoreTrebleServiceListener;
 import com.tencent.soter.soterserver.SoterSessionResult;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
     public static final int IS_NOT_TREBLE = 0;
     public static final int IS_TREBLE = 1;
 
-    private static boolean isAlreadyCheckedSetUp = false;
+    private static SoterCoreTrebleServiceListener serviceListener;
     private static SoterCoreBase IMPL;
 
     static {
@@ -63,14 +64,20 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         SoterCoreBeforeTreble.setUp();
     }
 
-    public static void tryToInitSoterTreble(Context context) {
+    public static synchronized void tryToInitSoterTreble(Context context) {
         if(IMPL == null ){
             SLogger.i(TAG,"soter: SoterCore IMPL is null then call tryToInitSoterTreble to init");
-            IMPL = new SoterCoreTreble();
-            if(!IMPL.initSoter(context)){
-                IMPL = null;
-                SLogger.i(TAG,"soter: SoterCore IMPL is null after call tryToInitSoterTreble to init");
+            if (!SoterCoreTreble.isInitializing()) {
+                IMPL = new SoterCoreTreble();
+                IMPL.setTrebleServiceListener(serviceListener);
+                if(!IMPL.initSoter(context)){
+                    IMPL = null;
+                    SLogger.i(TAG,"soter: SoterCore IMPL is null after call tryToInitSoterTreble to init");
+                }
+            } else {
+                SLogger.i(TAG, "soter: treble is initializing");
             }
+
         }
     }
 
@@ -120,6 +127,38 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         return null;
     }
 
+    public static boolean isTrebleServiceConnected() {
+        if (IMPL == null) {
+            SLogger.e(TAG, "soter: isTrebleServiceConnected IMPL is null, not support soter");
+            return false;
+        }
+        return IMPL.isTrebleServiceConnected();
+    }
+
+    public static void triggerTrebleServiceConnecting() {
+        if (IMPL == null) {
+            SLogger.e(TAG, "soter: triggerConnecting IMPL is null, not support soter");
+            return;
+        }
+        IMPL.triggerTrebleServiceConnecting();
+    }
+
+    public static void releaseTrebleServiceConnection() {
+        if (IMPL == null) {
+            SLogger.e(TAG, "soter: releaseServiceConnection IMPL is null, not support soter");
+            return;
+        }
+        IMPL.triggerTrebleServiceConnecting();
+    }
+
+    public static void setTrebleServiceListener(SoterCoreTrebleServiceListener listener) {
+        serviceListener = listener;
+        if (IMPL == null) {
+            SLogger.e(TAG, "soter: setTrebleServiceListener IMPL is null, not support soter");
+            return;
+        }
+        IMPL.setTrebleServiceListener(listener);
+    }
 
     /**
      * Check whether this device supports SOTER by checking native interfaces. Remind that you should check the server side as well,
@@ -420,7 +459,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     @Deprecated
     public static boolean isSupportFingerprint(Context context) {
-        boolean isSupportFingerprint = FingerprintManagerCompat.from(context).isHardwareDetected();
+        boolean isSupportFingerprint = BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isHardwareDetected();
         SLogger.e(TAG, "soter: isSupportFingerprint return["+isSupportFingerprint+"]");
         return isSupportFingerprint;
     }
@@ -438,7 +477,7 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     @Deprecated
     public static boolean isSystemHasFingerprint(Context context) {
-        return FingerprintManagerCompat.from(context).hasEnrolledFingerprints();
+        return BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).hasEnrolledBiometric();
     }
 
     public static boolean isSystemHasBiometric(Context context, int biometricType){
@@ -451,7 +490,8 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
      */
     @Deprecated
     public static boolean isCurrentFingerprintFrozen(Context context) {
-        return !SoterAntiBruteForceStrategy.isCurrentFailTimeAvailable(context) && !SoterAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context);
+        return !BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isCurrentFailTimeAvailable()
+                && !BiometricManagerCompat.from(context, ConstantsSoter.FINGERPRINT_AUTH).isCurrentTweenTimeAvailable(context);
     }
 
     public static boolean isCurrentBiometricFrozen(Context context, int biometricType) {

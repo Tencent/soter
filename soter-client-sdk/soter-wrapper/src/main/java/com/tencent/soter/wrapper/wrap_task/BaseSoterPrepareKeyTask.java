@@ -10,6 +10,9 @@
 package com.tencent.soter.wrapper.wrap_task;
 
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.wrapper.SoterWrapperApi;
+import com.tencent.soter.wrapper.wrap_callback.SoterProcessResultBase;
+import com.tencent.soter.wrapper.wrap_core.RemoveASKStrategy;
 import com.tencent.soter.wrapper.wrap_core.SoterDataCenter;
 
 /**
@@ -32,9 +35,16 @@ abstract class BaseSoterPrepareKeyTask extends BaseSoterTask {
         SLogger.d(TAG, "soter: marking preference. key: %s, status: %d", keyName, keyStatus);
         synchronized (SoterDataCenter.class) {
             if(SoterDataCenter.getInstance().getStatusSharedPreference() != null) {
-                SoterDataCenter.getInstance().getStatusSharedPreference().edit().putInt(keyName, keyStatus).apply();
+                SoterDataCenter.getInstance().getStatusSharedPreference().edit().putInt(keyName, keyStatus).commit();
             }
         }
     }
 
+    @Override
+    void onExecuteCallback(SoterProcessResultBase result) {
+/*        if (result.getErrCode() == ERR_AUTH_KEY_GEN_FAILED
+                && RemoveASKStrategy.shouldRemoveAllKey(this.getClass(), result)) {
+            SoterWrapperApi.clearAllKey();
+        }*/
+    }
 }

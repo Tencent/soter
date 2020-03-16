@@ -47,6 +47,7 @@ public class CertSoterCore extends SoterCoreBeforeTreble {
                 generator.generateKeyPair();
                 long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
                 SLogger.i(TAG, "soter: generate successfully. cost: %d ms", cost);
+                SoterDelegate.reset();
                 return new SoterCoreResult(ERR_OK);
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
@@ -74,6 +75,7 @@ public class CertSoterCore extends SoterCoreBeforeTreble {
                 try {
                     Certificate[] certificates = keyStore.getCertificateChain(SoterCoreData.getInstance().getAskName());
                     if (certificates != null) {
+                        SoterDelegate.reset();
                         return new SoterPubKeyModel(certificates);
                     }
                     SLogger.e(TAG, "soter: key can not be retrieved");

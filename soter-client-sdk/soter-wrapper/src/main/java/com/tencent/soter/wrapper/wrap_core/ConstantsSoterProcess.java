@@ -17,6 +17,7 @@ package com.tencent.soter.wrapper.wrap_core;
 public class ConstantsSoterProcess {
 
     public interface KeyStatus {
+        int KEY_STATUS_UNDEFINED = -1;
         int KEY_STATUS_NORMAL = 0;
         int KEY_STATUS_GENERATING = 1;
         int KEY_STATUS_GENERATED_BUT_NOT_UPLOADED = 2;

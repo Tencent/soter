@@ -104,6 +104,10 @@ public class SoterDemoUI extends AppCompatActivity {
         mOpenOrCloseFingerprintPayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!SoterCore.isSupportBiometric(getApplicationContext(), ConstantsSoter.FINGERPRINT_AUTH)) {
+                    Toast.makeText(getApplicationContext(), R.string.device_not_support_fp_toast, Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FINGERPRINT_AUTH)) {
                     doCloseBiometricPayment(ConstantsSoter.FINGERPRINT_AUTH);
                 } else {
@@ -122,6 +126,10 @@ public class SoterDemoUI extends AppCompatActivity {
         mOpenOrCloseFaceidPayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!SoterCore.isSupportBiometric(getApplicationContext(), ConstantsSoter.FACEID_AUTH)) {
+                    Toast.makeText(getApplicationContext(), R.string.device_not_support_faceid_toast, Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (SoterDemoData.getInstance().getIsBiometricPayOpened(ConstantsSoter.FACEID_AUTH)) {
                     doCloseBiometricPayment(ConstantsSoter.FACEID_AUTH);
                 } else {
@@ -290,6 +298,7 @@ public class SoterDemoUI extends AppCompatActivity {
                     });
                     normalPasswordAuthentication.execute();
                 } else {
+                    dismissLoading();
                     DemoLogger.w(TAG, "soterdemo: prepare authkey failed. check log to find more information");
                 }
             }

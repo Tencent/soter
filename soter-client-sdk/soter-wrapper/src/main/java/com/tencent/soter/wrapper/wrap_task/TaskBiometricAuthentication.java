@@ -22,9 +22,12 @@ import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.soterserver.SoterSessionResult;
+import com.tencent.soter.wrapper.SoterWrapperApi;
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricCanceller;
 import com.tencent.soter.wrapper.wrap_biometric.SoterBiometricStateCallback;
 import com.tencent.soter.wrapper.wrap_callback.SoterProcessAuthenticationResult;
+import com.tencent.soter.wrapper.wrap_callback.SoterProcessResultBase;
+import com.tencent.soter.wrapper.wrap_core.RemoveASKStrategy;
 import com.tencent.soter.wrapper.wrap_core.SoterDataCenter;
 import com.tencent.soter.wrapper.wrap_core.SoterProcessErrCode;
 import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
@@ -198,6 +201,17 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         } else {
             SLogger.i(TAG, "soter: already provided the challenge. directly authenticate");
             startAuthenticate();
+        }
+    }
+
+    @Override
+    void onExecuteCallback(SoterProcessResultBase result) {
+        if ((result.getErrCode() == ERR_SIGN_FAILED
+                || result.getErrCode() == ERR_INIT_SIGN_FAILED
+                || result.getErrCode() == ERR_START_AUTHEN_FAILED)
+                && RemoveASKStrategy.shouldRemoveAllKey(this.getClass(), result)) {
+            SLogger.i(TAG, "soter: same error happen too much, delete ask");
+            SoterWrapperApi.clearAllKey();
         }
     }
 
@@ -380,6 +394,8 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
             // Application should handle this as a normal logic, such as change authentication method
             if(errMsgId == ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX) {
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_LOCKED,  charSequenceToStringNullAsNil(errString)));
+            } else if (errMsgId == ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX_PERMANENT) {
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_LOCKED_PERMENANT, charSequenceToStringNullAsNil(errString)));
             } else {
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             }

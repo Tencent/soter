@@ -2,7 +2,8 @@ package com.tencent.soter.core.sotercore;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+
+import com.tencent.soter.core.model.SLogger;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,15 +14,15 @@ public class SyncJob {
 
     private static Handler mMainLooperHandler = null;
 
-    public void countDown(){
+    public synchronized void countDown(){
         if (countDownWait != null) {
             countDownWait.countDown();
             countDownWait = null;
         }
     }
 
-    public void doAsSyncJob(final long blockTime, final Runnable r) {
-        Log.i(TAG, "doAsSyncJob");
+    public synchronized void doAsSyncJob(final long blockTime, final Runnable r) {
+        SLogger.i(TAG, "doAsSyncJob");
         if (countDownWait == null) {
             countDownWait = new CountDownLatch(1);
         }
@@ -30,14 +31,14 @@ public class SyncJob {
             return;
         }
 
-        postToMainThread(r);
-
-        Log.i(TAG, "doAsSyncJob postToMainThread");
+//        postToMainThread(r);
+        r.run();
+//        SLogger.i(TAG, "doAsSyncJob postToMainThread");
         if (countDownWait != null) {
             try {
                 countDownWait.await(blockTime, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                Log.w(TAG, e.getMessage());
+                SLogger.printErrStackTrace(TAG, e, "");
             }
         }
     }
