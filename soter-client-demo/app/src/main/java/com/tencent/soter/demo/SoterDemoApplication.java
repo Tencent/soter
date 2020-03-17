@@ -9,6 +9,7 @@
 package com.tencent.soter.demo;
 
 import android.app.Application;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 
 import com.tencent.soter.demo.model.ConstantsSoterDemo;
@@ -26,18 +27,23 @@ import com.tencent.soter.wrapper.wrap_task.InitializeParam;
  */
 
 public class SoterDemoApplication extends Application{
+
     private static final String TAG = "SoterDemo.SoterDemoApplication";
 
     private SoterProcessCallback<SoterProcessNoExtResult> mGetIsSupportCallback = new SoterProcessCallback<SoterProcessNoExtResult>() {
         @Override
         public void onResult(@NonNull SoterProcessNoExtResult result) {
             DemoLogger.d(TAG, "soterdemo: get is support soter done. result: %s", result.toString());
-            // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备 ASK
+            if (result.isSuccess()) {
+
+
+                // 建议尽早准备ASK。主要有两个时机：1. 进程初始化时 2. 第一次使用业务任何一个业务时。这里在程序进程初始化的时候准备 ASK
 //            if(result.errCode == SoterProcessErrCode.ERR_OK && SoterWrapperApi.isSupportSoter()) {
 //                prepareASK();
 //            }
-            // Edit 2017.11.27
-            // 不再建议提前生成ASK，可能会拖慢启动。同时极少量机型有兼容性问题，提前生成ASK可能会导致不可预见错误
+                // Edit 2017.11.27
+                // 不再建议提前生成ASK，可能会拖慢启动。同时极少量机型有兼容性问题，提前生成ASK可能会导致不可预见错误
+            }
         }
     };
 

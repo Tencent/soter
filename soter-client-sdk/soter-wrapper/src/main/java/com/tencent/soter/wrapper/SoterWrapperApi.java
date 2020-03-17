@@ -11,7 +11,10 @@ package com.tencent.soter.wrapper;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.util.SparseArray;
 
 import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.model.ConstantsSoter;
@@ -66,6 +69,16 @@ public class SoterWrapperApi implements SoterProcessErrCode {
                 }
             }
         });
+    }
+
+    /**
+     * Soter service may be disconnected when app is in the background, so we try to reconnect when the app enters to the foreground.
+     * Should be called on {@link Application#onCreate()}
+     * @param application The application
+     */
+    @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    public static void detectAppForeground(Application application) {
+        application.registerActivityLifecycleCallbacks(new AppForegroundDetector());
     }
 
     /**
@@ -153,6 +166,15 @@ public class SoterWrapperApi implements SoterProcessErrCode {
     }
 
     /**
+     * Ensure Soter Service stay connected.
+     */
+    public static void ensureConnection() {
+        if (isInitialized() && !SoterCore.isTrebleServiceConnected()) {
+            SoterCore.triggerTrebleServiceConnecting();
+        }    
+    }
+
+    /**
      * Remove the Auth Key using business scene code.
      * @param scene Business scene. Should be initialized in {@link SoterWrapperApi#init(Context, SoterProcessCallback, InitializeParam)}
      * @return True if the remove process is successful, false otherwise
@@ -172,6 +194,19 @@ public class SoterWrapperApi implements SoterProcessErrCode {
             SLogger.w(TAG, "soter: scene not registered in init. please make sure");
             return false;
         }
+    }
+
+    /**
+     * Clear all business Auth Keys and ASK.
+     */
+    public static void clearAllKey() {
+        SparseArray<String> authKeyNames = SoterDataCenter.getInstance().getAuthKeyNames();
+        int size = authKeyNames.size();
+        for (int i = 0; i < size; i++) {
+            String authKeyName = authKeyNames.valueAt(i);
+            SoterCore.removeAuthKey(authKeyName, false);
+        }
+        SoterCore.removeAppGlobalSecureKey();
     }
 
     /**

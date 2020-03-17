@@ -57,11 +57,16 @@ abstract public class BaseSoterTask implements SoterProcessErrCode {
      */
     abstract void execute();
 
+    abstract void onExecuteCallback(SoterProcessResultBase result);
+
     synchronized void callback(final SoterProcessResultBase result) {
         if(mIsCallbacked) {
             SLogger.w(TAG, "soter: warning: already removed the task!");
             return;
         }
+
+        onExecuteCallback(result);
+
         SoterTaskManager.getInstance().removeFromTask(this);
         // must callback in main thread
         SoterTaskThread.getInstance().postToMainThread(new Runnable() {

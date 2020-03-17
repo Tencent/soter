@@ -19,6 +19,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by henryye on 2017/4/25.
@@ -32,7 +41,7 @@ abstract class RemoteBase {
     private JSONObject mResultJson = null;
 
     private static final long SIMULATE_NETWORK_DELAY = 1000;
-    protected static final String BASE_URL = "http://simulate.soter_demo";
+    protected static final String BASE_URL = "https://www.grouppic.cn/soter";
     public void execute() {
         DemoLogger.i(TAG, "soterdemo: simulate execute");
         JSONObject result = getSimulateJsonResult(mRequestJson);
@@ -48,6 +57,62 @@ abstract class RemoteBase {
         DemoNetworkThread.getInstance().postTaskDelayed(new Runnable() {
             @Override
             public void run() {
+                //post的方式提交
+                try {
+                    String path = getNetUrl();
+                    URL url = new URL(path);
+
+                    HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    });
+                    SSLContext context = SSLContext.getInstance("TLS");
+                    context.init(null, new X509TrustManager[]{new X509TrustManager() {
+                        public void checkClientTrusted(X509Certificate[] chain,
+                                                       String authType) throws CertificateException {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] chain,
+                                                       String authType) throws CertificateException {
+                        }
+
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+                    }}, new SecureRandom());
+                    HttpsURLConnection.setDefaultSSLSocketFactory(
+                            context.getSocketFactory());
+
+                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                    connection.setConnectTimeout(5000);
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.connect();
+                    connection.getOutputStream().write((mRequestJson.toString()).getBytes("UTF-8"));
+                    //获得结果码
+                    int responseCode = connection.getResponseCode();
+                    String response = null;
+                    if(responseCode ==200){
+                        //请求成功 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                        IOUtils.closeQuietly(is);
+                    }else {
+                        //请求失败 获得返回的流
+                        InputStream is = connection.getInputStream();
+                        response = IOUtils.toString(is, "UTF-8");
+                        DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                        IOUtils.closeQuietly(is);
+                    }
+                    DemoLogger.i(TAG, "soterdemo: remote request returned. url is: %s, response is: %s", path, response);
+                    JSONObject resultJson = new JSONObject(response);
+                    mResultJson = resultJson.getJSONObject("data");
+                    connection.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 onNetworkEnd(mResultJson);
             }
         }, SIMULATE_NETWORK_DELAY);

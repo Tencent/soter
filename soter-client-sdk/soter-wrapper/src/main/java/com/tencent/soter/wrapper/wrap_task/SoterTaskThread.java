@@ -28,23 +28,27 @@ public class SoterTaskThread {
     private static final String TAG = "Soter.SoterTaskThread";
     private static final String HANDLER_THREAD_NAME = "SoterGenKeyHandlerThreadName";
 
+    private static volatile SoterTaskThread mInstance = null;
+
+    private HandlerThread mTaskHandlerThread;
+    private Handler mTaskHandler = null;
+    private Handler mMainLooperHandler = null;
+
     private SoterTaskThread() {
-        HandlerThread taskHandlerThread = new HandlerThread(HANDLER_THREAD_NAME);
-        taskHandlerThread.start();
-        Looper taskLooper = taskHandlerThread.getLooper();
-        if(taskLooper != null) {
-            mTaskHandler = new Handler(taskHandlerThread.getLooper());
-        } else {
-            SLogger.e(TAG, "soter: task looper is null! use main looper as the task looper");
-            mTaskHandler = new Handler(Looper.getMainLooper());
+        if (mTaskHandlerThread == null) {
+            mTaskHandlerThread = new HandlerThread(HANDLER_THREAD_NAME);
+            mTaskHandlerThread.start();
+
+            Looper taskLooper = mTaskHandlerThread.getLooper();
+            if(taskLooper != null) {
+                mTaskHandler = new Handler(mTaskHandlerThread.getLooper());
+            } else {
+                SLogger.e(TAG, "soter: task looper is null! use main looper as the task looper");
+                mTaskHandler = new Handler(Looper.getMainLooper());
+            }
         }
         mMainLooperHandler = new Handler(Looper.getMainLooper());
     }
-
-    private static volatile SoterTaskThread mInstance = null;
-
-    private Handler mTaskHandler = null;
-    private Handler mMainLooperHandler = null;
 
     public static SoterTaskThread getInstance() {
         if (mInstance == null) {
@@ -57,6 +61,20 @@ public class SoterTaskThread {
         } else {
             return mInstance;
         }
+    }
+
+    public void setTaskHandlerThread(HandlerThread handlerThread) {
+        if (mTaskHandlerThread != null && mTaskHandlerThread.isAlive()) {
+            SLogger.i(TAG, "quit the previous thread");
+            mTaskHandlerThread.quit();
+        }
+
+        mTaskHandlerThread = handlerThread;
+        mTaskHandlerThread.setName(HANDLER_THREAD_NAME);
+        if (!handlerThread.isAlive()) {
+            handlerThread.start();
+        }
+        mTaskHandler = new Handler(mTaskHandlerThread.getLooper());
     }
 
     public void postToWorker(final Runnable task) {

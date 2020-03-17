@@ -14,6 +14,7 @@ public class SoterDelegate {
     public interface ISoterDelegate {
         void onTriggeredOOM();
         boolean isTriggeredOOM();
+        void reset();
     }
 
     @NonNull
@@ -30,6 +31,11 @@ public class SoterDelegate {
         public boolean isTriggeredOOM() {
             return isTriggeredOOM;
         }
+
+        @Override
+        public void reset() {
+            isTriggeredOOM = false;
+        }
     };
 
     public static void setImplement(@NonNull ISoterDelegate instance) {
@@ -43,5 +49,9 @@ public class SoterDelegate {
 
     public static boolean isTriggeredOOM() {
         return sSoterDelegateImp.isTriggeredOOM();
+    }
+
+    public static void reset() {
+        sSoterDelegateImp.reset();
     }
 }

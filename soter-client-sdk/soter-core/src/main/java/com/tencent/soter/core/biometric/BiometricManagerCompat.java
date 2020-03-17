@@ -395,13 +395,13 @@ public class BiometricManagerCompat {
                     }
                     mMarkPermanentlyCallbacked = true;
                     // filter cases when user has already cancelled the authentication.
-                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
+                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED || errMsgId == FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED) {
                         SLogger.i(TAG, "soter: user cancelled fingerprint authen");
                         callback.onAuthenticationCancelled();
                         return;
                     }
                     //sync freeze state
-                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT) {
+                    if(errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT || errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT) {
                         SLogger.i(TAG, "soter: system call too many trial.");
                         if(!SoterBiometricAntiBruteForceStrategy.isCurrentFailTimeAvailable(context)
                                 && !SoterBiometricAntiBruteForceStrategy.isCurrentTweenTimeAvailable(context)
@@ -409,10 +409,14 @@ public class BiometricManagerCompat {
                             SoterBiometricAntiBruteForceStrategy.freeze(context);
                         }
                         mMarkPermanentlyCallbacked = false;
-                        onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
+
+                        if (errMsgId == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT) {
+                            onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
+                        } else {
+                            onAuthenticationError(ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX_PERMANENT, ConstantsSoter.SOTER_BIOMETRIC_ERR_FAIL_MAX_MSG);
+                        }
                         return;
                     }
-
                     callback.onAuthenticationError(errMsgId, errString);
                 }
 

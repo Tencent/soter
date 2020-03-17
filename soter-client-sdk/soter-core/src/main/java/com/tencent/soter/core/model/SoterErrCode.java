@@ -44,9 +44,9 @@ public interface SoterErrCode {
     /**
      * Failed to generate Auth Key
      */
-    int ERR_AUTH_KEY_GEN_FAILED = 5;
+    int ERR_AUTH_KEY_GEN_FAILED = 6;
     /**
      * Failed to remove Auth Key
      */
-    int ERR_REMOVE_AUTH_KEY = 6;
+    int ERR_REMOVE_AUTH_KEY = 7;
 }

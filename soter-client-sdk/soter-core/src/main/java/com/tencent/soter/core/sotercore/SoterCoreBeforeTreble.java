@@ -121,6 +121,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 generator.generateKeyPair();
                 long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
                 SLogger.i(TAG, "soter: generate successfully. cost: %d ms", cost);
+                SoterDelegate.reset();
                 return new SoterCoreResult(ERR_OK);
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
@@ -182,6 +183,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 try {
                     Key key = keyStore.getKey(SoterCoreData.getInstance().getAskName(), "from_soter_ui".toCharArray());
                     if (key != null) {
+                        SoterDelegate.reset();
                         return retrieveJsonFromExportedData(key.getEncoded());
                     }
                     SLogger.e(TAG, "soter: key can not be retrieved");
@@ -226,6 +228,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                     generator.generateKeyPair();
                     long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
                     SLogger.i(TAG, "soter: generate successfully, cost: %d ms", cost);
+                    SoterDelegate.reset();
                     return new SoterCoreResult(ERR_OK);
                 } catch (Exception e) {
                     SLogger.e(TAG, "soter: cause exception. maybe reflection exception: " + e.toString());
@@ -309,6 +312,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         try {
             initAuthKeySignature(authKeyName);
             SLogger.i(TAG, "soter: key valid");
+            SoterDelegate.reset();
             return true;
         } catch (UnrecoverableEntryException | InvalidKeyException e) {
             SLogger.e(TAG, "soter: key invalid.");
@@ -340,6 +344,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 keyStore.load(null);
                 try {
                     Key key = keyStore.getKey(authKeyName, MAGIC_SOTER_PWD.toCharArray());
+                    SoterDelegate.reset();
                     if (key != null) {
                         return retrieveJsonFromExportedData(key.getEncoded());
                     }
@@ -369,6 +374,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
         }
         if (isNativeSupportSoter()) {
             try {
+                SoterDelegate.reset();
                 return initAuthKeySignature(useKeyAlias);
             } catch (UnrecoverableEntryException | InvalidKeyException e) {
                 SLogger.e(TAG, "soter: key invalid. Advice remove the key");
