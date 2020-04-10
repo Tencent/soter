@@ -13,7 +13,8 @@ For English version, please click [here](#a-quick-look-at-tencent-soter).
 * 增加对Android9.0的支持。
 * 增加人脸识别功能。
 * 后台ASK的解析有少量变动，看[这里](https://github.com/Tencent/soter/wiki/%E5%AE%89%E5%85%A8%E6%8E%A5%E5%85%A5%E2%80%94%E2%80%94%E5%90%8E%E5%8F%B0)。
-
+* 后台is_support接口传参有变更，看[这里]
+(https://github.com/Tencent/soter/wiki/%E5%90%8E%E5%8F%B0%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3)
 
 ## TENCENT SOTER简介
 
