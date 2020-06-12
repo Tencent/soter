@@ -14,26 +14,21 @@ public class SyncJob {
 
     private static Handler mMainLooperHandler = null;
 
-    public synchronized void countDown(){
+    public void countDown(){
         if (countDownWait != null) {
             countDownWait.countDown();
-            countDownWait = null;
         }
     }
 
-    public synchronized void doAsSyncJob(final long blockTime, final Runnable r) {
+    public void doAsSyncJob(final long blockTime, final Runnable r) {
         SLogger.i(TAG, "doAsSyncJob");
-        if (countDownWait == null) {
-            countDownWait = new CountDownLatch(1);
-        }
-
         if (r == null) {
             return;
         }
+        countDownWait = new CountDownLatch(1);
 
-//        postToMainThread(r);
         r.run();
-//        SLogger.i(TAG, "doAsSyncJob postToMainThread");
+
         if (countDownWait != null) {
             try {
                 countDownWait.await(blockTime, TimeUnit.MILLISECONDS);
