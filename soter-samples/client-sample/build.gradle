@@ -19,6 +19,7 @@ allprojects {
         maven {
             url "https://dl.bintray.com/tencent-soter/maven/"
         }
+        maven { url 'https://jitpack.io' }
     }
 
     tasks.withType(Javadoc).all {
