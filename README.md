@@ -6,7 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
-
+## 2.0.7
+* 发布aar到jitpack，新的依赖方法看[这里](https://github.com/Tencent/soter#%E6%B7%BB%E5%8A%A0gradle%E4%BE%9D%E8%B5%96)
 ## 2.0版本变化
 * 增加对华为设备的支持。
 * 增加对Android9.0的支持。
