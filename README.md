@@ -1,8 +1,7 @@
 # Hello TENCENT SOTER
 
 [![license](http://img.shields.io/badge/license-BSD3-brightgreen.svg?style=flat)](https://github.com/Tencent/soter/blob/master/LICENSE)
-[![Release Version](https://img.shields.io/badge/release-2.0.0-red.svg)](https://github.com/Tencent/soter/releases)
-
+[![](https://jitpack.io/v/Tencent/soter.svg)](https://jitpack.io/#Tencent/soter)
 [![WeChat Approved](https://img.shields.io/badge/Wechat_Approved-2.0.0-red.svg)](https://github.com/Tencent/soter/wiki) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
@@ -41,14 +40,14 @@ TENCENT SOTER是腾讯于2015年开始制定的生物认证平台与标准，通
 repositories {
     ...
     maven {
-            url "https://dl.bintray.com/tencent-soter/maven/"
+            url "https://jitpack.io"
     }
     ...
 }
 
 dependencies {
     ...
-    compile 'com.tencent.soter:soter-wrapper:2.0.0'
+    implementation 'com.github.Tencent.soter:soter-wrapper:2.0.7'
     ...
 }
 ```
