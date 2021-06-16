@@ -11,8 +11,6 @@ package com.tencent.soter.core.model;
 
 import android.util.Log;
 
-import junit.framework.Assert;
-
 /**
  * Created by henryye on 2017/4/13.
  *
@@ -25,7 +23,9 @@ public class SLogger {
     private static ISoterLogger mLoggerImp = new DefaultSoterLogger();
 
     public static void setLogImp(ISoterLogger logInstance) {
-        Assert.assertTrue(logInstance != null);
+        if (logInstance == null) {
+            throw new RuntimeException("logInstance can not be null");
+        }
         mLoggerImp = logInstance;
     }
 

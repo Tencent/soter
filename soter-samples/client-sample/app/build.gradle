@@ -22,7 +22,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.tencent.soter:soter-wrapper:2.0.4'
+    implementation 'com.github.Tencent.soter:soter-wrapper:2.0.7'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'commons-io:commons-io:1.4'
 }

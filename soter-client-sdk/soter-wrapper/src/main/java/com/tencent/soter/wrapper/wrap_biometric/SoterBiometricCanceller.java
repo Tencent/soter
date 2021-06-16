@@ -19,8 +19,6 @@ import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskManager;
 import com.tencent.soter.wrapper.wrap_task.SoterTaskThread;
 
-import junit.framework.Assert;
-
 /**
  * Created by henryye on 2017/4/24.
  *
@@ -36,8 +34,9 @@ public class SoterBiometricCanceller {
     private static final long MAX_WAIT_EXECUTION_TIME = 350;
 
     public SoterBiometricCanceller() {
-        Assert.assertTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
-        refreshCancellationSignal();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            refreshCancellationSignal();
+        }
     }
 
     /**
