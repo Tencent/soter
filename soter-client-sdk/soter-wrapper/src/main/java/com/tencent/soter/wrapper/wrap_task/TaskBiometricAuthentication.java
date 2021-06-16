@@ -34,8 +34,6 @@ import com.tencent.soter.wrapper.wrap_net.ISoterNetCallback;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetChallengeStr;
 import com.tencent.soter.wrapper.wrap_net.IWrapUploadSignature;
 
-import junit.framework.Assert;
-
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.security.Signature;
@@ -102,7 +100,10 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
             return true;
         }
         // All SOTER device must be at list Android 5.0, so be easy and free to add this Assert after checking SOTER support
-        Assert.assertTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            callback(new SoterProcessAuthenticationResult(ERR_SOTER_NOT_SUPPORTED));
+            return true;
+        }
         mAuthKeyName = SoterDataCenter.getInstance().getAuthKeyNames().get(mScene, "");
         if (SoterCoreUtil.isNullOrNil(mAuthKeyName)) {
             SLogger.w(TAG, "soter: request prepare auth key scene: %d, but key name is not registered. Please make sure you register the scene in init");

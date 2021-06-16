@@ -2,8 +2,6 @@ package com.tencent.soter.core.model;
 
 import android.support.annotation.NonNull;
 
-import junit.framework.Assert;
-
 /**
  * Created by henryye on 2018/1/10.
  */
@@ -39,7 +37,6 @@ public class SoterDelegate {
     };
 
     public static void setImplement(@NonNull ISoterDelegate instance) {
-        Assert.assertNotNull(instance);
         sSoterDelegateImp = instance;
     }
 

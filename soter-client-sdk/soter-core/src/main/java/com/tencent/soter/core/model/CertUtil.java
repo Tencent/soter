@@ -93,7 +93,9 @@ public class CertUtil
                 }
             }
             if (jsonStartOff > 0 && jsonStartOff < jsonEndOff) {
-                assert attestationExtensionBytes[jsonStartOff-1]==(jsonEndOff-jsonStartOff+1);
+                if (attestationExtensionBytes[jsonStartOff-1]!=(jsonEndOff-jsonStartOff+1)) {
+                    throw new Exception("read extension data error");
+                }
                 jsonLength = (jsonEndOff-jsonStartOff+1);
 
                 byte[] jsonBytes = new byte[jsonLength];
