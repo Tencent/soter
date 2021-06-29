@@ -100,7 +100,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
             return true;
         }
         // All SOTER device must be at list Android 5.0, so be easy and free to add this Assert after checking SOTER support
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
             callback(new SoterProcessAuthenticationResult(ERR_SOTER_NOT_SUPPORTED));
             return true;
         }
