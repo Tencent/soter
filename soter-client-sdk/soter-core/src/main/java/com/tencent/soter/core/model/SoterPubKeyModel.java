@@ -135,7 +135,7 @@ public class SoterPubKeyModel {
         try{
             CertUtil.extractAttestationSequence(attestationCert,this);
         }catch (Exception e){
-            SLogger.e(TAG, "soter: loadDeviceInfo from attestationCert failed" + e.getStackTrace());
+            SLogger.printErrStackTrace(TAG, e, "soter: loadDeviceInfo from attestationCert failed");
         }
 
     }

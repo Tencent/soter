@@ -76,42 +76,39 @@ public class CertUtil
             throw new Exception("Couldn't find the keystore attestation " + "extension data.");
         }
 
-        try {
-            int jsonStartOff = 0;
-            int jsonEndOff = 0;
-            int jsonLength = 0;
+        int jsonStartOff = 0;
+        int jsonEndOff = 0;
+        int jsonLength = 0;
 
-            byte jsonStartTag = "{".getBytes()[0];
-            byte jsonEndTag = "}".getBytes()[0];
+        byte jsonStartTag = "{".getBytes()[0];
+        byte jsonEndTag = "}".getBytes()[0];
 
-            for (int i = 0; i < attestationExtensionBytes.length; i++) {
-                byte b = attestationExtensionBytes[i];
-                if (b==jsonStartTag) {
-                    jsonStartOff = i;
-                }else if(b==jsonEndTag){
-                    jsonEndOff = i;
-                }
+        for (int i = 0; i < attestationExtensionBytes.length; i++) {
+            byte b = attestationExtensionBytes[i];
+            if (b==jsonStartTag) {
+                jsonStartOff = i;
+            }else if(b==jsonEndTag){
+                jsonEndOff = i;
             }
-            if (jsonStartOff > 0 && jsonStartOff < jsonEndOff) {
-                if (attestationExtensionBytes[jsonStartOff-1]!=(jsonEndOff-jsonStartOff+1)) {
-                    throw new Exception("read extension data error");
-                }
-                jsonLength = (jsonEndOff-jsonStartOff+1);
-
-                byte[] jsonBytes = new byte[jsonLength];
-                System.arraycopy(attestationExtensionBytes, jsonStartOff, jsonBytes, 0, jsonLength);
-                String jsonString = new String(jsonBytes);
-
-                SLogger.i(TAG, "soter: challenge json in attestation certificate " + jsonString);
-
-                JSONObject jsonObject = new JSONObject(jsonString);
-
-                soterPubKeyModel.setCpu_id(jsonObject.getString(JSON_KEY_CPU_ID));
-                soterPubKeyModel.setUid(jsonObject.getInt(JSON_KEY_UID));
-                soterPubKeyModel.setCounter(jsonObject.getLong(JSON_KEY_COUNTER));
+        }
+        if (jsonStartOff > 0 && jsonStartOff < jsonEndOff) {
+            if (attestationExtensionBytes[jsonStartOff-1]!=(jsonEndOff-jsonStartOff+1)) {
+//                throw new Exception("read extension data error");
+                SLogger.w(TAG, "read extension lenght error");
             }
-        }catch (Exception e){
-            throw new Exception("Couldn't parse challenge json string in the attestation certificate" + e.getStackTrace());
+            jsonLength = (jsonEndOff-jsonStartOff+1);
+
+            byte[] jsonBytes = new byte[jsonLength];
+            System.arraycopy(attestationExtensionBytes, jsonStartOff, jsonBytes, 0, jsonLength);
+            String jsonString = new String(jsonBytes);
+
+            SLogger.i(TAG, "soter: challenge json in attestation certificate " + jsonString);
+
+            JSONObject jsonObject = new JSONObject(jsonString);
+
+            soterPubKeyModel.setCpu_id(jsonObject.getString(JSON_KEY_CPU_ID));
+            soterPubKeyModel.setUid(jsonObject.getInt(JSON_KEY_UID));
+            soterPubKeyModel.setCounter(jsonObject.getLong(JSON_KEY_COUNTER));
         }
     }
 }
