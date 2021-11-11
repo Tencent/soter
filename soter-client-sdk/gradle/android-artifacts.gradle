@@ -41,6 +41,23 @@ group = GROUP
 //    }
 //}
 
+def getReleaseRepositoryUrl() {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.getProperty('RELEASE_REPOSITORY_URL')
+}
+
+def getRepositoryUsername() {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.getProperty('REPOSITORY_USERNAME')
+}
+
+def getRepositoryPassword() {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.getProperty('REPOSITORY_PASSWORD')
+}
 
 task androidJavadocs(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
@@ -65,6 +82,15 @@ artifacts {
 
 afterEvaluate {
     publishing {
+        repositories {
+            maven {
+                url = getReleaseRepositoryUrl()
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
+            }
+        }
         publications {
             SoterBoots(MavenPublication) {
                 // Applies the component for the release build variant.
