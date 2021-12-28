@@ -34,7 +34,11 @@ public class AuthenticationParam {
     private IWrapUploadSignature mIWrapUploadSignature;
     private Context mContext;
     private int mBiometricType;
-
+    private String mPromptTitle; //used for BiometricPrompt
+    private String mPromptSubTitle; //used for BiometricPrompt
+    private String mPromptDescription; //used for BiometricPrompt
+    private String mPromptButton; //used for BiometricPrompt
+    private boolean mUseBiometricPrompt; // force use BiometricPrompt when api>=31
     private SoterFingerprintCanceller mFingerprintCanceller;
     private SoterFingerprintStateCallback mSoterFingerprintStateCallback;
 
@@ -83,6 +87,26 @@ public class AuthenticationParam {
 
     public SoterBiometricStateCallback getSoterBiometricStateCallback() {
         return mSoterBiometricStateCallback;
+    }
+
+    public String getPromptTitle() {
+        return mPromptTitle;
+    }
+
+    public String getPromptSubTitle() {
+        return mPromptSubTitle;
+    }
+
+    public String getPromptDescription() {
+        return mPromptDescription;
+    }
+
+    public String getPromptButton() {
+        return mPromptButton;
+    }
+
+    public boolean getUseBiometricPrompt() {
+        return mUseBiometricPrompt;
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
@@ -196,6 +220,56 @@ public class AuthenticationParam {
          */
         public AuthenticationParamBuilder setBiometricType(int biometricType){
             mParam.mBiometricType = biometricType;
+            return this;
+        }
+
+        /**
+         * used for the BiometricPrompt，will use BiometricPrompt when api>31
+         * @param title
+         * @return
+         */
+        public AuthenticationParamBuilder setPromptTitle(String title) {
+            mParam.mPromptTitle = title;
+            return this;
+        }
+
+        /**
+         * used for the BiometricPrompt
+         * @param subTitle
+         * @return
+         */
+        public AuthenticationParamBuilder setPromptSubTitle(String subTitle) {
+            mParam.mPromptSubTitle = subTitle;
+            return this;
+        }
+
+        /**
+         * used for the BiometricPrompt
+         * @param description
+         * @return
+         */
+        public AuthenticationParamBuilder setPromptDescription(String description) {
+            mParam.mPromptDescription = description;
+            return this;
+        }
+
+        /**
+         * used for the BiometricPrompt
+         * @param button
+         * @return
+         */
+        public AuthenticationParamBuilder setPromptButton(String button) {
+            mParam.mPromptButton = button;
+            return this;
+        }
+
+        /**
+         * On Android S, the system will force to invoke BiometricPrompt when using FingerprintManager
+         * @param useBiometricPrompt
+         * @return
+         */
+        public AuthenticationParamBuilder setUseBiometricPrompt(boolean useBiometricPrompt) {
+            mParam.mUseBiometricPrompt = useBiometricPrompt;
             return this;
         }
 
