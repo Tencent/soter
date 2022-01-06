@@ -119,9 +119,9 @@ final class FingerprintManagerProxy {
     public static void authenticate(Context context, CryptoObject crypto, int flags, Object cancel,
                                     AuthenticationCallback callback, Handler handler, Bundle extra) {
         boolean useBiometricPrompt = extra.getBoolean("use_biometric_prompt");
-        SLogger.d(TAG, "use_biometric_prompt: %s", useBiometricPrompt);
-        if (useBiometricPrompt && Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
-            authenticateApi29(context, crypto, flags, cancel, callback, handler, extra);
+        SLogger.i(TAG, "use_biometric_prompt: %s, sdk_version: %s", useBiometricPrompt, Build.VERSION.SDK_INT);
+        if (useBiometricPrompt && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            authenticateApi28(context, crypto, flags, cancel, callback, handler, extra);
         } else {
             authenticateLegacy(context, crypto, flags, cancel, callback, handler);
         }
@@ -148,7 +148,7 @@ final class FingerprintManagerProxy {
         }
     }
     @SuppressLint("MissingPermission")
-    private static void authenticateApi29(Context context, CryptoObject crypto, int flags, Object cancel,
+    private static void authenticateApi28(Context context, CryptoObject crypto, int flags, Object cancel,
                                           final AuthenticationCallback callback, Handler handler, Bundle extra) {
         if (checkSelfPermission(context, Manifest.permission.USE_BIOMETRIC) != PackageManager.PERMISSION_GRANTED) {
             SLogger.e(TAG, "soter: permission check failed: authenticate");
