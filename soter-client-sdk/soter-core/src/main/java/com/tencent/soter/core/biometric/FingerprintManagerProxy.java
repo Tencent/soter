@@ -157,7 +157,9 @@ final class FingerprintManagerProxy {
 
         BiometricPrompt.Builder builder = new BiometricPrompt.Builder(context);
         builder.setDeviceCredentialAllowed(false);
-        builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+        }
         builder.setTitle(extra.getString("prompt_title"));
         builder.setSubtitle(extra.getString("prompt_subtitle"));
         builder.setDescription(extra.getString("prompt_description"));
