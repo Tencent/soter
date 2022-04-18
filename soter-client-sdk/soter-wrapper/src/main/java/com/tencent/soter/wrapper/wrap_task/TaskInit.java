@@ -45,12 +45,12 @@ public class TaskInit extends BaseSoterTask {
     private static final String TAG = "Soter.TaskInit";
 
     private static final String SOTER_STATUS_SHARED_PREFERENCE_NAME = "soter_status";
+    // reduce invoke frequency
+    private static final String DEVICE_INFO = SoterCore.generateRemoteCheckRequestParam();
+    private static final String DEVICE_INFO_DIGEST = SoterCoreUtil.getMessageDigest(DEVICE_INFO.getBytes(Charset.forName("UTF-8")));
     // we add device information digest as the salt, as OEMs may OTA their ROM to avoid OOM.
-    private static final String SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME = "soter_triggered_oom"
-            + SoterCoreUtil.getMessageDigest(SoterCore.generateRemoteCheckRequestParam().getBytes(Charset.forName("UTF-8")));
-
-    private static final String SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME = "soter_triggered_oom_count"
-            + SoterCoreUtil.getMessageDigest(SoterCore.generateRemoteCheckRequestParam().getBytes(Charset.forName("UTF-8")));
+    private static final String SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME = "soter_triggered_oom" + DEVICE_INFO_DIGEST;
+    private static final String SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME = "soter_triggered_oom_count" + DEVICE_INFO_DIGEST;
 
     private static final int MAX_SALT_STR_LEN = 16;
     private static final int MAX_CUSTOM_KEY_LEN = 24;
@@ -233,8 +233,7 @@ public class TaskInit extends BaseSoterTask {
                 SoterDataCenter.getInstance().setInit(true);
                 callback(new SoterProcessNoExtResult(SoterErrCode.ERR_OK));
             } else {
-                String deviceFpKey = SoterCore.generateRemoteCheckRequestParam();
-                getSupportNetWrapper.setRequest(new IWrapGetSupportNet.GetSupportRequest(deviceFpKey));
+                getSupportNetWrapper.setRequest(new IWrapGetSupportNet.GetSupportRequest(DEVICE_INFO));
                 getSupportNetWrapper.setCallback(new ISoterNetCallback<IWrapGetSupportNet.GetSupportResult>() {
                     @Override
                     public void onNetEnd(IWrapGetSupportNet.GetSupportResult callbackDataModel) {
