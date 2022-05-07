@@ -7,6 +7,7 @@ import com.tencent.soter.soterserver.SoterExportResult;
 import com.tencent.soter.soterserver.SoterSessionResult;
 import com.tencent.soter.soterserver.SoterSignResult;
 import com.tencent.soter.soterserver.SoterDeviceResult;
+import com.tencent.soter.soterserver.SoterExtraParam;
 
 interface ISoterService {
     /**
@@ -38,5 +39,5 @@ interface ISoterService {
 
      int getVersion();
 
-
+     SoterExtraParam getExtraParam(String key);
  }

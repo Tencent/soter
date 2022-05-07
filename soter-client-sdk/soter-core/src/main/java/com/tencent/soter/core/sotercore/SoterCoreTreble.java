@@ -11,8 +11,11 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
 
+import com.tencent.soter.core.model.ISoterExParameters;
+import com.tencent.soter.core.model.SoterExParametersTrebleImpl;
 import com.tencent.soter.soterserver.ISoterService;
 import com.tencent.soter.soterserver.SoterExportResult;
+import com.tencent.soter.soterserver.SoterExtraParam;
 import com.tencent.soter.soterserver.SoterSessionResult;
 import com.tencent.soter.soterserver.SoterSignResult;
 import com.tencent.soter.core.model.ConstantsSoter;
@@ -108,6 +111,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             try {
                 service.linkToDeath(mDeathRecipient, 0);
                 mSoterService = ISoterService.Stub.asInterface(service);
+                updateExtraParam();
             } catch (RemoteException e) {
                 SLogger.e(TAG, "soter: Binding deathRecipient is error - RemoteException"+ e.toString());
             }
@@ -696,6 +700,21 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             SLogger.printErrStackTrace(TAG, e, "soter: getVersion fail: ");
         }
         return 0;
+    }
+
+    private void updateExtraParam() {
+        try {
+            SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
+            if (typeResult != null && typeResult.result instanceof Integer) {
+                SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
+            }
+            SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
+            if (posResult != null && posResult.result instanceof Integer[]) {
+                SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
+            }
+        } catch (RemoteException e) {
+            SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+        }
     }
 
     private static long getFib(long n){
