@@ -704,15 +704,29 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     private void updateExtraParam() {
         try {
-            SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
-            if (typeResult != null && typeResult.result instanceof Integer) {
-                SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
-            }
-            SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
-            if (posResult != null && posResult.result instanceof Integer[]) {
-                SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
-            }
-        } catch (RemoteException e) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (mSoterService == null) {
+                            SLogger.w(TAG, "soter: mSoterService is null");
+                            return;
+                        }
+                        SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
+                        if (typeResult != null && typeResult.result instanceof Integer) {
+                            SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
+                        }
+                        SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
+                        if (posResult != null && posResult.result instanceof Integer[]) {
+                            SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
+                        }
+                    } catch (Exception e) {
+                        SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+                    }
+                }
+            });
+            thread.start();
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
         }
     }

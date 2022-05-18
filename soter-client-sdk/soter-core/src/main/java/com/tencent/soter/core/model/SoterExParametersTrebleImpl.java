@@ -12,19 +12,23 @@ public class SoterExParametersTrebleImpl implements ISoterExParameters {
 
     @Override
     public Object getParam(@NonNull String key, Object defVal) {
-        if (FINGERPRINT_TYPE.equals(key)) {
-            return fingerprintType != FINGERPRINT_TYPE_UNDEFINE ? fingerprintType : defVal;
-        } else if (FINGERPRINT_HARDWARE_POSITION.equals(key)) {
-            return fingerprintPosition != null ? fingerprintPosition : defVal;
+        synchronized (SoterExParametersTrebleImpl.class) {
+            if (FINGERPRINT_TYPE.equals(key)) {
+                return fingerprintType != FINGERPRINT_TYPE_UNDEFINE ? fingerprintType : defVal;
+            } else if (FINGERPRINT_HARDWARE_POSITION.equals(key)) {
+                return fingerprintPosition != null ? fingerprintPosition : defVal;
+            }
+            return null;
         }
-        return null;
     }
 
     public static void setParam(@NonNull String key, Object value) {
-        if (FINGERPRINT_TYPE.equals(key)) {
-            fingerprintType = (int) value;
-        } else if (FINGERPRINT_HARDWARE_POSITION.equals(key)) {
-            fingerprintPosition = (int[]) value;
+        synchronized (SoterExParametersTrebleImpl.class) {
+            if (FINGERPRINT_TYPE.equals(key)) {
+                fingerprintType = (int) value;
+            } else if (FINGERPRINT_HARDWARE_POSITION.equals(key)) {
+                fingerprintPosition = (int[]) value;
+            }
         }
     }
 }
