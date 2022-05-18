@@ -21,6 +21,9 @@ public class SoterExParameters {
             SLogger.e(TAG, "soter: init ext param failed.");
             if (SoterCore.getSoterCoreType() == SoterCore.IS_TREBLE) {
                 impl = new SoterExParametersTrebleImpl();
+                if (SoterCore.getImpl() != null) {
+                    SoterCore.getImpl().updateExtraParam();
+                }
             }
         }
     }

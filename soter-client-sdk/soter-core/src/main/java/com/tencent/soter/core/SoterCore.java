@@ -58,7 +58,10 @@ public class SoterCore implements ConstantsSoter, SoterErrCode {
         IMPL = getProviderSoterCore();
         SLogger.i(TAG,"soter: SoterCore is call static block to init SoterCore IMPL, IMPL is null[%b]", (IMPL == null) );
     }
-
+    
+    public static SoterCoreBase getImpl() {
+        return IMPL;
+    }
 
     public static void setUp() {
         SoterCoreBeforeTreble.setUp();
