@@ -145,6 +145,13 @@ public abstract class SoterCoreBase {
     public void setTrebleServiceListener(SoterCoreTrebleServiceListener listener) {
 
     }
+    
+    /**
+     * update system extra param(such as FingerType, FingerIconPosition) by SoterService
+     */
+    public void updateExtraParam() {
+    
+    }
 
     public abstract Signature initAuthKeySignature(String useKeyAlias) throws InvalidKeyException, NoSuchProviderException,
             NoSuchAlgorithmException,

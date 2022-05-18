@@ -111,7 +111,6 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             try {
                 service.linkToDeath(mDeathRecipient, 0);
                 mSoterService = ISoterService.Stub.asInterface(service);
-                updateExtraParam();
             } catch (RemoteException e) {
                 SLogger.e(TAG, "soter: Binding deathRecipient is error - RemoteException"+ e.toString());
             }
@@ -702,7 +701,8 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         return 0;
     }
 
-    private void updateExtraParam() {
+    @Override
+    public void updateExtraParam() {
         try {
             Thread thread = new Thread(new Runnable() {
                 @Override
