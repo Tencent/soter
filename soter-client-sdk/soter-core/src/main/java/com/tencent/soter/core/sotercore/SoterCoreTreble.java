@@ -53,7 +53,10 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     private int disconnectCount = 0;
 
-    private int noResponseCount = 0;
+    private static final int DELAY_THRESHOLD = 30;
+     //Fib(3)=2
+    private static final int INITIAL_FIB_VALUE = 3;
+    private int noResponseCount = INITIAL_FIB_VALUE;
 
     private long lastBindTime = 0L;
 
@@ -108,7 +111,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             synchronized (lock) {
                 connectState = CONNECTED;
             }
-            noResponseCount = 0;
+            // when connected, reset fib and cancel retryFunc.
+            noResponseCount = INITIAL_FIB_VALUE;
+            mMainLooperHandler.removeCallbacks(retryFunc);
             try {
                 service.linkToDeath(mDeathRecipient, 0);
                 mSoterService = ISoterService.Stub.asInterface(service);
@@ -127,14 +132,18 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         public void onServiceDisconnected(ComponentName className) {
             synchronized (lock) {
+                SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
                 connectState = DISCONNECT;
                 mSoterService = null;
-                noResponseCount = 0;
+                if (getFib(noResponseCount) > DELAY_THRESHOLD) {
+                    //when delay time large than DELAY_THRESHOLD second, reset fib value
+                    SLogger.i(TAG, "soter: rest fib, now is delay %dS", getFib(noResponseCount));
+                    noResponseCount = INITIAL_FIB_VALUE;
+                    mMainLooperHandler.removeCallbacks(retryFunc);
+                }
                 if (serviceListener != null) {
                     serviceListener.onServiceDisconnected();
                 }
-
-                SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
 
                 rebindService();
 
@@ -147,7 +156,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             SLogger.i(TAG, "soter: binding died");
             connectState = DISCONNECT;
             mSoterService = null;
-            noResponseCount = 0;
+            if (getFib(noResponseCount) > DELAY_THRESHOLD) {
+                //when delay time large than DELAY_THRESHOLD second, reset fib value
+                SLogger.i(TAG, "soter: rest fib, now is delay %dS", getFib(noResponseCount));
+                noResponseCount = INITIAL_FIB_VALUE;
+                mMainLooperHandler.removeCallbacks(retryFunc);
+            }
             unbindService();
             rebindService();
         }
@@ -238,8 +252,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             SLogger.d(TAG, "no need rebind");
         }
     }
-
+    
     public void bindService() {
+        bindService(false);
+    }
+
+    private void bindService(boolean isCycle) {
         Intent intent = new Intent();
         intent.setAction("com.tencent.soter.soterserver.ISoterService");
         intent.setPackage("com.tencent.soter.soterserver");
@@ -258,26 +276,35 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         hasBind = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
-        scheduleTimeoutTask();
+        scheduleTimeoutTask(isCycle);
 
         SLogger.i(TAG, "soter: bindService binding is start ");
     }
-
-    private void scheduleTimeoutTask() {
-        final long checkDelay = getFib(noResponseCount + 3);
-        mMainLooperHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!canRetry || !isInitializeSuccessed) {
-                    return;
-                }
-                noResponseCount++;
-                if (connectState != CONNECTED) {
-                    SLogger.i(TAG, "soter: bindservice no response: %s", checkDelay);
-                    bindService();
-                }
+    
+    private Runnable retryFunc = new Runnable() {
+        @Override
+        public void run() {
+            if (!canRetry || !isInitializeSuccessed) {
+                SLogger.i(TAG, "soter: retryFunc stop, canRetry:%b isInitializeSuccessed:%b", canRetry, isInitializeSuccessed);
+                return;
             }
-        }, checkDelay * 1000);
+    
+            noResponseCount++;
+            if (connectState != CONNECTED) {
+                SLogger.i(TAG, "soter: retryFunc bindservice no response: %d delay: %d", noResponseCount, getFib(noResponseCount));
+                bindService(true);
+            } else {
+                SLogger.i(TAG, "soter: retryFunc stop, CONNECTED");
+            }
+        }
+    };
+
+    private void scheduleTimeoutTask(boolean isCycle) {
+        final long checkDelay = getFib(noResponseCount);
+        SLogger.i(TAG, "soter: scheduleTimeoutTask isCycle:%b noResponseCount:%d checkDelay:%d ", isCycle, noResponseCount, checkDelay);
+        if (isCycle || noResponseCount <= INITIAL_FIB_VALUE) {
+            mMainLooperHandler.postDelayed(retryFunc, checkDelay * 1000);
+        }
     }
 
     public void unbindService(){
