@@ -175,7 +175,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         long duration = (SystemClock.elapsedRealtime() - lastBindTime) / 1000;
         long fib = getFib(disconnectCount);
         long delay = fib - duration;
-        SLogger.d(TAG, "fib: %s, rebind delay: %sS", fib, delay);
+        SLogger.i(TAG, "fib: %s, rebind delay: %sS", fib, delay);
         if (delay <= 0) {
             bindService();
         } else {
@@ -245,11 +245,15 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     public void bindServiceIfNeeded() {
-        if (connectState != CONNECTED || mSoterService == null || mSoterService.asBinder() == null || !mSoterService.asBinder().isBinderAlive() || !mSoterService.asBinder().pingBinder()) {
-            SLogger.i(TAG, "soter: bindServiceIfNeeded try to bind");
-            bindService();
-        } else {
-            SLogger.d(TAG, "no need rebind");
+        try {
+            if (connectState != CONNECTED || mSoterService == null || mSoterService.asBinder() == null || !mSoterService.asBinder().isBinderAlive() || !mSoterService.asBinder().pingBinder()) {
+                SLogger.i(TAG, "soter: bindServiceIfNeeded try to bind");
+                bindService();
+            } else {
+                SLogger.i(TAG, "no need rebind");
+            }
+        } catch (Exception e) {
+            SLogger.printErrStackTrace(TAG, e, "soter: bindServiceIfNeeded fail: ");
         }
     }
     
@@ -271,14 +275,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         if (serviceListener != null) {
             serviceListener.onStartServiceConnecting();
         }
-
+    
+        SLogger.i(TAG, "soter: bindService binding is start ");
         lastBindTime = SystemClock.elapsedRealtime();
-
         hasBind = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
         scheduleTimeoutTask(isCycle);
-
-        SLogger.i(TAG, "soter: bindService binding is start ");
     }
     
     private Runnable retryFunc = new Runnable() {
