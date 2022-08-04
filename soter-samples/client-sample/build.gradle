@@ -15,10 +15,7 @@ allprojects {
     repositories {
         mavenLocal()
         google()
-        jcenter()
-        maven {
-            url "https://dl.bintray.com/tencent-soter/maven/"
-        }
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
 

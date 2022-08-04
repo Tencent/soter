@@ -21,8 +21,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.github.Tencent.soter:soter-wrapper:2.0.9'
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'commons-io:commons-io:1.4'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.github.Tencent.soter:soter-wrapper:2.0.11'
+    implementation 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'commons-io:commons-io:1.4'
 }
