@@ -12,6 +12,7 @@ package com.tencent.soter.wrapper.wrap_task;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
@@ -61,6 +62,13 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
     private SoterBiometricCanceller mBiometricCancelSignal = null;
     private SoterBiometricStateCallback mBiometricStateCallback = null;
 
+    // used for biometric prompt
+    private String mPromptTitle;
+    private String mPromptSubTitle;
+    private String mPromptDescription;
+    private String mPromptButton;
+    private boolean mUseBiometricPrompt;
+
     private SoterSignatureResult mFinalResult = null;
 
     private AuthenticationCallbackImpl mAuthenticationCallbackIml = null;
@@ -83,6 +91,11 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         this.mBiometricCancelSignal = param.getSoterBiometricCanceller();
         this.mBiometricType = param.getBiometricType();
         this.mChallenge = param.getChallenge();
+        this.mPromptTitle = param.getPromptTitle();
+        this.mPromptSubTitle = param.getPromptSubTitle();
+        this.mPromptDescription = param.getPromptDescription();
+        this.mPromptButton = param.getPromptButton();
+        this.mUseBiometricPrompt = param.getUseBiometricPrompt();
     }
 
 
@@ -280,9 +293,15 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         }
         try {
             SLogger.v(TAG, "soter: performing start");
+            Bundle extra = new Bundle();
+            extra.putString("prompt_title", mPromptTitle);
+            extra.putString("prompt_subtitle", mPromptSubTitle);
+            extra.putString("prompt_description", mPromptDescription);
+            extra.putString("prompt_button", mPromptButton);
+            extra.putBoolean("use_biometric_prompt", mUseBiometricPrompt);
             BiometricManagerCompat.from(context, mBiometricType).authenticate(new BiometricManagerCompat.CryptoObject(signatureToAuth), 0,
                     mBiometricCancelSignal != null ? mBiometricCancelSignal.getSignalObj() : null,
-                    mAuthenticationCallbackIml, null);
+                    mAuthenticationCallbackIml, null, extra);
         } catch (Exception e) {
             String cause = e.getMessage();
             SLogger.e(TAG, "soter: caused exception when authenticating: %s", cause);
@@ -397,6 +416,8 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_LOCKED,  charSequenceToStringNullAsNil(errString)));
             } else if (errMsgId == ConstantsSoter.ERR_BIOMETRIC_FAIL_MAX_PERMANENT) {
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_LOCKED_PERMENANT, charSequenceToStringNullAsNil(errString)));
+            } else if (errMsgId == ConstantsSoter.ERR_NEGATIVE_BUTTON) {
+                callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_CLICK_NEGATIVE_BUTTON, charSequenceToStringNullAsNil(errString)));
             } else {
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             }

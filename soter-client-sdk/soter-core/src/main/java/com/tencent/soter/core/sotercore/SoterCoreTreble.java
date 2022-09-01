@@ -11,8 +11,11 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
 
+import com.tencent.soter.core.model.ISoterExParameters;
+import com.tencent.soter.core.model.SoterExParametersTrebleImpl;
 import com.tencent.soter.soterserver.ISoterService;
 import com.tencent.soter.soterserver.SoterExportResult;
+import com.tencent.soter.soterserver.SoterExtraParam;
 import com.tencent.soter.soterserver.SoterSessionResult;
 import com.tencent.soter.soterserver.SoterSignResult;
 import com.tencent.soter.core.model.ConstantsSoter;
@@ -50,7 +53,10 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
     private int disconnectCount = 0;
 
-    private int noResponseCount = 0;
+    private static final int DELAY_THRESHOLD = 30;
+     //Fib(3)=2
+    private static final int INITIAL_FIB_VALUE = 3;
+    private int noResponseCount = INITIAL_FIB_VALUE;
 
     private long lastBindTime = 0L;
 
@@ -80,8 +86,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         public void binderDied() {
             // TODO Auto-generated method stub
             SLogger.i(TAG, "soter: binder died");
-            if (mSoterService == null)
+            if (mSoterService == null || mSoterService.asBinder() == null) {
                 return;
+            }
 
             mSoterService.asBinder().unlinkToDeath(mDeathRecipient, 0);
             mSoterService = null;
@@ -104,7 +111,9 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             synchronized (lock) {
                 connectState = CONNECTED;
             }
-            noResponseCount = 0;
+            // when connected, reset fib and cancel retryFunc.
+            noResponseCount = INITIAL_FIB_VALUE;
+            mMainLooperHandler.removeCallbacks(retryFunc);
             try {
                 service.linkToDeath(mDeathRecipient, 0);
                 mSoterService = ISoterService.Stub.asInterface(service);
@@ -123,14 +132,18 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         public void onServiceDisconnected(ComponentName className) {
             synchronized (lock) {
+                SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
                 connectState = DISCONNECT;
                 mSoterService = null;
-                noResponseCount = 0;
+                if (getFib(noResponseCount) > DELAY_THRESHOLD) {
+                    //when delay time large than DELAY_THRESHOLD second, reset fib value
+                    SLogger.i(TAG, "soter: rest fib, now is delay %dS", getFib(noResponseCount));
+                    noResponseCount = INITIAL_FIB_VALUE;
+                    mMainLooperHandler.removeCallbacks(retryFunc);
+                }
                 if (serviceListener != null) {
                     serviceListener.onServiceDisconnected();
                 }
-
-                SLogger.i(TAG, "soter: unBinding is done - Service disconnected");
 
                 rebindService();
 
@@ -143,7 +156,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             SLogger.i(TAG, "soter: binding died");
             connectState = DISCONNECT;
             mSoterService = null;
-            noResponseCount = 0;
+            if (getFib(noResponseCount) > DELAY_THRESHOLD) {
+                //when delay time large than DELAY_THRESHOLD second, reset fib value
+                SLogger.i(TAG, "soter: rest fib, now is delay %dS", getFib(noResponseCount));
+                noResponseCount = INITIAL_FIB_VALUE;
+                mMainLooperHandler.removeCallbacks(retryFunc);
+            }
             unbindService();
             rebindService();
         }
@@ -157,7 +175,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         long duration = (SystemClock.elapsedRealtime() - lastBindTime) / 1000;
         long fib = getFib(disconnectCount);
         long delay = fib - duration;
-        SLogger.d(TAG, "fib: %s, rebind delay: %sS", fib, delay);
+        SLogger.i(TAG, "fib: %s, rebind delay: %sS", fib, delay);
         if (delay <= 0) {
             bindService();
         } else {
@@ -227,15 +245,23 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     public void bindServiceIfNeeded() {
-        if (connectState != CONNECTED || mSoterService == null || !mSoterService.asBinder().isBinderAlive() || !mSoterService.asBinder().pingBinder()) {
-            SLogger.i(TAG, "soter: bindServiceIfNeeded try to bind");
-            bindService();
-        } else {
-            SLogger.d(TAG, "no need rebind");
+        try {
+            if (connectState != CONNECTED || mSoterService == null || mSoterService.asBinder() == null || !mSoterService.asBinder().isBinderAlive() || !mSoterService.asBinder().pingBinder()) {
+                SLogger.i(TAG, "soter: bindServiceIfNeeded try to bind");
+                bindService();
+            } else {
+                SLogger.i(TAG, "no need rebind");
+            }
+        } catch (Exception e) {
+            SLogger.printErrStackTrace(TAG, e, "soter: bindServiceIfNeeded fail: ");
         }
     }
-
+    
     public void bindService() {
+        bindService(false);
+    }
+
+    private void bindService(boolean isCycle) {
         Intent intent = new Intent();
         intent.setAction("com.tencent.soter.soterserver.ISoterService");
         intent.setPackage("com.tencent.soter.soterserver");
@@ -249,31 +275,38 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         if (serviceListener != null) {
             serviceListener.onStartServiceConnecting();
         }
-
+    
+        SLogger.i(TAG, "soter: bindService binding is start ");
         lastBindTime = SystemClock.elapsedRealtime();
-
         hasBind = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
-        scheduleTimeoutTask();
-
-        SLogger.i(TAG, "soter: bindService binding is start ");
+        scheduleTimeoutTask(isCycle);
     }
-
-    private void scheduleTimeoutTask() {
-        final long checkDelay = getFib(noResponseCount + 3);
-        mMainLooperHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!canRetry || !isInitializeSuccessed) {
-                    return;
-                }
-                noResponseCount++;
-                if (connectState != CONNECTED) {
-                    SLogger.i(TAG, "soter: bindservice no response: %s", checkDelay);
-                    bindService();
-                }
+    
+    private Runnable retryFunc = new Runnable() {
+        @Override
+        public void run() {
+            if (!canRetry || !isInitializeSuccessed) {
+                SLogger.i(TAG, "soter: retryFunc stop, canRetry:%b isInitializeSuccessed:%b", canRetry, isInitializeSuccessed);
+                return;
             }
-        }, checkDelay * 1000);
+    
+            noResponseCount++;
+            if (connectState != CONNECTED) {
+                SLogger.i(TAG, "soter: retryFunc bindservice no response: %d delay: %d", noResponseCount, getFib(noResponseCount));
+                bindService(true);
+            } else {
+                SLogger.i(TAG, "soter: retryFunc stop, CONNECTED");
+            }
+        }
+    };
+
+    private void scheduleTimeoutTask(boolean isCycle) {
+        final long checkDelay = getFib(noResponseCount);
+        SLogger.i(TAG, "soter: scheduleTimeoutTask isCycle:%b noResponseCount:%d checkDelay:%d ", isCycle, noResponseCount, checkDelay);
+        if (isCycle || noResponseCount <= INITIAL_FIB_VALUE) {
+            mMainLooperHandler.postDelayed(retryFunc, checkDelay * 1000);
+        }
     }
 
     public void unbindService(){
@@ -333,7 +366,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             if(mSoterService.generateAppSecureKey(uid) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: generateAppSecureKey fail: ");
         }
         return new SoterCoreResult(ERR_ASK_GEN_FAILED);
@@ -363,7 +396,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             if(mSoterService.removeAllAuthKey(uid) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: removeAppGlobalSecureKey fail: ");
         }
         return new SoterCoreResult(ERR_REMOVE_ASK);
@@ -392,7 +425,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             return mSoterService.hasAskAlready(uid);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAppGlobalSecureKey fail: ");
             return false;
         }
@@ -439,7 +472,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 SLogger.e(TAG, "soter: soter: key can not be retrieved");
                 return null;
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getAppGlobalSecureKeyModel fail: ");
         }
         return null;
@@ -470,7 +503,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             if(mSoterService.generateAuthKey(uid, authKeyName) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: generateAuthKey fail: ");
         }
 
@@ -508,7 +541,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 }
                 return new SoterCoreResult(ERR_OK);
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: removeAuthKey fail: ");
         }
         return new SoterCoreResult(ERR_REMOVE_AUTH_KEY);
@@ -559,7 +592,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 SLogger.e(TAG, "soter: key can not be retrieved");
                 return null;
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getAuthKeyModel fail: ");
         }
         return null;
@@ -594,7 +627,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             return mSoterService.hasAuthKey(uid,authKeyName);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAuthKey fail: ");
             return false;
         }
@@ -627,7 +660,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             result =  mSoterService.initSigh(uid, kname, challenge);
             return result;
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: initSigh fail: ");
         }
         return null;
@@ -664,7 +697,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 throw new Exception("finishSign error");
             }
 
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: finishSign fail: ");
         }
         return rawBytes;
@@ -692,10 +725,40 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
 
         try {
             return mSoterService.getVersion() ;
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getVersion fail: ");
         }
         return 0;
+    }
+
+    @Override
+    public void updateExtraParam() {
+        try {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (mSoterService == null) {
+                            SLogger.w(TAG, "soter: mSoterService is null");
+                            return;
+                        }
+                        SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
+                        if (typeResult != null && typeResult.result instanceof Integer) {
+                            SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
+                        }
+                        SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
+                        if (posResult != null && posResult.result instanceof Integer[]) {
+                            SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
+                        }
+                    } catch (Exception e) {
+                        SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+                    }
+                }
+            });
+            thread.start();
+        } catch (Exception e) {
+            SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+        }
     }
 
     private static long getFib(long n){

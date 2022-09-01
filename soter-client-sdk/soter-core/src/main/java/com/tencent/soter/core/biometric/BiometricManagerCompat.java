@@ -19,6 +19,7 @@ package com.tencent.soter.core.biometric;
 import android.content.Context;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
 
@@ -151,13 +152,13 @@ public class BiometricManagerCompat {
      */
     public void authenticate(CryptoObject crypto, int flags,
                              CancellationSignal cancel, AuthenticationCallback callback,
-                             Handler handler) {
+                             Handler handler, Bundle extra) {
         IBiometricManager IMPL = IMPL_PROVIDER.get(mBiometricType);
         if (IMPL == null){
             SLogger.i(TAG, "soter: Biometric provider not initialized type["+ mBiometricType +"]");
             callback.onAuthenticationCancelled();
         }
-        IMPL.authenticate(mContext, crypto, flags, cancel, callback, handler);
+        IMPL.authenticate(mContext, crypto, flags, cancel, callback, handler, extra);
     }
 
     /**
@@ -284,7 +285,7 @@ public class BiometricManagerCompat {
         void authenticate(Context context,
                           CryptoObject crypto, int flags,
                           CancellationSignal cancel,
-                          AuthenticationCallback callback, Handler handler);
+                          AuthenticationCallback callback, Handler handler, Bundle extra);
     }
 
     private static class LegacyFingerprintManagerImpl implements IBiometricManager {
@@ -311,7 +312,7 @@ public class BiometricManagerCompat {
         public void authenticate(Context context,
                                  CryptoObject crypto, int flags,
                                  CancellationSignal cancel,
-                                 AuthenticationCallback callback, Handler handler) {
+                                 AuthenticationCallback callback, Handler handler, Bundle extra) {
         }
 
     }
@@ -343,13 +344,13 @@ public class BiometricManagerCompat {
         public void authenticate(Context context,
                                  CryptoObject crypto, int flags,
                                  CancellationSignal cancel,
-                                 AuthenticationCallback callback, Handler handler) {
+                                 AuthenticationCallback callback, Handler handler, Bundle extra) {
 
             FingerprintManagerProxy.authenticate(
                     context,
                     wrapCryptoObject(crypto), flags,
                     cancel,
-                    wrapCallback(context, callback), handler);
+                    wrapCallback(context, callback), handler, extra);
         }
 
         private static FingerprintManagerProxy.CryptoObject wrapCryptoObject(CryptoObject cryptoObject) {
@@ -527,7 +528,7 @@ public class BiometricManagerCompat {
                                  CryptoObject crypto,
                                  int flags,
                                  CancellationSignal cancel,
-                                 AuthenticationCallback callback, Handler handler) {
+                                 AuthenticationCallback callback, Handler handler, Bundle extra) {
 
             FaceidManagerProxy.authenticate(
                     context,

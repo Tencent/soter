@@ -148,4 +148,9 @@ public interface SoterProcessErrCode extends SoterErrCode {
      * Equals to {@link android.hardware.fingerprint.FingerprintManager#FINGERPRINT_ERROR_LOCKOUT_PERMANENT}
      */
     int ERR_BIOMETRIC_LOCKED_PERMENANT = 1022;
+
+    /**
+     * Clicked negative button, use above 31
+     */
+    int ERR_CLICK_NEGATIVE_BUTTON = 1029;
 }

@@ -1,5 +1,7 @@
 package com.tencent.soter.core.model;
 
+import com.tencent.soter.core.SoterCore;
+
 /**
  * Device settings about biometrics.
  */
@@ -16,8 +18,13 @@ public class SoterExParameters {
         try {
             impl = (ISoterExParameters) Class.forName(SOTEREX_PROVIDER_CLASS_NAME).getDeclaredMethod("getInstance").invoke(null);
         } catch (Exception e) {
-            e.printStackTrace();
-            SLogger.printErrStackTrace(TAG, e, "soter: init ext param failed.");
+            SLogger.e(TAG, "soter: init ext param failed.");
+            if (SoterCore.getSoterCoreType() == SoterCore.IS_TREBLE) {
+                impl = new SoterExParametersTrebleImpl();
+                if (SoterCore.getImpl() != null) {
+                    SoterCore.getImpl().updateExtraParam();
+                }
+            }
         }
     }
 

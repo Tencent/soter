@@ -1,9 +1,11 @@
 package com.tencent.soter.core.model;
 
+import android.support.annotation.NonNull;
+
 /**
  * An interface that defines biometric parameters. The vendor implements this interface to provide biometrics parameters
  */
-interface ISoterExParameters {
+public interface ISoterExParameters {
 
     /**
      * The type of fingerprint, will return an int.
@@ -31,6 +33,6 @@ interface ISoterExParameters {
      */
     int FINGERPRINT_TYPE_UNDER_SCREEN = 2;
 
-    Object getParam(String key, Object defVal);
+    Object getParam(@NonNull String key, Object defVal);
 
 }

@@ -19,11 +19,17 @@ package com.tencent.soter.core.biometric;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 
+import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
 import com.tencent.soter.core.model.SoterCoreUtil;
 
@@ -43,6 +49,8 @@ final class FingerprintManagerProxy {
     private static final String TAG = "Soter.FingerprintManagerProxy";
 
     public static final String FINGERPRINT_SERVICE = "fingerprint";
+
+    public static boolean sCLOSE_API31 = false;
 
     private static FingerprintManager getFingerprintManager(Context ctx) {
         return (FingerprintManager) ctx.getSystemService(FINGERPRINT_SERVICE);
@@ -109,7 +117,19 @@ final class FingerprintManagerProxy {
     }
 
     public static void authenticate(Context context, CryptoObject crypto, int flags, Object cancel,
-                                    AuthenticationCallback callback, Handler handler) {
+                                    AuthenticationCallback callback, Handler handler, Bundle extra) {
+        boolean useBiometricPrompt = extra.getBoolean("use_biometric_prompt");
+        SLogger.i(TAG, "use_biometric_prompt: %s, sdk_version: %s", useBiometricPrompt, Build.VERSION.SDK_INT);
+        if (useBiometricPrompt && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            authenticateApi28(context, crypto, flags, cancel, callback, handler, extra);
+        } else {
+            authenticateLegacy(context, crypto, flags, cancel, callback, handler);
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private static void authenticateLegacy(Context context, CryptoObject crypto, int flags, Object cancel,
+                                           AuthenticationCallback callback, Handler handler) {
         if (checkSelfPermission(context, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
             SLogger.e(TAG, "soter: permission check failed: authenticate");
             return;
@@ -127,6 +147,34 @@ final class FingerprintManagerProxy {
             SLogger.e(TAG, "soter: triggered SecurityException in authenticate! Make sure you declared USE_FINGERPRINT in AndroidManifest.xml");
         }
     }
+    @SuppressLint("MissingPermission")
+    private static void authenticateApi28(Context context, CryptoObject crypto, int flags, Object cancel,
+                                          final AuthenticationCallback callback, Handler handler, Bundle extra) {
+        if (checkSelfPermission(context, Manifest.permission.USE_BIOMETRIC) != PackageManager.PERMISSION_GRANTED) {
+            SLogger.e(TAG, "soter: permission check failed: authenticate");
+            return;
+        }
+
+        BiometricPrompt.Builder builder = new BiometricPrompt.Builder(context);
+        builder.setDeviceCredentialAllowed(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+        }
+        builder.setTitle(extra.getString("prompt_title"));
+        builder.setSubtitle(extra.getString("prompt_subtitle"));
+        builder.setDescription(extra.getString("prompt_description"));
+        String promptButton = extra.getString("prompt_button");
+        if (TextUtils.isEmpty(promptButton)) {
+            promptButton = context.getString(android.R.string.cancel);
+        }
+        builder.setNegativeButton(promptButton, context.getMainExecutor(), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onAuthenticationError(ConstantsSoter.ERR_NEGATIVE_BUTTON, "click negative button");
+            }
+        });
+        builder.build().authenticate((android.os.CancellationSignal) cancel, context.getMainExecutor(), wrapCallback2(callback));
+    }
 
     private static FingerprintManager.CryptoObject wrapCryptoObject(CryptoObject cryptoObject) {
         if (cryptoObject == null) {
@@ -143,6 +191,20 @@ final class FingerprintManagerProxy {
     }
 
     private static CryptoObject unwrapCryptoObject(FingerprintManager.CryptoObject cryptoObject) {
+        if (cryptoObject == null) {
+            return null;
+        } else if (cryptoObject.getCipher() != null) {
+            return new CryptoObject(cryptoObject.getCipher());
+        } else if (cryptoObject.getSignature() != null) {
+            return new CryptoObject(cryptoObject.getSignature());
+        } else if (cryptoObject.getMac() != null) {
+            return new CryptoObject(cryptoObject.getMac());
+        } else {
+            return null;
+        }
+    }
+
+    private static CryptoObject unwrapCryptoObject(BiometricPrompt.CryptoObject cryptoObject) {
         if (cryptoObject == null) {
             return null;
         } else if (cryptoObject.getCipher() != null) {
@@ -181,6 +243,30 @@ final class FingerprintManagerProxy {
             @Override
             public void onAuthenticationFailed() {
                 SLogger.d(TAG, "hy: lowest level return onAuthenticationFailed");
+                callback.onAuthenticationFailed();
+            }
+        };
+    }
+
+    private static BiometricPrompt.AuthenticationCallback wrapCallback2(final AuthenticationCallback callback) {
+        return new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                callback.onAuthenticationError(errorCode, errString);
+            }
+
+            @Override
+            public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
+                callback.onAuthenticationHelp(helpCode, helpString);
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                callback.onAuthenticationSucceeded(new AuthenticationResultInternal(unwrapCryptoObject(result.getCryptoObject())));
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
                 callback.onAuthenticationFailed();
             }
         };

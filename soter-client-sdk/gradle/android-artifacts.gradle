@@ -41,10 +41,20 @@ group = GROUP
 //    }
 //}
 
+def isReleaseBuild() {
+    return version.contains("SNAPSHOT") == false
+}
+
 def getReleaseRepositoryUrl() {
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     return properties.getProperty('RELEASE_REPOSITORY_URL')
+}
+
+def getSnapshotRepositoryUrl() {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.getProperty('SNAPSHOT_REPOSITORY_URL')
 }
 
 def getRepositoryUsername() {
@@ -84,7 +94,7 @@ afterEvaluate {
     publishing {
         repositories {
             maven {
-                url = getReleaseRepositoryUrl()
+                url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
                 credentials {
                     username = getRepositoryUsername()
                     password = getRepositoryPassword()
