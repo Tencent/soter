@@ -457,7 +457,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                         }else {
                             try {
                                 mSignatureToAuth.update(mChallenge.getBytes(Charset.forName("UTF-8")));
-                            } catch (SignatureException e) {
+                            } catch (Exception e) {
                                 SLogger.e(TAG, "soter: exception in update");
                                 SLogger.printErrStackTrace(TAG, e, "soter: exception in update");
                                 //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
