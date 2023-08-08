@@ -84,7 +84,7 @@ public class TaskInit extends BaseSoterTask {
             if(preferences != null) {
 //                boolean isTriggeredOOM = preferences.getBoolean(SOTER_TRIGGERED_OOM_FLAG_PREFERENCE_NAME, false);
                 int count = preferences.getInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, 0);
-                SLogger.i(TAG, "soter: is triggered OOM: %b", count);
+                SLogger.i(TAG, "soter: is triggered OOM: %d", count);
 
                 if (count >= 10) {
                     return true;
@@ -98,6 +98,7 @@ public class TaskInit extends BaseSoterTask {
 
         @Override
         public void reset() {
+            SLogger.i(TAG, "soter: SoterDelegate reset");
             SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
             if (preferences != null) {
                 preferences.edit().putInt(SOTER_TRIGGERED_OOM_COUNT_PREFERENCE_NAME, 0).apply();
