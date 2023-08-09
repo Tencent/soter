@@ -267,7 +267,7 @@ For more information about contributing issues or pull requests, check our [CONT
 ## Information Publication
 
 * Name：SOTER Client SDK
-* Version Number：2.0.7
+* Version Number：2.1.8
 * Developer：Shenzhen Tencent Computer Systems Company Limited
 * The Main Function：TENCENT SOTER is a safe, universal and complete fingerprint authentication solution. By geting access to SOTER, developers can quickly implement secure fingerprint authentication.
 * [Operation Instruction](https://github.com/Tencent/soter/wiki)
