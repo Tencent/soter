@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
+## 2.1.8
+* 修复一些已知问题
 ## 2.0.7
 * 发布aar到jitpack，新的依赖方法看[这里](https://github.com/Tencent/soter#%E6%B7%BB%E5%8A%A0gradle%E4%BE%9D%E8%B5%96)
 ## 2.0版本变化
@@ -136,6 +138,16 @@ TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 [腾讯开源激励计划](https://opensource.tencent.com/contribution) 鼓励开发者的参与和贡献，期待你的加入。
 
+[合规使用指南](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E5%90%88%E8%A7%84%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
+
+## 信息公示
+
+* SDK名称：SOTER Client SDK
+* 版本号：2.1.8
+* 开发者：深圳市腾讯计算机系统有限公司
+* 主要功能：TENCENT SOTER是一套安全、通用、完整的指纹认证方案，通过接入SOTER，开发者可以快速实现安全的指纹认证。
+* [SOTER Client SDK使用说明](https://github.com/Tencent/soter/wiki)
+* [SOTER Client SDK个人信息保护规则](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF%E4%BF%9D%E6%8A%A4%E8%A7%84%E5%88%99?from_wecom=1)
 
 ## Changelog
 * Adding support for Huawei device
@@ -255,6 +267,17 @@ You can also join in the following QQ Group for more convenient discussing:
 ## Contributing
 
 For more information about contributing issues or pull requests, check our [CONTRIBUTING document](./CONTRIBUTING.md).
+
+[Compliance usage guide](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E5%90%88%E8%A7%84%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
+
+## Information Publication
+
+* Name：SOTER Client SDK
+* Version Number：2.1.8
+* Developer：Shenzhen Tencent Computer Systems Company Limited
+* The Main Function：TENCENT SOTER is a safe, universal and complete fingerprint authentication solution. By geting access to SOTER, developers can quickly implement secure fingerprint authentication.
+* [Operation Instruction](https://github.com/Tencent/soter/wiki)
+* [SOTER Client SDK Personal Information Protection Rules](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF%E4%BF%9D%E6%8A%A4%E8%A7%84%E5%88%99?from_wecom=1)
 
 ## License
 
