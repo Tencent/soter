@@ -136,6 +136,8 @@ TENCENT SOTER基于BSD协议。请参考[协议文档](./LICENSE)。
 
 [腾讯开源激励计划](https://opensource.tencent.com/contribution) 鼓励开发者的参与和贡献，期待你的加入。
 
+[合规使用指南](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E5%90%88%E8%A7%84%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
+
 ## 信息公示
 
 * SDK名称：SOTER Client SDK
@@ -263,6 +265,8 @@ You can also join in the following QQ Group for more convenient discussing:
 ## Contributing
 
 For more information about contributing issues or pull requests, check our [CONTRIBUTING document](./CONTRIBUTING.md).
+
+[Compliance usage guide](https://github.com/Tencent/soter/wiki/SOTER-Client-SDK%E5%90%88%E8%A7%84%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
 
 ## Information Publication
 
