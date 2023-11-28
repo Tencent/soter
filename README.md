@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Tencent/soter/pulls)
 
 For English version, please click [here](#a-quick-look-at-tencent-soter).
+## 2.1.8
+* 修复一些已经异常
 ## 2.0.7
 * 发布aar到jitpack，新的依赖方法看[这里](https://github.com/Tencent/soter#%E6%B7%BB%E5%8A%A0gradle%E4%BE%9D%E8%B5%96)
 ## 2.0版本变化
