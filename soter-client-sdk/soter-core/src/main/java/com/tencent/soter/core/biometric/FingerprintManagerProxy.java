@@ -31,12 +31,15 @@ import android.text.TextUtils;
 
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreUtil;
 
 import java.security.Signature;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
+
+import static com.tencent.soter.core.model.ConstantsSoter.ERR_ANDROID_HAREWARE_NOT_SUPPORT;
 
 /**
  * Actual BiometricManagerCompat implementation for API level 23 and later.
@@ -105,7 +108,11 @@ final class FingerprintManagerProxy {
         try {
             FingerprintManager mgr = getFingerprintManager(context);
             if (mgr != null) {
-                return mgr.isHardwareDetected();
+                boolean ret = mgr.isHardwareDetected();
+                if (!ret) {
+                    SReporter.reportError(ERR_ANDROID_HAREWARE_NOT_SUPPORT, "FingerprintManager.isHardwareDetected return false");
+                }
+                return ret;
             } else {
                 SLogger.e(TAG, "soter: fingerprint manager is null in isHardwareDetected! Should never happen");
                 return false;

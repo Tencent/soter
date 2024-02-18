@@ -3,6 +3,7 @@ package com.tencent.soter.core.sotercore;
 import com.tencent.soter.core.keystore.KeyGenParameterSpecCompatBuilder;
 import com.tencent.soter.core.keystore.KeyPropertiesCompact;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
@@ -52,6 +53,7 @@ public class CertSoterCore extends SoterCoreBeforeTreble {
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
                 SLogger.printErrStackTrace(TAG, e, "soter: generateAppGlobalSecureKey error");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "CertSoter: generateAppGlobalSecureKey.", e);
                 return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
@@ -79,13 +81,16 @@ public class CertSoterCore extends SoterCoreBeforeTreble {
                         return new SoterPubKeyModel(certificates);
                     }
                     SLogger.e(TAG, "soter: key can not be retrieved");
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "CertSoter: getAppGlobalSecureKeyModel. keyStore.getCertificateChain is null");
                     return null;
                 } catch (ClassCastException e) {
                     SLogger.e(TAG, "soter: cast error: " + e.toString());
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "CertSoter: getAppGlobalSecureKeyModel.", e);
                 }
                 return null;
             } catch (Exception e) {
                 SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "CertSoter: getAppGlobalSecureKeyModel.", e);
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
                 SoterDelegate.onTriggerOOM();

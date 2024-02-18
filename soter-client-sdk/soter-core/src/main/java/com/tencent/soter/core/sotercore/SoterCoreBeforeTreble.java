@@ -7,6 +7,7 @@ import com.tencent.soter.core.keystore.KeyGenParameterSpecCompatBuilder;
 import com.tencent.soter.core.keystore.KeyPropertiesCompact;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreResult;
 import com.tencent.soter.core.model.SoterCoreUtil;
@@ -126,6 +127,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generateAppGlobalSecureKey " + e.toString());
                 SLogger.printErrStackTrace(TAG, e, "soter: generateAppGlobalSecureKey error");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAppGlobalSecureKey.", e);
                 return new SoterCoreResult(ERR_ASK_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate ASK!! maybe no attk inside");
@@ -163,6 +165,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             return keyStore.getCertificate(SoterCoreData.getInstance().getAskName()) != null;
         } catch (Exception e) {
             SLogger.e(TAG, "soter: hasAppGlobalSecureKey exception: " + e.toString());
+            SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: hasAppGlobalSecureKey.", e);
         }
         return false;
     }
@@ -187,13 +190,16 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                         return retrieveJsonFromExportedData(key.getEncoded());
                     }
                     SLogger.e(TAG, "soter: key can not be retrieved");
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAppGlobalSecureKeyModel. keyStore.getKey is null");
                     return null;
                 } catch (ClassCastException e) {
                     SLogger.e(TAG, "soter: cast error: " + e.toString());
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAppGlobalSecureKeyModel.", e);
                 }
                 return null;
             } catch (Exception e) {
                 SLogger.printErrStackTrace(TAG, e, "soter: error when get ask");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAppGlobalSecureKeyModel.", e);
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getting ask!! maybe no attk inside");
                 SoterDelegate.onTriggerOOM();
@@ -232,10 +238,12 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                     return new SoterCoreResult(ERR_OK);
                 } catch (Exception e) {
                     SLogger.e(TAG, "soter: cause exception. maybe reflection exception: " + e.toString());
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAuthKey.", e);
                     return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
                 }
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generate auth key failed: " + e.toString());
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAuthKey.", e);
                 return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
@@ -288,6 +296,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             return keyStore.getCertificate(authKeyName) != null;
         } catch (Exception e) {
             SLogger.e(TAG, "soter: hasAppGlobalSecureKey exception: " + e.toString());
+            SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: hasAuthKey.", e);
         }
         return false;
     }
@@ -349,13 +358,16 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                         return retrieveJsonFromExportedData(key.getEncoded());
                     }
                     SLogger.e(TAG, "soter: key can not be retrieved");
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAuthKeyModel. keyStore.getKey is null");
                     return null;
                 } catch (ClassCastException e) {
                     SLogger.e(TAG, "soter: cast error: " + e.toString());
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAuthKeyModel.", e);
                 }
                 return null;
             } catch (Exception e) {
                 SLogger.printErrStackTrace(TAG, e, "soter: error in get auth key model");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAuthKeyModel.", e);
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthKeyModel!! maybe no attk inside");
                 SoterDelegate.onTriggerOOM();
@@ -378,10 +390,12 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 return initAuthKeySignature(useKeyAlias);
             } catch (UnrecoverableEntryException | InvalidKeyException e) {
                 SLogger.e(TAG, "soter: key invalid. Advice remove the key");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAuthInitAndSign.", e);
                 return null;
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: exception when getSignatureResult: " + e.toString());
                 SLogger.printErrStackTrace(TAG, e, "soter: exception when getSignatureResult");
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: getAuthInitAndSign.", e);
                 return null;
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when getAuthInitAndSign!! maybe no attk inside");

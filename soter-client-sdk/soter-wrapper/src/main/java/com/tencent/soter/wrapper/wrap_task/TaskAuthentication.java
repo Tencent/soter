@@ -19,6 +19,7 @@ import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.fingerprint.FingerprintManagerCompat;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.soterserver.SoterSessionResult;
@@ -284,6 +285,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
             String cause = e.getMessage();
             SLogger.e(TAG, "soter: caused exception when authenticating: %s", cause);
             SLogger.printErrStackTrace(TAG, e, "soter: caused exception when authenticating");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskAuthentication, start authentication fail: performStartFingerprintLogic().", e);
             callback(new SoterProcessAuthenticationResult(ERR_START_AUTHEN_FAILED, String.format("start authentication failed due to %s", cause)));
         }
     }
@@ -304,6 +306,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         } catch (Exception e) {
             SLogger.e(TAG, "soter: finish sign failed due to exception: %s", e.getMessage());
             SLogger.printErrStackTrace(TAG, e, "soter: sign failed due to exception");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskAuthentication, sign fail: executeWhenAuthenticatedWithSession().", e);
             callback(new SoterProcessAuthenticationResult(ERR_SIGN_FAILED, "sign failed even after user authenticated the key."));
         }
     }
@@ -321,6 +324,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
         } catch (SignatureException e) {
             SLogger.e(TAG, "soter: sign failed due to exception: %s", e.getMessage());
             SLogger.printErrStackTrace(TAG, e, "soter: sign failed due to exception");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskAuthentication, sign fail: executeWhenAuthenticated().", e);
             callback(new SoterProcessAuthenticationResult(ERR_SIGN_FAILED, "sign failed even after user authenticated the key."));
         }
     }
@@ -426,6 +430,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                             } catch (SignatureException e) {
                                 SLogger.e(TAG, "soter: exception in update");
                                 SLogger.printErrStackTrace(TAG, e, "soter: exception in update");
+                                SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskAuthentication, update signature fail: onAuthenticationSucceeded().", e);
                                 //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
                                 SLogger.e(TAG, "soter: remove the auth key: %s", mAuthKeyName);
                                 SoterCore.removeAuthKey(mAuthKeyName, false);
