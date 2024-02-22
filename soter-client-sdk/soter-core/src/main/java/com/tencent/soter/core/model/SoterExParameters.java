@@ -17,13 +17,18 @@ public class SoterExParameters {
     private SoterExParameters() {
         try {
             impl = (ISoterExParameters) Class.forName(SOTEREX_PROVIDER_CLASS_NAME).getDeclaredMethod("getInstance").invoke(null);
+            SLogger.i(TAG, "soter: get system SoterExParameterProvider class success");
         } catch (Exception e) {
-            SLogger.e(TAG, "soter: init ext param failed.");
+            SLogger.i(TAG, "soter: get system SoterExParameterProvider class fail");
             if (SoterCore.getSoterCoreType() == SoterCore.IS_TREBLE) {
                 impl = new SoterExParametersTrebleImpl();
                 if (SoterCore.getImpl() != null) {
                     SoterCore.getImpl().updateExtraParam();
+                } else {
+                    SLogger.e(TAG, "soter: SoterExParameters updateExtraParam fail, SoterCore.getImpl is null");
                 }
+            } else {
+                SLogger.e(TAG, "soter: SoterExParameters updateExtraParam fail, SoterCoreType is not TREBLE");
             }
         }
     }

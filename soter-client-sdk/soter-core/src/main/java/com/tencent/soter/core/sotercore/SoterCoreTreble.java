@@ -34,6 +34,7 @@ import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 
 /**
@@ -756,15 +757,17 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 public void run() {
                     try {
                         if (mSoterService == null) {
-                            SLogger.w(TAG, "soter: mSoterService is null");
+                            SLogger.e(TAG, "soter: updateExtraParam fail, mSoterService is null");
                             return;
                         }
                         SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
                         if (typeResult != null && typeResult.result instanceof Integer) {
+                            SLogger.i(TAG, "soter: updateExtraParam finger type:%s", (Integer)typeResult.result);
                             SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
                         }
                         SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
                         if (posResult != null && posResult.result instanceof Integer[]) {
+                            SLogger.i(TAG, "soter: updateExtraParam finger pos:%s", Arrays.toString((Integer[]) posResult.result));
                             SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
                         }
                     } catch (Exception e) {
