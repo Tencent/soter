@@ -20,4 +20,4 @@ Soter Server Samples (Java) 提供了Java版本的后台验证签名的实现示
 - final_signature.bin: 使用AuthKey对final_json数据进行签名得到的签名数据
 
 ## 运行
-此示例是一个标准的Java项目，主函数入口为`SoterServerDemo.main`，使用Eclipse导入之后，即可直接运行。
+此示例是一个标准的Java项目，主函数入口为`SoterServerDemo.main`，可使用**IntelliJ IDEA**直接打开`server-sample`目录。

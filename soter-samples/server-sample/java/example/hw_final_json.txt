@@ -1,0 +1,1 @@
+{"bo_t":"1","raw":"cd99c126b2fa8cc2022b8fbaa288fd37735c824c1712735791","fid":"761123376","counter":59,"tee_n":"hwteeos","tee_v":"version_1.0","fp_n":"fpc_goodix","fp_v":"goodix_1.0","rsa_pss_saltlen":32,"cpu_id":"HUAWEI_HWHMA_604a9644-ac64-423d-a718-dab935a1140e-3b0e1228","uid":"10316","fc_n":"hwbioalgo","fc_v":"bioalgo_1.0"}

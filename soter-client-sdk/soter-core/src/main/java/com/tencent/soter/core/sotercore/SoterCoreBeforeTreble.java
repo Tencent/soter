@@ -121,7 +121,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                 long currentTicks = SoterCoreUtil.getCurrentTicks();
                 generator.generateKeyPair();
                 long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
-                SLogger.i(TAG, "soter: generate successfully. cost: %d ms", cost);
+                SLogger.i(TAG, "soter: generate global successfully. cost: %d ms", cost);
                 SoterDelegate.reset();
                 return new SoterCoreResult(ERR_OK);
             } catch (Exception e) {
@@ -233,7 +233,7 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                     long currentTicks = SoterCoreUtil.getCurrentTicks();
                     generator.generateKeyPair();
                     long cost = SoterCoreUtil.ticksToNowInMs(currentTicks);
-                    SLogger.i(TAG, "soter: generate successfully, cost: %d ms", cost);
+                    SLogger.i(TAG, "soter: generate auth successfully, cost: %d ms", cost);
                     SoterDelegate.reset();
                     return new SoterCoreResult(ERR_OK);
                 } catch (Exception e) {
