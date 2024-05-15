@@ -216,6 +216,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         } else {
             connectState = DISCONNECT;
             SLogger.e(TAG, "soter: initSoter error");
+            SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "bind SoterService fail: DISCONNECT");
             return false;
         }
 
