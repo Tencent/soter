@@ -47,4 +47,5 @@ public interface ConstantsSoter {
     int ERR_ANDROID_HAREWARE_NOT_SUPPORT = 104; //Android手机系统方法返回不支持指纹/面容
     int ERR_SOTER_INNER = 200; //Soter内部异常
     int ERR_SOTER_SRV_CONFIG = 300; //上报SrvDeviceInfo的服务端配置
+    int ERR_SOTER_AUTH_ERROR = 401; //上报指纹/面容识别错误
 }

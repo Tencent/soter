@@ -426,6 +426,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             }
             authenticationShouldComplete();
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_AUTH_ERROR, "on authentication fatal error: " + errMsgId + " " + errString);
         }
 
         @Override

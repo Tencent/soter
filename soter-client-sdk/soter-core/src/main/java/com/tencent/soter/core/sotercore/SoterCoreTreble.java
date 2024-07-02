@@ -48,6 +48,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     private static final int CONNECTED = 2;
 
     protected static final int DEFAULT_BLOCK_TIME = 3 * 1000; // Default synchronize block time
+    private volatile long startInitTime = 0L;
 
     private Context mContext;
 
@@ -129,7 +130,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             }
 
             SLogger.i(TAG, "soter: Binding is done - Service connected");
-
+            long useTime = SystemClock.elapsedRealtime() - startInitTime;
+            if (useTime > DEFAULT_BLOCK_TIME) {
+                // bind service out time, need report
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "bind SoterService out time, use time:" + useTime);
+            }
+            
             syncJob.countDown();
         }
 
@@ -148,8 +154,13 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                     serviceListener.onServiceDisconnected();
                 }
 
+                long useTime = SystemClock.elapsedRealtime() - startInitTime;
+                if (useTime > DEFAULT_BLOCK_TIME) {
+                    // bind service out time, need report
+                    SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "bind SoterService out time, use time:" + useTime);
+                }
                 rebindService();
-
+                
                 syncJob.countDown();
             }
         }
@@ -200,6 +211,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         mContext = context;
         SLogger.i(TAG, "soter: initSoter in");
         isInitializing = true;
+        startInitTime = SystemClock.elapsedRealtime();
         syncJob.doAsSyncJob(DEFAULT_BLOCK_TIME, new Runnable() {
             @Override
             public void run() {
@@ -207,7 +219,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 SLogger.i(TAG, "soter: initSoter binding");
             }
         });
-
+        
         isInitializing = false;
         if(connectState == CONNECTED){
             SLogger.i(TAG, "soter: initSoter finish");

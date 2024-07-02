@@ -400,6 +400,7 @@ public class TaskAuthentication extends BaseSoterTask implements AuthCancellatio
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_FINGERPRINT_LOCKED,  charSequenceToStringNullAsNil(errString)));
             }
             compatLogicWhenDone();
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_AUTH_ERROR, "on authentication fatal error: " + errMsgId + " " + errString);
         }
 
         @Override
