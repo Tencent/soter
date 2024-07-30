@@ -45,6 +45,7 @@ public interface ConstantsSoter {
     int ERR_ANDROID_AIDL_RESULT = 102; //调用android系统服务SoterService的接口时返回值为失败或空
     int ERR_ANDROID_BEFORE_TREBLE = 103; //采用BeforeTreble方案的手机，系统调用异常
     int ERR_ANDROID_HAREWARE_NOT_SUPPORT = 104; //Android手机系统方法返回不支持指纹/面容
+    int ERR_ANDROID_BIND_SERVICE_OUTTIME = 105; //绑定手机系统的SoterService超时(3秒)
     int ERR_SOTER_INNER = 200; //Soter内部异常
     int ERR_SOTER_SRV_CONFIG = 300; //上报SrvDeviceInfo的服务端配置
     int ERR_SOTER_AUTH_ERROR = 401; //上报指纹/面容识别错误
