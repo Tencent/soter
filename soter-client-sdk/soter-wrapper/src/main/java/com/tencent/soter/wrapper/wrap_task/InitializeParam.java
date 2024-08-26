@@ -12,6 +12,7 @@ package com.tencent.soter.wrapper.wrap_task;
 import android.os.HandlerThread;
 
 import com.tencent.soter.core.model.ISoterLogger;
+import com.tencent.soter.core.model.ISoterReporter;
 import com.tencent.soter.wrapper.wrap_net.IWrapGetSupportNet;
 
 /**
@@ -26,6 +27,7 @@ public class InitializeParam {
     private int[] scenes;
 
     private ISoterLogger mSoterLogger;
+    private ISoterReporter mSoterReporter = null;
     private String customAppSecureKeyName = "";
     private HandlerThread customTaskHandlerThread;
 
@@ -47,6 +49,10 @@ public class InitializeParam {
 
     public ISoterLogger getSoterLogger() {
         return mSoterLogger;
+    }
+    
+    public ISoterReporter getSoterReporter() {
+        return mSoterReporter;
     }
 
     public String getCustomAppSecureKeyName() {
@@ -107,6 +113,16 @@ public class InitializeParam {
          */
         public InitializeParamBuilder setSoterLogger(ISoterLogger soterLogger) {
             mInitializeParam.mSoterLogger = soterLogger;
+            return this;
+        }
+        
+        /**
+         * Set a report implement.
+         * @param soterReporter The report implement
+         * @return the builder
+         */
+        public InitializeParamBuilder setSoterReporter(ISoterReporter soterReporter) {
+            mInitializeParam.mSoterReporter = soterReporter;
             return this;
         }
 

@@ -12,6 +12,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 
 import com.tencent.soter.core.model.ISoterExParameters;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterExParametersTrebleImpl;
 import com.tencent.soter.soterserver.ISoterService;
 import com.tencent.soter.soterserver.SoterExportResult;
@@ -33,6 +34,7 @@ import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 
 /**
@@ -119,6 +121,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 mSoterService = ISoterService.Stub.asInterface(service);
             } catch (RemoteException e) {
                 SLogger.e(TAG, "soter: Binding deathRecipient is error - RemoteException"+ e.toString());
+                SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService interface: ISoterService.Stub.asInterface.", e);
             }
 
             if (serviceListener != null) {
@@ -126,7 +129,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             }
 
             SLogger.i(TAG, "soter: Binding is done - Service connected");
-
+            long useTime = SystemClock.elapsedRealtime() - lastBindTime;
+            if (useTime > DEFAULT_BLOCK_TIME) {
+                // bind service out time, need report
+                SReporter.reportError(ERR_ANDROID_BIND_SERVICE_OUTTIME, "bind SoterService out time: " + useTime);
+            }
+            
             syncJob.countDown();
         }
 
@@ -146,7 +154,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 }
 
                 rebindService();
-
+                
                 syncJob.countDown();
             }
         }
@@ -197,6 +205,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         mContext = context;
         SLogger.i(TAG, "soter: initSoter in");
         isInitializing = true;
+        
         syncJob.doAsSyncJob(DEFAULT_BLOCK_TIME, new Runnable() {
             @Override
             public void run() {
@@ -204,7 +213,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 SLogger.i(TAG, "soter: initSoter binding");
             }
         });
-
+        
         isInitializing = false;
         if(connectState == CONNECTED){
             SLogger.i(TAG, "soter: initSoter finish");
@@ -213,6 +222,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         } else {
             connectState = DISCONNECT;
             SLogger.e(TAG, "soter: initSoter error");
+            SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "bind SoterService fail: DISCONNECT");
             return false;
         }
 
@@ -365,9 +375,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             if(mSoterService.generateAppSecureKey(uid) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
+            } else {
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "SoterService aidl: generateAppSecureKey. Return is not 0");
             }
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: generateAppSecureKey fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: generateAppSecureKey.", e);
         }
         return new SoterCoreResult(ERR_ASK_GEN_FAILED);
     }
@@ -427,6 +440,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return mSoterService.hasAskAlready(uid);
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAppGlobalSecureKey fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: hasAskAlready.", e);
             return false;
         }
 
@@ -470,10 +484,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return retrieveJsonFromExportedData(rawBytes);
             }else {
                 SLogger.e(TAG, "soter: soter: key can not be retrieved");
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "SoterService aidl: getAppSecureKey. Result.exportData is null");
                 return null;
             }
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getAppGlobalSecureKeyModel fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: getAppSecureKey.", e);
         }
         return null;
 
@@ -502,9 +518,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
         try {
             if(mSoterService.generateAuthKey(uid, authKeyName) == ERR_OK) {
                 return new SoterCoreResult(ERR_OK);
+            } else {
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "SoterService aidl: generateAuthKey. Return is not 0");
             }
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: generateAuthKey fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: generateAuthKey.", e);
         }
 
         return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED);
@@ -590,10 +609,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 return retrieveJsonFromExportedData(rawBytes);
             }else {
                 SLogger.e(TAG, "soter: key can not be retrieved");
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "SoterService aidl: getAuthKey. Result.exportData is null");
                 return null;
             }
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getAuthKeyModel fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: getAuthKey.", e);
         }
         return null;
 
@@ -629,6 +650,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return mSoterService.hasAuthKey(uid,authKeyName);
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: hasAuthKey fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: hasAuthKey.", e);
             return false;
         }
 
@@ -662,6 +684,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return result;
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: initSigh fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: initSigh.", e);
         }
         return null;
 
@@ -694,11 +717,12 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             soterSignResult =  mSoterService.finishSign(signSession);
             rawBytes = soterSignResult.exportData;
             if(soterSignResult.resultCode != ERR_OK ){
+                SReporter.reportError(ERR_ANDROID_AIDL_RESULT, "SoterService aidl: finishSign. Result.resultCode is not 0");
                 throw new Exception("finishSign error");
             }
-
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: finishSign fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: finishSign.", e);
         }
         return rawBytes;
 
@@ -727,6 +751,7 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
             return mSoterService.getVersion() ;
         } catch (Exception e) {
             SLogger.printErrStackTrace(TAG, e, "soter: getVersion fail: ");
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: getVersion.", e);
         }
         return 0;
     }
@@ -739,25 +764,28 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
                 public void run() {
                     try {
                         if (mSoterService == null) {
-                            SLogger.w(TAG, "soter: mSoterService is null");
+                            SLogger.e(TAG, "soter: updateExtraParam fail, mSoterService is null");
                             return;
                         }
                         SoterExtraParam typeResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_TYPE);
                         if (typeResult != null && typeResult.result instanceof Integer) {
+                            SLogger.i(TAG, "soter: updateExtraParam finger type:%s", (Integer)typeResult.result);
                             SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_TYPE, typeResult.result);
                         }
                         SoterExtraParam posResult = mSoterService.getExtraParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION);
                         if (posResult != null && posResult.result instanceof Integer[]) {
+                            SLogger.i(TAG, "soter: updateExtraParam finger pos:%s", Arrays.toString((Integer[]) posResult.result));
                             SoterExParametersTrebleImpl.setParam(ISoterExParameters.FINGERPRINT_HARDWARE_POSITION, posResult.result);
                         }
                     } catch (Exception e) {
-                        SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+                        SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail1");
+                        SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "SoterService aidl: getExtraParam.", e);
                     }
                 }
             });
             thread.start();
         } catch (Exception e) {
-            SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail");
+            SLogger.printErrStackTrace(TAG, e, "soter: getExtraParam fail2");
         }
     }
 

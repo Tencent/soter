@@ -26,6 +26,7 @@ import android.os.Handler;
 import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 
 import java.security.Signature;
 import java.util.HashMap;
@@ -300,6 +301,7 @@ public class BiometricManagerCompat {
 
         @Override
         public boolean isHardwareDetected(Context context) {
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "LegacyFingerprintManagerImpl.isHardwareDetected return false");
             return false;
         }
 

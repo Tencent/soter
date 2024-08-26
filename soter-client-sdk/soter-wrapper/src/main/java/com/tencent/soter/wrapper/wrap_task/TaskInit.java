@@ -22,6 +22,7 @@ import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.ISoterLogger;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreData;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterDelegate;
@@ -111,6 +112,10 @@ public class TaskInit extends BaseSoterTask {
         // set logger first.
         if(loggerImp != null) {
             SLogger.setLogImp(loggerImp);
+        }
+        // set reporter
+        if (param.getSoterReporter() != null) {
+            SReporter.setReporterImp(param.getSoterReporter());
         }
 
         HandlerThread customTaskHandlerThread = param.getCustomTaskHandlerThread();

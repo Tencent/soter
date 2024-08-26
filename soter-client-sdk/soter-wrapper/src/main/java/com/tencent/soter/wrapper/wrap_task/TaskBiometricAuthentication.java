@@ -20,6 +20,7 @@ import com.tencent.soter.core.SoterCore;
 import com.tencent.soter.core.biometric.BiometricManagerCompat;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreUtil;
 import com.tencent.soter.core.model.SoterSignatureResult;
 import com.tencent.soter.soterserver.SoterSessionResult;
@@ -306,6 +307,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
             String cause = e.getMessage();
             SLogger.e(TAG, "soter: caused exception when authenticating: %s", cause);
             SLogger.printErrStackTrace(TAG, e, "soter: caused exception when authenticating");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskBiometric, start authentication failed: performStartBiometricLogic().", e);
             callback(new SoterProcessAuthenticationResult(ERR_START_AUTHEN_FAILED, String.format("start authentication failed due to %s", cause)));
         }
     }
@@ -326,6 +328,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         } catch (Exception e) {
             SLogger.e(TAG, "soter: finish sign failed due to exception: %s", e.getMessage());
             SLogger.printErrStackTrace(TAG, e, "soter: sign failed due to exception");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskBiometric, sign failed: executeWhenAuthenticatedWithSession().", e);
             callback(new SoterProcessAuthenticationResult(ERR_SIGN_FAILED, "sign failed even after user authenticated the key."));
         }
     }
@@ -343,6 +346,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
         } catch (SignatureException e) {
             SLogger.e(TAG, "soter: sign failed due to exception: %s", e.getMessage());
             SLogger.printErrStackTrace(TAG, e, "soter: sign failed due to exception");
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskBiometric, sign failed: executeWhenAuthenticated().", e);
             callback(new SoterProcessAuthenticationResult(ERR_SIGN_FAILED, "sign failed even after user authenticated the key."));
         }
     }
@@ -422,6 +426,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                 callback(new SoterProcessAuthenticationResult(SoterProcessErrCode.ERR_BIOMETRIC_AUTHENTICATION_FAILED, charSequenceToStringNullAsNil(errString)));
             }
             authenticationShouldComplete();
+            SReporter.reportError(ConstantsSoter.ERR_SOTER_AUTH_ERROR, "on authentication fatal error: " + errMsgId + " " + errString);
         }
 
         @Override
@@ -460,6 +465,7 @@ public class TaskBiometricAuthentication extends BaseSoterTask implements AuthCa
                             } catch (Exception e) {
                                 SLogger.e(TAG, "soter: exception in update");
                                 SLogger.printErrStackTrace(TAG, e, "soter: exception in update");
+                                SReporter.reportError(ConstantsSoter.ERR_SOTER_INNER, "TaskBiometric, update signature failed: onAuthenticationSucceeded().", e);
                                 //fix the bug that auth key will be invalid after enroll a new fingerprint after OTA to android O from android N.
                                 SLogger.e(TAG, "soter: remove the auth key: %s", mAuthKeyName);
                                 SoterCore.removeAuthKey(mAuthKeyName, false);

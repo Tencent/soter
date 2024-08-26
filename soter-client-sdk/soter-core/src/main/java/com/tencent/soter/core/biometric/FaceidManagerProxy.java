@@ -24,12 +24,15 @@ import android.os.Build;
 import android.os.Handler;
 
 import com.tencent.soter.core.model.SLogger;
+import com.tencent.soter.core.model.SReporter;
 import com.tencent.soter.core.model.SoterCoreUtil;
 
 import java.security.Signature;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
+
+import static com.tencent.soter.core.model.ConstantsSoter.ERR_ANDROID_HAREWARE_NOT_SUPPORT;
 
 /**
  * Actual BiometricManagerCompat implementation for API level 23 and later.
@@ -80,7 +83,11 @@ final class FaceidManagerProxy {
         try {
             FaceManager mgr = getFaceManager(context);
             if (mgr != null) {
-                return mgr.isHardwareDetected();
+                boolean ret = mgr.isHardwareDetected();
+                if (!ret) {
+                    SReporter.reportError(ERR_ANDROID_HAREWARE_NOT_SUPPORT, "FaceManager.isHardwareDetected return false");
+                }
+                return ret;
             } else {
                 SLogger.e(TAG, "soter: facemanager is null in isHardwareDetected! Should never happen");
                 return false;

@@ -60,7 +60,12 @@ dependencies {
 在 `AndroidManifest.xml`中添加使用指纹权限
 
 ```xml
-<uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+    <queries>
+    <package android:name="com.tencent.soter.soterserver" />
+    </queries>
+
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 ```
 
 ### 初始化
@@ -203,7 +208,12 @@ dependencies {
 Add fingerprint permission declaration in `AndroidManifest.xml`
 
 ```xml
-<uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+    <queries>
+    <package android:name="com.tencent.soter.soterserver" />
+    </queries>
+
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 ```
 
 ### Initialize

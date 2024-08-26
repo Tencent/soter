@@ -9,10 +9,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PSSParameterSpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.*;
 
 import com.tencent.soter.serverdemo.SoterPubKeyModel;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -88,16 +85,41 @@ public class RSAUtil {
 		return false;
 	}
 
+	/**
+	 * verify signature
+	 * @param publicKey the public key used to verify signature
+	 * @param data the origin data
+	 * @param sign the signature
+     * @param saltLen the saltLen
+	 * @return true if verify successfully, false otherwise
+	 */
+	public static boolean verify(RSAPublicKey publicKey, byte[] data, byte[] sign, int saltLen) {
+		try {
+			if (saltLen < 20) {
+				saltLen = 20;
+			}
+			Signature signature = Signature.getInstance("SHA256withRSA/PSS", BouncyCastleProvider.PROVIDER_NAME);
+			signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, saltLen, 1));
+			signature.initVerify(publicKey);
+			signature.update(data);
+			return signature.verify(sign);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public static boolean verify(RSAPublicKey publicKey, String data, byte[] signature) {
 		return verify(publicKey, data.getBytes(), signature);
 	}
 
-	public static void extractAttestationSequence(X509Certificate attestationCert, SoterPubKeyModel soterPubKeyModel) throws Exception, IOException {
+	public static int extractAttestationSequence(X509Certificate attestationCert, SoterPubKeyModel soterPubKeyModel) throws Exception, IOException {
 		byte[] attestationExtensionBytes = attestationCert.getExtensionValue(KEY_DESCRIPTION_OID);
 		if (attestationExtensionBytes == null || attestationExtensionBytes.length == 0) {
 			throw new Exception("Couldn't find the keystore attestation " + "extension data.");
 		}
 
+		int saltLen = 0;
 		ASN1Sequence decodedSequence;
 		try (ASN1InputStream asn1InputStream =
 					 new ASN1InputStream(attestationExtensionBytes)) {
@@ -124,8 +146,10 @@ public class RSAUtil {
 			soterPubKeyModel.setCpu_id(jsonObject.getString("cpu_id"));
 			soterPubKeyModel.setUid(jsonObject.getInt("uid"));
 			soterPubKeyModel.setCounter(jsonObject.getLong("counter"));
+			saltLen = jsonObject.optInt("rsa_pss_saltlen", 0);
 		} catch (Exception e){
 			throw new Exception("Couldn't parse challenge json string in the attestation certificate" + e.getStackTrace());
 		}
+		return saltLen;
 	}
 }
