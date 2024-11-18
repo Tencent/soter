@@ -19,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.tencent.soter.core.SoterCore;
+import com.tencent.soter.core.model.CertUtil;
 import com.tencent.soter.core.model.ConstantsSoter;
 import com.tencent.soter.core.model.ISoterLogger;
 import com.tencent.soter.core.model.SLogger;
@@ -194,28 +195,32 @@ public class TaskInit extends BaseSoterTask {
 
     // check if there's any keys invalid and need to be deleted
     private void removeAbnormalKeys() {
-        SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
-        int askStatus = preferences.getInt(SoterCoreData.getInstance().getAskName(), ConstantsSoterProcess.KeyStatus.KEY_STATUS_UNDEFINED);
-        SLogger.d(TAG, "soter: ask status: %d", askStatus);
-        if(isKeyStatusInvalid(askStatus) && SoterCore.hasAppGlobalSecureKey()) {
-            SLogger.i(TAG, "invalid ask, remove all key");
-            SoterCore.removeAppGlobalSecureKey();
-            for (int scene : scenes) {
-                String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
-                SoterCore.removeAuthKey(keyName, false);
-            }
-        } else {
-            for (int scene : scenes) {
-                String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
-                if(!SoterCoreUtil.isNullOrNil(keyName)) {
-                    int keyStatus = preferences.getInt(keyName, ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL);
-                    SLogger.d(TAG, "soter: %s status: %d", keyName, keyStatus);
-                    if(isKeyStatusInvalid(keyStatus) && SoterCore.hasAuthKey(keyName)) {
-                        SLogger.i(TAG, "remove invalid ask: %s", keyName);
-                        SoterCore.removeAuthKey(keyName, false);
+        try{
+            SharedPreferences preferences = SoterDataCenter.getInstance().getStatusSharedPreference();
+            int askStatus = preferences.getInt(SoterCoreData.getInstance().getAskName(), ConstantsSoterProcess.KeyStatus.KEY_STATUS_UNDEFINED);
+            SLogger.d(TAG, "soter: ask status: %d", askStatus);
+            if(isKeyStatusInvalid(askStatus) && SoterCore.hasAppGlobalSecureKey()) {
+                SLogger.i(TAG, "invalid ask, remove all key");
+                SoterCore.removeAppGlobalSecureKey();
+                for (int scene : scenes) {
+                    String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
+                    SoterCore.removeAuthKey(keyName, false);
+                }
+            } else {
+                for (int scene : scenes) {
+                    String keyName = SoterDataCenter.getInstance().getAuthKeyNames().get(scene, "");
+                    if(!SoterCoreUtil.isNullOrNil(keyName)) {
+                        int keyStatus = preferences.getInt(keyName, ConstantsSoterProcess.KeyStatus.KEY_STATUS_NORMAL);
+                        SLogger.d(TAG, "soter: %s status: %d", keyName, keyStatus);
+                        if(isKeyStatusInvalid(keyStatus) && SoterCore.hasAuthKey(keyName)) {
+                            SLogger.i(TAG, "remove invalid ask: %s", keyName);
+                            SoterCore.removeAuthKey(keyName, false);
+                        }
                     }
                 }
             }
+        }catch (Exception e){
+            SLogger.printErrStackTrace(TAG, e, "soter: removeAbnormalKeys failed");
         }
     }
 
