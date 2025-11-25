@@ -240,6 +240,10 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
                     SLogger.e(TAG, "soter: cause exception. maybe reflection exception: " + e.toString());
                     SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAuthKey.", e);
                     return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
+                } catch (Error e) {
+                    SLogger.e(TAG, "soter: cause error. maybe reflection exception: " + e.toString());
+                    SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAuthKey error:" + e);
+                    return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
                 }
             } catch (Exception e) {
                 SLogger.e(TAG, "soter: generate auth key failed: " + e.toString());
@@ -248,6 +252,10 @@ public class SoterCoreBeforeTreble extends SoterCoreBase implements ConstantsSot
             } catch (OutOfMemoryError oomError) {
                 SLogger.printErrStackTrace(TAG, oomError, "soter: out of memory when generate AuthKey!! maybe no attk inside");
                 SoterDelegate.onTriggerOOM();
+            } catch (Error e) {
+                SLogger.e(TAG, "soter: outside cause error. maybe reflection exception: " + e.toString());
+                SReporter.reportError(ERR_ANDROID_BEFORE_TREBLE, "BeforeTreble: generateAuthKey outside error:" + e);
+                return new SoterCoreResult(ERR_AUTH_KEY_GEN_FAILED, e.toString());
             }
         } else {
             SLogger.e(TAG, "soter: not support soter");

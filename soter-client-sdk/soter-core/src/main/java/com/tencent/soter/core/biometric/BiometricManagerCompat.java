@@ -56,15 +56,18 @@ public class BiometricManagerCompat {
     private BiometricManagerCompat(Context context, Integer biometricType) {
         mContext = context;
         mBiometricType = biometricType;
+        initImpl();
     }
 
     static final Map<Integer, IBiometricManager> IMPL_PROVIDER = new HashMap<>();
 
-    static {
+    private void initImpl() {
         IBiometricManager IMPL;
         if (SoterCore.isNativeSupportSoter()) {
+            SLogger.i(TAG, "soter: set IMPL to FingerprintManagerImpl");
             IMPL = new FingerprintManagerImpl();
         } else {
+            SLogger.i(TAG, "soter: set IMPL to LegacyFingerprintManagerImpl");
             IMPL = new LegacyFingerprintManagerImpl();
         }
         IMPL_PROVIDER.put(ConstantsSoter.FINGERPRINT_AUTH, IMPL);

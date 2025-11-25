@@ -48,9 +48,13 @@ public class SoterBiometricCanceller {
         return asyncCancelBiometricAuthenticationInnerImp(true);
     }
 
+    public boolean asyncCancelBiometricAuthentication(final boolean shouldPublishCancel) {
+        return asyncCancelBiometricAuthenticationInnerImp(shouldPublishCancel);
+    }
+
     @SuppressLint("NewApi")
     public boolean asyncCancelBiometricAuthenticationInnerImp(final boolean shouldPublishCancel) {
-        SLogger.v(TAG, "soter: publishing cancellation. should publish: %b", shouldPublishCancel);
+        SLogger.i(TAG, "soter: publishing cancellation. should publish: %b", shouldPublishCancel);
         if(!mCancellationSignal.isCanceled()) {
             if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 SoterTaskThread.getInstance().postToWorker(new Runnable() {
@@ -70,14 +74,16 @@ public class SoterBiometricCanceller {
                         mCancellationSignal.cancel();
                     }
                 });
-                // double check in case some weired devices do not callback cancel in system level
-                SoterTaskThread.getInstance().postToWorkerDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        SLogger.w(TAG, "hy: waiting for %s ms not callback to system callback. cancel manually", MAX_WAIT_EXECUTION_TIME);
-                        publishCancel();
-                    }
-                }, MAX_WAIT_EXECUTION_TIME);
+                if (shouldPublishCancel) {
+                    // double check in case some weired devices do not callback cancel in system level
+                    SoterTaskThread.getInstance().postToWorkerDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            SLogger.w(TAG, "hy: waiting for %s ms not callback to system callback. cancel manually", MAX_WAIT_EXECUTION_TIME);
+                            publishCancel();
+                        }
+                    }, MAX_WAIT_EXECUTION_TIME);
+                }
             }
 
             return true;

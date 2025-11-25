@@ -15,6 +15,10 @@ public class SoterExParameters {
     private ISoterExParameters impl = null;
 
     private SoterExParameters() {
+        initExParameters();
+    }
+
+    void initExParameters() {
         try {
             impl = (ISoterExParameters) Class.forName(SOTEREX_PROVIDER_CLASS_NAME).getDeclaredMethod("getInstance").invoke(null);
             SLogger.i(TAG, "soter: get system SoterExParameterProvider class success");
@@ -55,11 +59,14 @@ public class SoterExParameters {
 
     public int getFingerprintType() {
         Object result = getParam(ISoterExParameters.FINGERPRINT_TYPE, ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE);
+        int ret = ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE;
         if (result instanceof Integer) {
-            return (int) result;
-        } else {
-            return ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE;
+            ret = (int) result;
         }
+        if (ret == ISoterExParameters.FINGERPRINT_TYPE_UNDEFINE) {
+            initExParameters();
+        }
+        return ret;
     }
 
     public int[] getFingerprintHardwarePosition() {

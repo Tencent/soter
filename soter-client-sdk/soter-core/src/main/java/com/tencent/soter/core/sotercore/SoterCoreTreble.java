@@ -272,25 +272,31 @@ public class SoterCoreTreble extends SoterCoreBase implements ConstantsSoter, So
     }
 
     private void bindService(boolean isCycle) {
-        Intent intent = new Intent();
-        intent.setAction("com.tencent.soter.soterserver.ISoterService");
-        intent.setPackage("com.tencent.soter.soterserver");
+        try {
+            Intent intent = new Intent();
+            intent.setAction("com.tencent.soter.soterserver.ISoterService");
+            intent.setPackage("com.tencent.soter.soterserver");
 
-        if(mContext == null) {
-            SLogger.e(TAG, "soter: bindService context is null ");
-            return;
+            if(mContext == null) {
+                SLogger.e(TAG, "soter: bindService context is null ");
+                return;
+            }
+            connectState = CONNECTING;
+
+            if (serviceListener != null) {
+                serviceListener.onStartServiceConnecting();
+            }
+
+            SLogger.i(TAG, "soter: bindService binding is start ");
+            lastBindTime = SystemClock.elapsedRealtime();
+            hasBind = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
+            scheduleTimeoutTask(isCycle);
+        } catch (Exception e) {
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "mContext.bindService exception: " + e);
+        } catch (Error e) {
+            SReporter.reportError(ERR_ANDROID_AIDL_EXCEPTION, "mContext.bindService error: " + e);
         }
-        connectState = CONNECTING;
-
-        if (serviceListener != null) {
-            serviceListener.onStartServiceConnecting();
-        }
-    
-        SLogger.i(TAG, "soter: bindService binding is start ");
-        lastBindTime = SystemClock.elapsedRealtime();
-        hasBind = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-
-        scheduleTimeoutTask(isCycle);
     }
     
     private Runnable retryFunc = new Runnable() {
