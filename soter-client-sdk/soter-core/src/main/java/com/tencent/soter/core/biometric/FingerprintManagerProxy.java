@@ -144,7 +144,8 @@ final class FingerprintManagerProxy {
         try {
             FingerprintManager mgr = getFingerprintManager(context);
             if(mgr != null) {
-                mgr.authenticate(wrapCryptoObject(crypto),
+                SLogger.i(TAG, "call system authenticate");
+                        mgr.authenticate(wrapCryptoObject(crypto),
                         (android.os.CancellationSignal) cancel, flags,
                         wrapCallback(callback), handler);
             } else {
@@ -180,6 +181,7 @@ final class FingerprintManagerProxy {
                 callback.onAuthenticationError(ConstantsSoter.ERR_NEGATIVE_BUTTON, "click negative button");
             }
         });
+        SLogger.i(TAG, "call system build().authenticate");
         builder.build().authenticate((android.os.CancellationSignal) cancel, context.getMainExecutor(), wrapCallback2(callback));
     }
 
