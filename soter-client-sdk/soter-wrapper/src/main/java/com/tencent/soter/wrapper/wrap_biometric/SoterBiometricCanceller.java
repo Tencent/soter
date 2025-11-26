@@ -60,7 +60,7 @@ public class SoterBiometricCanceller {
                 SoterTaskThread.getInstance().postToWorker(new Runnable() {
                     @Override
                     public void run() {
-                        SLogger.v(TAG, "soter: enter worker thread. perform cancel");
+                        SLogger.i(TAG, "soter: cancellation signal 1");
                         mCancellationSignal.cancel();
                         if(shouldPublishCancel) {
                             publishCancel();
@@ -68,13 +68,14 @@ public class SoterBiometricCanceller {
                     }
                 });
             } else {
-                SoterTaskThread.getInstance().postToWorker(new Runnable() {
-                    @Override
-                    public void run() {
-                        mCancellationSignal.cancel();
-                    }
-                });
                 if (shouldPublishCancel) {
+                    SoterTaskThread.getInstance().postToWorker(new Runnable() {
+                        @Override
+                        public void run() {
+                            SLogger.i(TAG, "soter: cancellation signal 2");
+                            mCancellationSignal.cancel();
+                        }
+                    });
                     // double check in case some weired devices do not callback cancel in system level
                     SoterTaskThread.getInstance().postToWorkerDelayed(new Runnable() {
                         @Override
@@ -83,6 +84,10 @@ public class SoterBiometricCanceller {
                             publishCancel();
                         }
                     }, MAX_WAIT_EXECUTION_TIME);
+                } else {
+                    SLogger.i(TAG, "soter: cancellation signal 3");
+                    mCancellationSignal.cancel();
+                    SoterTaskManager.getInstance().cancelAuthCancellationTask();
                 }
             }
 
@@ -98,11 +103,18 @@ public class SoterBiometricCanceller {
 
     @SuppressLint("NewApi")
     public void refreshCancellationSignal() {
+        SLogger.i(TAG, "qc: %s refreshCancellationSignal", this);
         this.mCancellationSignal = new CancellationSignal();
     }
 
     @NonNull
+    @SuppressLint("NewApi")
     public CancellationSignal getSignalObj() {
+        if (mCancellationSignal != null) {
+            SLogger.i(TAG, "qc: %s getSignalObj isCanceled:%s", this, mCancellationSignal.isCanceled());
+        } else {
+            SLogger.i(TAG, "qc: %s getSignalObj:null", this);
+        }
         return mCancellationSignal;
     }
 

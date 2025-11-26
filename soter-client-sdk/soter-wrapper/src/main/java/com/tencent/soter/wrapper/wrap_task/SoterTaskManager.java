@@ -167,4 +167,28 @@ public class SoterTaskManager implements SoterProcessErrCode {
             }
         }
     }
+
+    public void cancelAuthCancellationTask() {
+        synchronized (mTaskPoolLock) {
+            SLogger.i(TAG, "soter: cancelAuthCancellationTask");
+            if(sTaskPool.size() != 0) {
+                for(int i = 0; i < sTaskPool.size(); i++) {
+                    final int key = sTaskPool.keyAt(i);
+                    SoterTaskThread.getInstance().postToWorker(new Runnable() {
+                        @Override
+                        public void run() {
+                            BaseSoterTask task = null;
+                            synchronized (mTaskPoolLock) {
+                                task = sTaskPool.get(key);
+                            }
+                            if(task != null && (task instanceof AuthCancellationCallable)) {
+                                removeFromTask(task);
+                            }
+                        }
+                    });
+
+                }
+            }
+        }
+    }
 }
